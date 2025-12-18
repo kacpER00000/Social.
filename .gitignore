@@ -1,0 +1,24 @@
+# IntelliJ files
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# VS Code 
+.vscode/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# --- BACKEND (Java) ---
+backend/target/
+backend/help.md
+backend/.mvn/wrapper/maven-wrapper.jar
+!backend/.mvn/wrapper/maven-wrapper.jar
+
+# --- FRONTEND (React) ---
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.env.local
