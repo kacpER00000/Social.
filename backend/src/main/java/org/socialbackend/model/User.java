@@ -3,6 +3,7 @@ package org.socialbackend.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -19,7 +20,7 @@ public class User {
     @Column(name="last_name")
     private String lastName;
     @Column(name="birth_date")
-    private Date birthDate;
+    private LocalDate birthDate;
     @Column(name="sex")
     private Character sex;
     @OneToMany(mappedBy = "followed")
@@ -37,82 +38,87 @@ public class User {
 
     public User(){}
 
-    public User(String firstName, String lastName, Date birthDate, Character sex) {
+    public User(String firstName, String lastName, LocalDate birthDate, Character sex, UserLoginData userLoginData) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.birthDate = birthDate;
         this.sex = sex;
+        this.userLoginData = userLoginData;
     }
 
     public Long getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
     public String getFirstName() {
         return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
     }
 
     public String getLastName() {
         return lastName;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public Date getBirthDate() {
+    public LocalDate getBirthDate() {
         return birthDate;
-    }
-
-    public void setBirthDate(Date birthDate) {
-        this.birthDate = birthDate;
     }
 
     public Character getSex() {
         return sex;
     }
 
-    public void setSex(Character sex) {
-        this.sex = sex;
-    }
-
     public List<Follower> getFollowers() {
         return followers;
-    }
-
-    public void setFollowers(List<Follower> followers) {
-        this.followers = followers;
     }
 
     public List<Follower> getFollowing() {
         return following;
     }
 
-    public void setFollowing(List<Follower> following) {
-        this.following = following;
-    }
-
     public UserLoginData getUserLoginData() {
         return userLoginData;
-    }
-
-    public void setUserLoginData(UserLoginData userLoginData) {
-        this.userLoginData = userLoginData;
     }
 
     public List<Post> getPosts() {
         return posts;
     }
 
-    public void setPosts(List<Post> posts) {
-        this.posts = posts;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public void setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
+    }
+
+    public void setSex(Character sex) {
+        this.sex = sex;
+    }
+
+    public void setUserLoginData(UserLoginData userLoginData) {
+        this.userLoginData = userLoginData;
+        if(this.userLoginData != null){
+            this.userLoginData.setUser(this);
+        }
+    }
+
+    public void follow(Follower user){
+        following.add(user);
+        user.setFollower(this);
+    }
+    public void unfollow(Follower user){
+        following.remove(user);
+        user.setFollower(null);
+    }
+    public void addFollower(Follower user){
+        followers.add(user);
+        user.setFollowed(this);
+    }
+    public void removeFollower(Follower user){
+        followers.remove(user);
+        user.setFollowed(null);
     }
 }
