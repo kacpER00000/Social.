@@ -7,6 +7,7 @@ import org.socialbackend.model.User;
 import org.socialbackend.model.UserLoginData;
 import org.socialbackend.repository.UserLoginDataRepository;
 import org.socialbackend.repository.UserRepository;
+import org.socialbackend.request.RegisterUserRequest;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -23,13 +24,19 @@ public class UserService {
     private final UserLoginDataRepository userLoginDataRepository;
 
     @Transactional
-    public void addUser(User u, UserLoginData userLoginData){
-        if(userLoginDataRepository.existsByEmail(userLoginData.getEmail())){
+    public void addUser(RegisterUserRequest registerUserRequest){
+
+        if(userLoginDataRepository.existsByEmail(registerUserRequest.getEmail())){
             throw new IllegalStateException("User with this email already exists");
         }
+        User u = new User();
+        u.setFirstName(registerUserRequest.getFirstName());
+        u.setLastName(registerUserRequest.getLastName());
+        u.setBirthDate(registerUserRequest.getBirthDate());
+        u.setSex(registerUserRequest.getSex());
         UserLoginData newUserLoginData = new UserLoginData();
-        newUserLoginData.setEmail(userLoginData.getEmail());
-        newUserLoginData.setPassword(hashPassword(userLoginData.getPassword()));
+        newUserLoginData.setEmail(registerUserRequest.getEmail());
+        newUserLoginData.setPassword(hashPassword(registerUserRequest.getPassword()));
         u.setUserLoginData(newUserLoginData);
         userRepository.save(u);
     }
