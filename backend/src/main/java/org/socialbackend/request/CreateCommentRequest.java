@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateCommentRequest {
+    @NotNull
+    private Long userId;
     @NotBlank
     private String content;
 }
