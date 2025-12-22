@@ -21,7 +21,6 @@ import java.util.NoSuchElementException;
 public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
-    private final PostLikeRepository postLikeRepository;
 
     @Transactional
     public void addPost(CreatePostRequest createPostRequest){
@@ -66,7 +65,7 @@ public class PostService {
     }
 
     private PostDTO mapToDTO(Post post){
-        Long likesNumber = postLikeRepository.countByPost(post);
+        Long likesNumber = post.getLikesCount();
         String nickname = post.getUser().getFirstName() + " " + post.getUser().getLastName();
         return new PostDTO(post.getPostId(),nickname,post.getTitle(),post.getContent(),post.getCreatedAt(),likesNumber);
     }

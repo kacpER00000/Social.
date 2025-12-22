@@ -28,6 +28,15 @@ public class Post {
     private LocalDateTime createdAt;
     @OneToMany(mappedBy = "post")
     private List<Comment> comments = new ArrayList<>();
+    @Column(name="likes_count")
+    private Long likesCount=0L;
+
+    public Long getLikesCount() {
+        return likesCount;
+    }
+    public void setLikesCount(Long likesCount) {
+        this.likesCount = likesCount;
+    }
 
     public Post(){}
 
