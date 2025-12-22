@@ -38,14 +38,16 @@ public class PostLikeService {
         long deletedCount = postLikeRepository.deleteByPost_postIdAndUser_userId(postId, userId);
         if(deletedCount > 0){
             postRepository.decrementLikes(postId);
+            return;
         }
+        throw new IllegalStateException("Already unliked");
     }
 
     public Page<PostLikeDTO> findUserWhoLikePost(Long postId, Pageable pageable){
         Page<PostLike> usersWhoLike = postLikeRepository.findAllByPost_PostId(postId,pageable);
         return usersWhoLike.map(this::mapToDTO);
     }
-    public PostLikeDTO mapToDTO(PostLike postLike){
+    private PostLikeDTO mapToDTO(PostLike postLike){
         String username = postLike.getUser().getFirstName() + " " + postLike.getUser().getLastName();
         return new PostLikeDTO(username, postLike.getUser().getUserId(),postLike.getPost().getPostId(),postLike.getLikedAt());
     }
