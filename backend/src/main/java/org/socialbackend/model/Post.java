@@ -69,6 +69,10 @@ public class Post {
         this.content = content;
     }
 
+    public void setUser(User u){
+        this.user=u;
+    }
+
     public void addComment(Comment comment){
         comments.add(comment);
         comment.setPost(this);

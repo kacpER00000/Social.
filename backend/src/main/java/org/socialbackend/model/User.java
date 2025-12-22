@@ -121,4 +121,12 @@ public class User {
         followers.remove(user);
         user.setFollowed(null);
     }
+    public void addPost(Post post){
+        this.posts.add(post);
+        post.setUser(this);
+    }
+    public void removePost(Post postToDelete){
+        this.posts.remove(postToDelete);
+        postToDelete.setUser(null);
+    }
 }
