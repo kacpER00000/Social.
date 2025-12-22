@@ -3,6 +3,7 @@ package org.socialbackend.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.tomcat.util.http.InvalidParameterException;
+import org.socialbackend.dto.UserDTO;
 import org.socialbackend.model.User;
 import org.socialbackend.model.UserLoginData;
 import org.socialbackend.repository.UserLoginDataRepository;
@@ -40,27 +41,26 @@ public class UserService {
         u.setUserLoginData(newUserLoginData);
         userRepository.save(u);
     }
-    public User findUserById(Long userId){
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
+    public UserDTO findUserById(Long userId){
+        return userRepository.findById(userId).map(this::mapToDTO).orElseThrow(() -> new NoSuchElementException("User with this id don't exist"));
     }
-    public List<User> findUsersByFirstNameOrLastName(String query) {
+    public List<UserDTO> findUsersByFirstNameOrLastName(String query) {
         if (query == null || query.isBlank()) {
             throw new InvalidParameterException("Search query cannot be empty");
         }
-        return userRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(query, query);
+        return userRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(query, query).stream().map(this::mapToDTO).toList();
     }
     @Transactional
-    public void updateUser(User u){
-        User foundUser = findUserById(u.getUserId());
-        foundUser.setFirstName(u.getFirstName());
-        foundUser.setLastName(u.getLastName());
-        foundUser.setSex(u.getSex());
-        foundUser.setBirthDate(u.getBirthDate());
+    public void updateUser(Long userId,UpdateUserRequest updateUserRequest){
+        User foundUser = getUserEntity(userId);
+        foundUser.setFirstName(updateUserRequest.getFirstName());
+        foundUser.setLastName(updateUserRequest.getLastName());
+        foundUser.setSex(updateUserRequest.getSex());
+        foundUser.setBirthDate(updateUserRequest.getBirthDate());
     }
     @Transactional
-    public void deleteUser(User u){
-        User userToDelete = findUserById(u.getUserId());
+    public void deleteUser(Long userId){
+        User userToDelete = getUserEntity(userId);
         userRepository.delete(userToDelete);
     }
     private String hashPassword(String password){
@@ -71,5 +71,12 @@ public class UserService {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
+    }
+    private UserDTO mapToDTO(User u){
+        return new UserDTO(u.getUserId(),u.getFirstName(),u.getLastName(),u.getBirthDate(),u.getSex());
+    }
+
+    private User getUserEntity(Long userId){
+        return userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User with this id don't exist"));
     }
 }
