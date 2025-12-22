@@ -6,6 +6,7 @@ import org.apache.tomcat.util.http.InvalidParameterException;
 import org.socialbackend.dto.UserDTO;
 import org.socialbackend.model.User;
 import org.socialbackend.model.UserLoginData;
+import org.socialbackend.request.UpdateUserRequest;
 import org.socialbackend.repository.UserLoginDataRepository;
 import org.socialbackend.repository.UserRepository;
 import org.socialbackend.request.RegisterUserRequest;
