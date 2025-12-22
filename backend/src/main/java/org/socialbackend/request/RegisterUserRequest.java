@@ -1,8 +1,6 @@
 package org.socialbackend.request;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,13 +15,15 @@ public class RegisterUserRequest {
     private String firstName;
     @NotBlank
     private String lastName;
-    @NotBlank
+    @NotNull
+    @Past
     private LocalDate birthDate;
-    @NotBlank
+    @NotNull
     private Character sex;
     @Email
     @NotBlank
     private String email;
     @Size(min = 8)
+    @NotBlank
     private String password;
 }
