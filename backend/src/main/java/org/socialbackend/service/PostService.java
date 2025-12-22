@@ -7,6 +7,7 @@ import org.socialbackend.model.User;
 import org.socialbackend.repository.PostRepository;
 import org.socialbackend.repository.UserRepository;
 import org.socialbackend.request.CreatePostRequest;
+import org.socialbackend.request.UpdatePostRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
