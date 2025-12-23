@@ -10,8 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FollowerDTO {
-    private Long id;
-    private Long followerId;
+    private Long userId;
     private String followerUsername;
     private LocalDateTime startFollowDate;
 }
