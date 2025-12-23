@@ -74,8 +74,9 @@ public class PostService {
 
     private PostDTO mapToDTO(Post post){
         Long likesNumber = post.getLikesCount();
+        Long commentCount = post.getCommentCount();
         String nickname = post.getUser().getFirstName() + " " + post.getUser().getLastName();
-        return new PostDTO(post.getPostId(),nickname,post.getTitle(),post.getContent(),post.getCreatedAt(),likesNumber);
+        return new PostDTO(post.getPostId(),nickname,post.getTitle(),post.getContent(),post.getCreatedAt(),likesNumber,commentCount);
     }
 
     private User findUserById(Long userId){

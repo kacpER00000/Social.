@@ -18,8 +18,13 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     Page<Post> findAllByOrderByCreatedAtDesc(Pageable pageable);
     @Modifying
     @Query("UPDATE Post p SET p.likesCount = p.likesCount + 1 WHERE p.postId = :postId")
-    public void incrementLikes(@Param("postId") Long postId);
+    void incrementLikes(@Param("postId") Long postId);
     @Modifying
     @Query("UPDATE Post p SET p.likesCount = p.likesCount - 1 WHERE p.postId = :postId")
-    public void decrementLikes(@Param("postId") Long postId);
+    void decrementLikes(@Param("postId") Long postId);
+    @Modifying
+    @Query("UPDATE Post p SET p.commentCount = p.commentCount + 1 WHERE p.postId = :postId")
+    void incrementCommentCount(@Param("postId") Long postId);
+    @Query("UPDATE Post p SET p.commentCount = p.commentCount - 1 WHERE p.postId = :postId")
+    void decrementCommentCount(@Param("postId") Long postId);
 }

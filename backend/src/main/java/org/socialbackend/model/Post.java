@@ -30,6 +30,16 @@ public class Post {
     private List<Comment> comments = new ArrayList<>();
     @Column(name="likes_count")
     private Long likesCount=0L;
+    @Column(name = "comment_count")
+    private Long commentCount=0L;
+
+    public Long getCommentCount() {
+        return commentCount;
+    }
+
+    public void setCommentCount(Long commentCount) {
+        this.commentCount = commentCount;
+    }
 
     public Long getLikesCount() {
         return likesCount;

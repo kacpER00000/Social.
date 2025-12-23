@@ -11,6 +11,5 @@ import java.util.List;
 
 @Repository
 public interface CommentRepository extends JpaRepository<Comment,Long> {
-    Long countByPost_PostId(Long postId);
     Page<Comment> findAllByPost_PostIdOrderByCreatedAtAsc(Long postId, Pageable pageable);
 }

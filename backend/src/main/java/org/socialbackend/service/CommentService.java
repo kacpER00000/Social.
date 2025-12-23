@@ -30,6 +30,7 @@ public class CommentService {
         Post post = postRepository.findById(postId).orElseThrow(() -> new NoSuchElementException("Post with this id don't exist"));
         Comment comment = new Comment(post,user,createCommentRequest.getContent());
         post.addComment(comment);
+        postRepository.incrementCommentCount(postId);
         commentRepository.save(comment);
     }
 
@@ -49,6 +50,7 @@ public class CommentService {
             throw new IllegalStateException("You can't edit this comment");
         }
         post.removeComment(comment);
+        postRepository.decrementCommentCount(post.getPostId());
         commentRepository.delete(comment);
     }
 
@@ -58,10 +60,6 @@ public class CommentService {
 
     public Page<CommentDTO> findPostComments(Long postId, Pageable pageable){
         return commentRepository.findAllByPost_PostIdOrderByCreatedAtAsc(postId,pageable).map(this::mapToDTO);
-    }
-
-    public Long countComments(Long postId){
-        return commentRepository.countByPost_PostId(postId);
     }
 
     private void validateCommentOwner(Comment comment, Long userId){
