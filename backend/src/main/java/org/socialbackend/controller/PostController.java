@@ -32,13 +32,13 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
     @PutMapping("/{postId}")
-    public ResponseEntity<Void> updatePost(@PathVariable Long postId,@Valid @RequestBody UpdatePostRequest updatePostRequest){
-        postService.updatePost(postId,updatePostRequest);
+    public ResponseEntity<Void> updatePost(@PathVariable Long postId,@RequestParam("userId") Long userId,@Valid @RequestBody UpdatePostRequest updatePostRequest){
+        postService.updatePost(postId,userId,updatePostRequest);
         return ResponseEntity.ok().build();
     }
     @DeleteMapping("/{postId}")
-    public ResponseEntity<Void> deletePost(@PathVariable Long postId){
-        postService.deletePost(postId);
+    public ResponseEntity<Void> deletePost(@PathVariable Long postId,@RequestParam("userId") Long userId){
+        postService.deletePost(postId,userId);
         return ResponseEntity.noContent().build();
     }
     @GetMapping("/latest")

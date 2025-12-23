@@ -28,14 +28,14 @@ public class UserController {
         userService.addUser(registerUserRequest);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-    @PutMapping("/{userId}")
-    public ResponseEntity<Void> updateUser(@PathVariable Long userId, @Valid @RequestBody UpdateUserRequest updateUserRequest){
-        userService.updateUser(userId,updateUserRequest);
+    @PutMapping("/{targetUserId}")
+    public ResponseEntity<Void> updateUser(@PathVariable Long targetUserId, @RequestParam Long requestingUserId,@Valid @RequestBody UpdateUserRequest updateUserRequest){
+        userService.updateUser(targetUserId,requestingUserId,updateUserRequest);
         return ResponseEntity.ok().build();
     }
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long userId){
-        userService.deleteUser(userId);
+    @DeleteMapping("/{targetUserId}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long targetUserId, @RequestParam Long requestingUserId){
+        userService.deleteUser(targetUserId,requestingUserId);
         return ResponseEntity.noContent().build();
     }
     @GetMapping("/search")

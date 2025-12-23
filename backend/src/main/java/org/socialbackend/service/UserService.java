@@ -52,16 +52,18 @@ public class UserService {
         return userRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(query, query).stream().map(this::mapToDTO).toList();
     }
     @Transactional
-    public void updateUser(Long userId,UpdateUserRequest updateUserRequest){
-        User foundUser = getUserEntity(userId);
+    public void updateUser(Long targetUserId, Long requestingUserId, UpdateUserRequest updateUserRequest){
+        validateUserPrivilege(targetUserId,requestingUserId);
+        User foundUser = getUserEntity(targetUserId);
         foundUser.setFirstName(updateUserRequest.getFirstName());
         foundUser.setLastName(updateUserRequest.getLastName());
         foundUser.setSex(updateUserRequest.getSex());
         foundUser.setBirthDate(updateUserRequest.getBirthDate());
     }
     @Transactional
-    public void deleteUser(Long userId){
-        User userToDelete = getUserEntity(userId);
+    public void deleteUser(Long targetUserId, Long requestingUserId){
+        validateUserPrivilege(targetUserId, requestingUserId);
+        User userToDelete = getUserEntity(targetUserId);
         userRepository.delete(userToDelete);
     }
     private String hashPassword(String password){
@@ -79,5 +81,11 @@ public class UserService {
 
     private User getUserEntity(Long userId){
         return userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User with this id don't exist"));
+    }
+
+    private void validateUserPrivilege(Long targetUserId, Long requestingUserId){
+        if(!targetUserId.equals(requestingUserId)){
+            throw new IllegalStateException("You can't modify other user");
+        }
     }
 }

@@ -35,15 +35,17 @@ public class PostService {
     }
 
     @Transactional
-    public void updatePost(Long postId, UpdatePostRequest updatePostRequest){
+    public void updatePost(Long postId, Long userId, UpdatePostRequest updatePostRequest){
         Post foundPost = getPostEntity(postId);
+        validatePostOwner(foundPost,userId);
         foundPost.setTitle(updatePostRequest.getTitle());
         foundPost.setContent(updatePostRequest.getContent());
     }
 
     @Transactional
-    public void deletePost(Long postId){
+    public void deletePost(Long postId, Long userId){
         Post postToDelete = getPostEntity(postId);
+        validatePostOwner(postToDelete,userId);
         User owner = postToDelete.getUser();
         if(owner != null){
             owner.removePost(postToDelete);
@@ -58,6 +60,12 @@ public class PostService {
     public Page<PostDTO> findLatestUserPosts(Long userId, Pageable pageable){
         User user = findUserById(userId);
         return postRepository.findAllByUserOrderByCreatedAtDesc(user,pageable).map(this::mapToDTO);
+    }
+
+    private void validatePostOwner(Post post, Long userId){
+        if(!post.getUser().getUserId().equals(userId)){
+            throw new IllegalStateException("You can't modify this post");
+        }
     }
 
     private Post getPostEntity(Long postId){
