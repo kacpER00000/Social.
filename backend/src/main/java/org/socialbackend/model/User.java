@@ -35,8 +35,27 @@ public class User {
     @OneToMany(mappedBy = "user")
     @JsonIgnore
     private List<Post> posts = new ArrayList<>();
-
+    @Column(name = "followers_count")
+    private Long followersCount = 0L;
+    @Column(name = "following_count")
+    private Long followingCount = 0L;
     public User(){}
+
+    public Long getFollowersCount() {
+        return followersCount;
+    }
+
+    public void setFollowersCount(Long followersCount) {
+        this.followersCount = followersCount;
+    }
+
+    public Long getFollowingCount() {
+        return followingCount;
+    }
+
+    public void setFollowingCount(Long followingCount) {
+        this.followingCount = followingCount;
+    }
 
     public User(String firstName, String lastName, LocalDate birthDate, Character sex, UserLoginData userLoginData) {
         this.firstName = firstName;

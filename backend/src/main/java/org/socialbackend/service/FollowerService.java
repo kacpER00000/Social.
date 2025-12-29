@@ -32,6 +32,8 @@ public class FollowerService {
         Follower f = new Follower(follower,followed);
         follower.follow(f);
         followed.addFollower(f);
+        userRepository.incrementFollowingCount(followerId);
+        userRepository.incrementFollowersCount(followedId);
         followerRepository.save(f);
     }
 
@@ -47,7 +49,9 @@ public class FollowerService {
         User followed = userRepository.findById(followedId).orElseThrow(() -> new NoSuchElementException("User with this id don't exist."));
         Follower f = followerRepository.findByFollower_UserIdAndFollowed_UserId(followerId,followedId).orElseThrow(() -> new IllegalStateException("Relation not found"));
         follower.unfollow(f);
-        followed.unfollow(f);
+        followed.removeFollower(f);
+        userRepository.decrementFollowingCount(followerId);
+        userRepository.decrementFollowersCount(followedId);
         followerRepository.delete(f);
     }
 

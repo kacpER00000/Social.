@@ -15,4 +15,6 @@ public class UserDTO {
     private String lastName;
     private LocalDate birthDate;
     private Character sex;
+    private Long followersCount;
+    private Long followingCount;
 }

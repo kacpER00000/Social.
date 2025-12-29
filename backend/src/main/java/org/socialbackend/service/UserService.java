@@ -76,7 +76,7 @@ public class UserService {
         }
     }
     private UserDTO mapToDTO(User u){
-        return new UserDTO(u.getUserId(),u.getFirstName(),u.getLastName(),u.getBirthDate(),u.getSex());
+        return new UserDTO(u.getUserId(),u.getFirstName(),u.getLastName(),u.getBirthDate(),u.getSex(),u.getFollowersCount(),u.getFollowingCount());
     }
 
     private User getUserEntity(Long userId){
