@@ -23,7 +23,6 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     @Transactional
     public void addUser(RegisterUserRequest registerUserRequest){
-
         if(userLoginDataRepository.existsByEmail(registerUserRequest.getEmail())){
             throw new IllegalStateException("User with this email already exists");
         }
@@ -43,7 +42,7 @@ public class UserService {
     }
     public UserDTO findUserByEmail(String email){
         UserLoginData userLoginData = userLoginDataRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("User with this email don't exist."));
-        return findUserById(userLoginData.getUserId());
+        return mapToDTO(userLoginData.getUser());
     }
     public List<UserDTO> findUsersByFirstNameOrLastName(String query) {
         if (query == null || query.isBlank()) {
@@ -52,31 +51,23 @@ public class UserService {
         return userRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(query, query).stream().map(this::mapToDTO).toList();
     }
     @Transactional
-    public void updateUser(Long targetUserId, Long requestingUserId, UpdateUserRequest updateUserRequest){
-        validateUserPrivilege(targetUserId,requestingUserId);
-        User foundUser = getUserEntity(targetUserId);
+    public void updateUser(String email, UpdateUserRequest updateUserRequest){
+        User foundUser = getUserEntityByEmail(email);
         foundUser.setFirstName(updateUserRequest.getFirstName());
         foundUser.setLastName(updateUserRequest.getLastName());
         foundUser.setSex(updateUserRequest.getSex());
         foundUser.setBirthDate(updateUserRequest.getBirthDate());
     }
     @Transactional
-    public void deleteUser(Long targetUserId, Long requestingUserId){
-        validateUserPrivilege(targetUserId, requestingUserId);
-        User userToDelete = getUserEntity(targetUserId);
+    public void deleteUser(String email){
+        User userToDelete = getUserEntityByEmail(email);
         userRepository.delete(userToDelete);
     }
     private UserDTO mapToDTO(User u){
         return new UserDTO(u.getUserId(),u.getFirstName(),u.getLastName(),u.getBirthDate(),u.getSex(),u.getFollowersCount(),u.getFollowingCount());
     }
-
-    private User getUserEntity(Long userId){
-        return userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User with this id don't exist"));
-    }
-
-    private void validateUserPrivilege(Long targetUserId, Long requestingUserId){
-        if(!targetUserId.equals(requestingUserId)){
-            throw new IllegalStateException("You can't modify other user");
-        }
+    private User getUserEntityByEmail(String email){
+        UserLoginData userLoginData = userLoginDataRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("User with this email don't exist"));
+        return userLoginData.getUser();
     }
 }

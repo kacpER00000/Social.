@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
 import org.socialbackend.dto.FollowerDTO;
 import org.socialbackend.dto.UserDTO;
+import org.socialbackend.model.User;
 import org.socialbackend.repository.FollowerRepository;
 import org.socialbackend.request.RegisterUserRequest;
 import org.socialbackend.request.UpdateUserRequest;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,14 +38,15 @@ public class UserController {
         userService.addUser(registerUserRequest);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-    @PutMapping("/{targetUserId}")
-    public ResponseEntity<Void> updateUser(@PathVariable Long targetUserId, @RequestParam Long requestingUserId,@Valid @RequestBody UpdateUserRequest updateUserRequest){
-        userService.updateUser(targetUserId,requestingUserId,updateUserRequest);
+
+    @PutMapping()
+    public ResponseEntity<Void> updateUser(@Valid @RequestBody UpdateUserRequest updateUserRequest, Authentication authentication){
+        userService.updateUser(authentication.getName(), updateUserRequest);
         return ResponseEntity.ok().build();
     }
-    @DeleteMapping("/{targetUserId}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long targetUserId, @RequestParam Long requestingUserId){
-        userService.deleteUser(targetUserId,requestingUserId);
+    @DeleteMapping()
+    public ResponseEntity<Void> deleteUser(Authentication authentication){
+        userService.deleteUser(authentication.getName());
         return ResponseEntity.noContent().build();
     }
     @GetMapping("/search")
@@ -51,21 +54,21 @@ public class UserController {
         return ResponseEntity.ok(userService.findUsersByFirstNameOrLastName(query));
     }
     @PostMapping("/{targetUserId}/follow")
-    public ResponseEntity<Void> follow(@PathVariable Long targetUserId, @RequestParam Long followerId){
-        followerService.follow(followerId, targetUserId);
+    public ResponseEntity<Void> follow(@PathVariable Long targetUserId, Authentication authentication){
+        followerService.follow(authentication.getName(), targetUserId);
         return ResponseEntity.ok().build();
     }
     @DeleteMapping("/{targetUserId}/follow")
-    public ResponseEntity<Void> unfollow(@PathVariable Long targetUserId, @RequestParam Long followerId){
-        followerService.unfollow(followerId, targetUserId);
+    public ResponseEntity<Void> unfollow(@PathVariable Long targetUserId, Authentication authentication){
+        followerService.unfollow(authentication.getName(), targetUserId);
         return ResponseEntity.noContent().build();
     }
     @GetMapping("/{userId}/followers")
-    public ResponseEntity<Page<FollowerDTO>> getUserFollowers(@PathVariable Long userId, @PageableDefault Pageable pageable){
+    public ResponseEntity<Page<FollowerDTO>> getUserFollowers(@PathVariable Long userId,@PageableDefault Pageable pageable){
         return ResponseEntity.ok(followerService.findUserFollowers(userId, pageable));
     }
     @GetMapping("/{userId}/following")
-    public ResponseEntity<Page<FollowerDTO>> getUserFollowing(@PathVariable Long userId, @PageableDefault Pageable pageable){
+    public ResponseEntity<Page<FollowerDTO>> getUserFollowing(@PathVariable Long userId,@PageableDefault Pageable pageable){
         return ResponseEntity.ok(followerService.findUserFollowing(userId, pageable));
     }
 }
