@@ -10,12 +10,8 @@ import org.socialbackend.request.UpdateUserRequest;
 import org.socialbackend.repository.UserLoginDataRepository;
 import org.socialbackend.repository.UserRepository;
 import org.socialbackend.request.RegisterUserRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -24,7 +20,7 @@ import java.util.NoSuchElementException;
 public class UserService {
     private final UserRepository userRepository;
     private final UserLoginDataRepository userLoginDataRepository;
-
+    private final PasswordEncoder passwordEncoder;
     @Transactional
     public void addUser(RegisterUserRequest registerUserRequest){
 
@@ -38,12 +34,16 @@ public class UserService {
         u.setSex(registerUserRequest.getSex());
         UserLoginData newUserLoginData = new UserLoginData();
         newUserLoginData.setEmail(registerUserRequest.getEmail());
-        newUserLoginData.setPassword(hashPassword(registerUserRequest.getPassword()));
+        newUserLoginData.setPassword(passwordEncoder.encode(registerUserRequest.getPassword()));
         u.setUserLoginData(newUserLoginData);
         userRepository.save(u);
     }
     public UserDTO findUserById(Long userId){
         return userRepository.findById(userId).map(this::mapToDTO).orElseThrow(() -> new NoSuchElementException("User with this id don't exist"));
+    }
+    public UserDTO findUserByEmail(String email){
+        UserLoginData userLoginData = userLoginDataRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("User with this email don't exist."));
+        return findUserById(userLoginData.getUserId());
     }
     public List<UserDTO> findUsersByFirstNameOrLastName(String query) {
         if (query == null || query.isBlank()) {
@@ -65,15 +65,6 @@ public class UserService {
         validateUserPrivilege(targetUserId, requestingUserId);
         User userToDelete = getUserEntity(targetUserId);
         userRepository.delete(userToDelete);
-    }
-    private String hashPassword(String password){
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(hash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
     }
     private UserDTO mapToDTO(User u){
         return new UserDTO(u.getUserId(),u.getFirstName(),u.getLastName(),u.getBirthDate(),u.getSex(),u.getFollowersCount(),u.getFollowingCount());
