@@ -2,14 +2,14 @@ package org.socialbackend.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.tomcat.util.http.InvalidParameterException;
 import org.socialbackend.dto.PostDTO;
 import org.socialbackend.model.Post;
 import org.socialbackend.model.User;
-import org.socialbackend.repository.PostLikeRepository;
 import org.socialbackend.repository.PostRepository;
+import org.socialbackend.repository.UserLoginDataRepository;
 import org.socialbackend.repository.UserRepository;
-import org.socialbackend.request.CreatePostRequest;
-import org.socialbackend.request.UpdatePostRequest;
+import org.socialbackend.request.PostRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,11 +21,12 @@ import java.util.NoSuchElementException;
 public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final UserLoginDataRepository userLoginDataRepository;
 
     @Transactional
-    public void addPost(CreatePostRequest createPostRequest){
-        User owner = findUserById(createPostRequest.getUserId());
-        Post post = new Post(owner,createPostRequest.getTitle(), createPostRequest.getContent());
+    public void addPost(PostRequest postRequest, String email){
+        User owner = findUserByEmail(email);
+        Post post = new Post(owner, postRequest.getTitle(), postRequest.getContent());
         owner.addPost(post);
         postRepository.save(post);
     }
@@ -35,17 +36,17 @@ public class PostService {
     }
 
     @Transactional
-    public void updatePost(Long postId, Long userId, UpdatePostRequest updatePostRequest){
+    public void updatePost(Long postId, String email, PostRequest updatePostRequest){
         Post foundPost = getPostEntity(postId);
-        validatePostOwner(foundPost,userId);
+        validatePostOwner(foundPost,email);
         foundPost.setTitle(updatePostRequest.getTitle());
         foundPost.setContent(updatePostRequest.getContent());
     }
 
     @Transactional
-    public void deletePost(Long postId, Long userId){
+    public void deletePost(Long postId, String email){
         Post postToDelete = getPostEntity(postId);
-        validatePostOwner(postToDelete,userId);
+        validatePostOwner(postToDelete,email);
         User owner = postToDelete.getUser();
         if(owner != null){
             owner.removePost(postToDelete);
@@ -62,10 +63,9 @@ public class PostService {
         return postRepository.findAllByUserOrderByCreatedAtDesc(user,pageable).map(this::mapToDTO);
     }
 
-    private void validatePostOwner(Post post, Long userId){
-        if(!post.getUser().getUserId().equals(userId)){
-            throw new IllegalStateException("You can't modify this post");
-        }
+    private void validatePostOwner(Post post, String email){
+        User owner = findUserByEmail(email);
+        if(!post.getUser().equals(owner)){throw new InvalidParameterException("You can only edit your posts.");}
     }
 
     private Post getPostEntity(Long postId){
@@ -81,5 +81,8 @@ public class PostService {
 
     private User findUserById(Long userId){
         return userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User with that id don't exist"));
+    }
+    private User findUserByEmail(String email){
+        return userLoginDataRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("Current user not found.")).getUser();
     }
 }

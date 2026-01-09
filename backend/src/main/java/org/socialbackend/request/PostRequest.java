@@ -8,10 +8,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdatePostRequest {
+public class PostRequest {
     @NotBlank
     private String title;
     @NotBlank
     private String content;
 }
-

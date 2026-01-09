@@ -4,8 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.socialbackend.dto.PostDTO;
 import org.socialbackend.dto.PostLikeDTO;
-import org.socialbackend.request.CreatePostRequest;
-import org.socialbackend.request.UpdatePostRequest;
+import org.socialbackend.request.PostRequest;
 import org.socialbackend.service.PostLikeService;
 import org.socialbackend.service.PostService;
 import org.springframework.data.domain.Page;
@@ -13,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -27,18 +27,18 @@ public class PostController {
         return ResponseEntity.ok(postService.findPostById(postId));
     }
     @PostMapping
-    public ResponseEntity<Void> createPost(@Valid @RequestBody CreatePostRequest createPostRequest){
-        postService.addPost(createPostRequest);
+    public ResponseEntity<Void> createPost(@Valid @RequestBody PostRequest postRequest, Authentication authentication){
+        postService.addPost(postRequest, authentication.getName());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
     @PutMapping("/{postId}")
-    public ResponseEntity<Void> updatePost(@PathVariable Long postId,@RequestParam("userId") Long userId,@Valid @RequestBody UpdatePostRequest updatePostRequest){
-        postService.updatePost(postId,userId,updatePostRequest);
+    public ResponseEntity<Void> updatePost(@PathVariable Long postId,@Valid @RequestBody PostRequest postRequest, Authentication authentication){
+        postService.updatePost(postId,authentication.getName(),postRequest);
         return ResponseEntity.ok().build();
     }
     @DeleteMapping("/{postId}")
-    public ResponseEntity<Void> deletePost(@PathVariable Long postId,@RequestParam("userId") Long userId){
-        postService.deletePost(postId,userId);
+    public ResponseEntity<Void> deletePost(@PathVariable Long postId,Authentication authentication){
+        postService.deletePost(postId,authentication.getName());
         return ResponseEntity.noContent().build();
     }
     @GetMapping("/latest")
@@ -50,13 +50,13 @@ public class PostController {
         return ResponseEntity.ok(postService.findLatestUserPosts(userId,pageable));
     }
     @PostMapping("/{postId}/like")
-    public ResponseEntity<Void> likePost(@PathVariable Long postId, @RequestParam Long userId){
-        postLikeService.likePost(postId,userId);
+    public ResponseEntity<Void> likePost(@PathVariable Long postId, Authentication authentication){
+        postLikeService.likePost(postId,authentication.getName());
         return ResponseEntity.ok().build();
     }
     @DeleteMapping("/{postId}/like")
-    public ResponseEntity<Void> unlikePost(@PathVariable Long postId, @RequestParam Long userId){
-        postLikeService.unlikePost(postId,userId);
+    public ResponseEntity<Void> unlikePost(@PathVariable Long postId, Authentication authentication){
+        postLikeService.unlikePost(postId,authentication.getName());
         return ResponseEntity.noContent().build();
     }
     @GetMapping("/{postId}/likes")
