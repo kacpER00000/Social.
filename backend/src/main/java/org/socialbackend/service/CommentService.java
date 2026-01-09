@@ -8,9 +8,9 @@ import org.socialbackend.model.Post;
 import org.socialbackend.model.User;
 import org.socialbackend.repository.CommentRepository;
 import org.socialbackend.repository.PostRepository;
+import org.socialbackend.repository.UserLoginDataRepository;
 import org.socialbackend.repository.UserRepository;
-import org.socialbackend.request.CreateCommentRequest;
-import org.socialbackend.request.UpdateCommentRequest;
+import org.socialbackend.request.CommentRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,34 +21,30 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
     private final PostRepository postRepository;
-
+    private final UserLoginDataRepository userLoginDataRepository;
     @Transactional
-    public void addComment(Long postId, CreateCommentRequest createCommentRequest){
-        User user = userRepository.findById(createCommentRequest.getUserId()).orElseThrow(() -> new NoSuchElementException("User with this id don't exist"));
+    public void addComment(Long postId, CommentRequest commentRequest, String email){
+        User user = findUserByEmail(email);
         Post post = postRepository.findById(postId).orElseThrow(() -> new NoSuchElementException("Post with this id don't exist"));
-        Comment comment = new Comment(post,user,createCommentRequest.getContent());
+        Comment comment = new Comment(post,user, commentRequest.getContent());
         post.addComment(comment);
         postRepository.incrementCommentCount(postId);
         commentRepository.save(comment);
     }
 
     @Transactional
-    public void updateComment(Long commentId, Long userId, UpdateCommentRequest updateCommentRequest){
+    public void updateComment(Long commentId, String email, CommentRequest commentRequest){
         Comment comment = findCommentEntity(commentId);
-        validateCommentOwner(comment,userId);
-        comment.setContent(updateCommentRequest.getContent());
+        validateCommentOwner(comment,email);
+        comment.setContent(commentRequest.getContent());
     }
 
     @Transactional
-    public void deleteComment(Long commentId, Long userId){
+    public void deleteComment(Long commentId, String email){
         Comment comment = findCommentEntity(commentId);
-        validateCommentOwner(comment,userId);
+        validateCommentOwner(comment,email);
         Post post = comment.getPost();
-        if(!post.getUser().getUserId().equals(userId)){
-            throw new IllegalStateException("You can't edit this comment");
-        }
         post.removeComment(comment);
         postRepository.decrementCommentCount(post.getPostId());
         commentRepository.delete(comment);
@@ -62,8 +58,9 @@ public class CommentService {
         return commentRepository.findAllByPost_PostIdOrderByCreatedAtAsc(postId,pageable).map(this::mapToDTO);
     }
 
-    private void validateCommentOwner(Comment comment, Long userId){
-        if(!comment.getUser().getUserId().equals(userId)){
+    private void validateCommentOwner(Comment comment, String email){
+        User user = findUserByEmail(email);
+        if(!comment.getUser().equals(user)){
             throw new IllegalStateException("You can't edit this comment");
         }
     }
@@ -77,5 +74,8 @@ public class CommentService {
         Long userId = user.getUserId();
         String author = user.getFirstName() + " " + user.getLastName();
         return new CommentDTO(comment.getCommentId(), userId,author, comment.getContent(), comment.getCreatedAt());
+    }
+    private User findUserByEmail(String email){
+        return userLoginDataRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("Current user not found.")).getUser();
     }
 }

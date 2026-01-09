@@ -9,9 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateCommentRequest {
-    @NotNull
-    private Long userId;
+public class CommentRequest {
     @NotBlank
     private String content;
 }

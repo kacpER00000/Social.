@@ -3,14 +3,14 @@ package org.socialbackend.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.socialbackend.dto.CommentDTO;
-import org.socialbackend.request.CreateCommentRequest;
-import org.socialbackend.request.UpdateCommentRequest;
+import org.socialbackend.request.CommentRequest;
 import org.socialbackend.service.CommentService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -30,20 +30,20 @@ public class CommentController {
     }
 
     @PostMapping("/posts/{postId}/comments")
-    public ResponseEntity<Void> createComment(@PathVariable Long postId, @Valid @RequestBody CreateCommentRequest createCommentRequest){
-        commentService.addComment(postId,createCommentRequest);
+    public ResponseEntity<Void> createComment(@PathVariable Long postId, @Valid @RequestBody CommentRequest commentRequest, Authentication authentication){
+        commentService.addComment(postId, commentRequest,authentication.getName());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PutMapping("/comments/{commentId}")
-    public ResponseEntity<Void> editComment(@PathVariable Long commentId, @RequestParam Long userId, @Valid @RequestBody UpdateCommentRequest updateCommentRequest){
-        commentService.updateComment(commentId, userId,updateCommentRequest);
+    public ResponseEntity<Void> editComment(@PathVariable Long commentId, Authentication authentication, @Valid @RequestBody CommentRequest commentRequest){
+        commentService.updateComment(commentId, authentication.getName(), commentRequest);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/comments/{commentId}")
-    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId, @RequestParam Long userId){
-        commentService.deleteComment(commentId,userId);
+    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId, Authentication authentication){
+        commentService.deleteComment(commentId,authentication.getName());
         return ResponseEntity.noContent().build();
     }
 }
