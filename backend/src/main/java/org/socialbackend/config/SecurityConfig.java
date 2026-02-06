@@ -32,7 +32,6 @@ import java.util.List;
 public class SecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-
     @Value("${application.security.cors.allowed-origins}")
     private String allowedOrigins;
     @Bean
