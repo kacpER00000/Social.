@@ -33,11 +33,6 @@ public class UserController {
     public ResponseEntity<UserDTO> getUser(@PathVariable Long userId){
         return ResponseEntity.ok(userService.findUserById(userId));
     }
-    @PostMapping
-    public ResponseEntity<Void> registerUser(@Valid @RequestBody RegisterUserRequest registerUserRequest){
-        userService.addUser(registerUserRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
 
     @PutMapping()
     public ResponseEntity<Void> updateUser(@Valid @RequestBody UpdateUserRequest updateUserRequest, Authentication authentication){
