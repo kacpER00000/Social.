@@ -1,10 +1,72 @@
+import {createBrowserRouter, RouterProvider} from "react-router-dom";
+import PublicLayout from "./components/PublicLayout.tsx";
+import Login from "./components/Login.tsx";
+import Register from "./components/Register.tsx";
+import ProtectedLayout from "./components/ProtectedLayout.tsx";
+import {redirect} from "react-router-dom";
+import {jwtDecode} from "jwt-decode";
+
+
+const isAuthenticated=()=>{
+    const token = localStorage.getItem("token")
+    if(token === null){return false;}
+    try{
+        const decoded = jwtDecode(token)
+        const currentTime = new Date()/1000
+        return decoded.exp > currentTime
+    } catch (e) {
+        return false
+    }
+}
+
+const router = createBrowserRouter([
+    {
+        element: <PublicLayout/>,
+        children: [
+            {
+                path: "/login",
+                element: <Login/>,
+                loader: async () => {
+                    if(isAuthenticated()){
+                        return redirect("/dashboard")
+                    }
+                    return null
+                }
+            },
+            {
+                path: "/register",
+                element: <Register/>
+            }
+        ]
+    },
+    {
+        element: <ProtectedLayout/>,
+        loader: async ()=>{
+            if(!isAuthenticated()){
+                return redirect("/login")
+            }
+            return null
+        },
+        children: [
+            {
+                path: "/home",
+                element: <Home/>
+            },
+            {
+                path: "/profile",
+                element: <Profile/>
+            }
+        ]
+    }
+])
+
 function App() {
 
-  return (
-    <>
-
-    </>
-  )
+    return (
+        <>
+            <RouterProvider router={router}/>
+        </>
+    )
 }
 
 export default App
