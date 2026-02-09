@@ -2,10 +2,10 @@ import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import PublicLayout from "./components/PublicLayout.tsx";
 import Login from "./components/Login.tsx";
 import Register from "./components/Register.tsx";
+import Home from "./components/Home.tsx";
 import ProtectedLayout from "./components/ProtectedLayout.tsx";
 import {redirect} from "react-router-dom";
 import {jwtDecode} from "jwt-decode";
-
 
 const isAuthenticated=()=>{
     const token = localStorage.getItem("token")
@@ -50,11 +50,14 @@ const router = createBrowserRouter([
         children: [
             {
                 path: "/home",
-                element: <Home/>
-            },
-            {
-                path: "/profile",
-                element: <Profile/>
+                element: <Home/>,
+                loader: async () =>{
+                    return await fetch(`${import.meta.env.VITE_API_URL}/social/posts/latest`,{
+                        headers: {
+                            "Authorization": "Bearer " + localStorage.getItem("token")
+                        }
+                    })
+                }
             }
         ]
     }
