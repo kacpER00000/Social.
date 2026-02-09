@@ -1,4 +1,5 @@
 import {useState} from "react";
+import {useNavigate} from "react-router-dom";
 
 const Login=()=>{
 
@@ -6,7 +7,9 @@ const Login=()=>{
     const [password, setPassword] = useState("")
     const [emailError,setEmailError] = useState(false)
     const [passwordError, setPasswordError] = useState(false)
-    const [generalError, setGeneralError] = useState(false)
+    const [loginError, setLoginError] = useState(false)
+    const [loading, setLoadingState] = useState(false)
+    const navigate = useNavigate();
 
     const validate = () => {
         const isEmailEmpty = email.trim() === "";
@@ -22,6 +25,7 @@ const Login=()=>{
             password: password
         }
         try {
+            setLoadingState(true)
             const response = await fetch(`${import.meta.env.VITE_API_URL}/social/auth/login`, {
                 method: "POST",
                 headers: {
@@ -32,13 +36,15 @@ const Login=()=>{
             if(response.ok){
                 const data = await response.json()
                 localStorage.setItem("token",data.token)
-                setGeneralError(false)
-                //TODO: Redirect to home page
+                setLoginError(false)
+                navigate("/dashboard")
             } else {
-                setGeneralError(true)
+                setLoginError(true)
             }
         } catch (e) {
             console.log("Network error: ",e)
+        } finally {
+            setLoadingState(false)
         }
     }
     return(
@@ -49,45 +55,48 @@ const Login=()=>{
                     <p className="text-7xl text-white font-bold">Login</p>
                 </div>
             </div>
+            <div
+                className={`
+                fixed top-0 left-1/2 -translate-x-1/2 mt-4 
+                bg-red-500 text-white px-6 py-3 rounded-3xl shadow-xl z-50
+                transition-transform duration-500 ease-in-out
+                ${loginError ? 'translate-y-0' : '-translate-y-[200%]'}
+            `}
+            >
+                Incorrect login or password!
+            </div>
             <div className="flex justify-center items-center">
-                {generalError &&
-                    <div className="flex justify-center items-center bg-red-500 text-white p-2 border-1 border-red-950 rounded-3xl" >
-                        Incorrect email or password.
-                    </div>
-                }
                 <form className="flex flex-col gap-4 w-64">
                     <label htmlFor="email-input">E-mail</label>
                     <input
                         id="email-input"
                         type="email"
-                        className="border border-gray-300 rounded-3xl px-3 py-2 transition-all duration-500 ease-in-out focus:shadow-2xl"
+                        className={`border ${emailError ? "border-red-500 animate-shake" : "border-gray-300"} rounded-3xl px-3 py-2 transition-all duration-500 ease-in-out focus:shadow-2xl`}
                         defaultValue={email}
                         onChange={(e) => setEmail(e.target.value)}
                     />
-                    {emailError &&
-                        <div className="flex justify-center items-center bg-red-500 text-white p-2 border-1 border-red-950 rounded-3xl" >
-                            Email cannot be empty
-                        </div>
-                    }
                     <label htmlFor="password-input">Password</label>
                     <input
                         id="password-input"
                         type="password"
-                        className="border border-gray-300 rounded-3xl px-3 py-2 transition-all duration-500 ease-in-out focus:shadow-2xl"
+                        className={`border ${passwordError ? "border-red-500 animate-shake" : "border-gray-300"} rounded-3xl px-3 py-2 transition-all duration-500 ease-in-out focus:shadow-2xl`}
                         defaultValue={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
-
-                    {passwordError &&
-                        <div className="flex justify-center items-center bg-red-500 text-white p-2 border-1 border-red-950 rounded-3xl" >
-                            Invalid password
-                        </div>
-                    }
-
                     <div className="flex justify-between">
-                        <input className="w-20 bg-blue-500 text-white rounded-3xl cursor-pointer active:bg-blue-700" type="button" value="Login" onClick={handleLogin}/>
-                        <input className="w-20 bg-blue-500 text-white rounded-3xl cursor-pointer active:bg-blue-700" type="button" value="Register"/>
-                        {/*TODO: Link button with register page*/}
+                        <button type="button" className={`${loading ? 'w-full' : 'w-20'} flex justify-center items-center bg-blue-500 text-white rounded-3xl py-2 cursor-pointer hover:bg-blue-600 transition-all duration-500 ease-in-out`} onClick={handleLogin} disabled={loading}>
+                            {loading ?
+                                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                :
+                                "Login"
+                            }
+                        </button>
+                        {!loading && <button className="w-20 flex justify-center items-center bg-blue-500 text-white rounded-3xl py-2 cursor-pointer hover:bg-blue-600 transition-all duration-500 ease-in-out" onClick={()=>{navigate("/register")}}>
+                            Register
+                        </button>}
                     </div>
                 </form>
             </div>
