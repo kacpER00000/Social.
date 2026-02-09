@@ -37,7 +37,7 @@ const Login=()=>{
                 const data = await response.json()
                 localStorage.setItem("token",data.token)
                 setLoginError(false)
-                navigate("/dashboard")
+                navigate("/home")
             } else {
                 setLoginError(true)
             }
