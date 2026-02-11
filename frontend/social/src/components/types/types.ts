@@ -14,3 +14,17 @@ export interface PostResponse{
     number: number,
     totalPages: number
 }
+
+export interface Comment{
+    commentId: number,
+    postId: number,
+    author: string,
+    content: string,
+    createdAt: string
+}
+
+export interface CommentResponse{
+    content: Comment[],
+    number: number,
+    totalPages: number
+}
