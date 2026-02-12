@@ -24,11 +24,12 @@ public class PostService {
     private final UserLoginDataRepository userLoginDataRepository;
 
     @Transactional
-    public void addPost(PostRequest postRequest, String email){
+    public PostDTO addPost(PostRequest postRequest, String email){
         User owner = findUserByEmail(email);
         Post post = new Post(owner, postRequest.getTitle(), postRequest.getContent());
         owner.addPost(post);
         postRepository.save(post);
+        return mapToDTO(post);
     }
 
     public PostDTO findPostById(Long postId){

@@ -30,9 +30,8 @@ public class CommentController {
     }
 
     @PostMapping("/posts/{postId}/comments")
-    public ResponseEntity<Void> createComment(@PathVariable Long postId, @Valid @RequestBody CommentRequest commentRequest, Authentication authentication){
-        commentService.addComment(postId, commentRequest,authentication.getName());
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<CommentDTO> createComment(@PathVariable Long postId, @Valid @RequestBody CommentRequest commentRequest, Authentication authentication){
+        return ResponseEntity.status(HttpStatus.CREATED).body(commentService.addComment(postId, commentRequest,authentication.getName()));
     }
 
     @PutMapping("/comments/{commentId}")

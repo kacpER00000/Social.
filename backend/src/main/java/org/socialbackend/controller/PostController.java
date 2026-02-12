@@ -27,9 +27,8 @@ public class PostController {
         return ResponseEntity.ok(postService.findPostById(postId));
     }
     @PostMapping
-    public ResponseEntity<Void> createPost(@Valid @RequestBody PostRequest postRequest, Authentication authentication){
-        postService.addPost(postRequest, authentication.getName());
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<PostDTO> createPost(@Valid @RequestBody PostRequest postRequest, Authentication authentication){
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.addPost(postRequest, authentication.getName()));
     }
     @PutMapping("/{postId}")
     public ResponseEntity<Void> updatePost(@PathVariable Long postId,@Valid @RequestBody PostRequest postRequest, Authentication authentication){

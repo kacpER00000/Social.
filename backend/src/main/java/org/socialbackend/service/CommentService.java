@@ -24,13 +24,14 @@ public class CommentService {
     private final PostRepository postRepository;
     private final UserLoginDataRepository userLoginDataRepository;
     @Transactional
-    public void addComment(Long postId, CommentRequest commentRequest, String email){
+    public CommentDTO addComment(Long postId, CommentRequest commentRequest, String email){
         User user = findUserByEmail(email);
         Post post = postRepository.findById(postId).orElseThrow(() -> new NoSuchElementException("Post with this id don't exist"));
         Comment comment = new Comment(post,user, commentRequest.getContent());
         post.addComment(comment);
         postRepository.incrementCommentCount(postId);
         commentRepository.save(comment);
+        return mapToDTO(comment);
     }
 
     @Transactional
