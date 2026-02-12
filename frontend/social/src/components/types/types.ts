@@ -28,3 +28,8 @@ export interface CommentResponse{
     number: number,
     totalPages: number
 }
+
+export interface FieldConfig {
+    label: string,
+    value: string
+}
