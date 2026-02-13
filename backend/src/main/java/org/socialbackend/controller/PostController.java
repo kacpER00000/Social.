@@ -24,8 +24,9 @@ public class PostController {
     private final PostLikeService postLikeService;
 
     @GetMapping("/{postId}")
-    public ResponseEntity<PostDTO> getPost(@PathVariable Long postId){
-        return ResponseEntity.ok(postService.findPostById(postId));
+    public ResponseEntity<PostDTO> getPost(@PathVariable Long postId, Authentication authentication){
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        return ResponseEntity.ok(postService.findPostById(postId, userDetails.getUserId()));
     }
     @PostMapping
     public ResponseEntity<PostDTO> createPost(@Valid @RequestBody PostRequest postRequest, Authentication authentication){
@@ -45,12 +46,14 @@ public class PostController {
         return ResponseEntity.noContent().build();
     }
     @GetMapping("/latest")
-    public ResponseEntity<Page<PostDTO>> getLatestPosts(@PageableDefault(page = 0) Pageable pageable){
-        return ResponseEntity.ok(postService.findLatestPosts(pageable));
+    public ResponseEntity<Page<PostDTO>> getLatestPosts(@PageableDefault(page = 0) Pageable pageable, Authentication authentication){
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        return ResponseEntity.ok(postService.findLatestPosts(pageable, userDetails.getUserId()));
     }
     @GetMapping("/{userId}/latest")
-    public ResponseEntity<Page<PostDTO>> getUserLatestPosts(@PathVariable Long userId, @PageableDefault(page = 0) Pageable pageable){
-        return ResponseEntity.ok(postService.findLatestUserPosts(userId,pageable));
+    public ResponseEntity<Page<PostDTO>> getUserLatestPosts(@PathVariable Long userId, @PageableDefault(page = 0) Pageable pageable, Authentication authentication){
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        return ResponseEntity.ok(postService.findLatestUserPosts(userId,pageable,userDetails.getUserId()));
     }
     @PostMapping("/{postId}/like")
     public ResponseEntity<Void> likePost(@PathVariable Long postId, Authentication authentication){
