@@ -16,7 +16,7 @@ const EditModal = ({fields, onConfirm, onCancel}: EditModalProps) => {
         )
     }
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/50 z-999">
             <div className="bg-white text-center w-11/12 max-w-md rounded-3xl p-6 shadow-2xl">
                 <form className="flex flex-col gap-4">
                     {formFields.map((item) => (
