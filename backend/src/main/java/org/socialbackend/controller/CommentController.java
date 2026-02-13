@@ -2,6 +2,7 @@ package org.socialbackend.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.socialbackend.details.AppUserDetails;
 import org.socialbackend.dto.CommentDTO;
 import org.socialbackend.request.CommentRequest;
 import org.socialbackend.service.CommentService;
@@ -31,18 +32,21 @@ public class CommentController {
 
     @PostMapping("/posts/{postId}/comments")
     public ResponseEntity<CommentDTO> createComment(@PathVariable Long postId, @Valid @RequestBody CommentRequest commentRequest, Authentication authentication){
-        return ResponseEntity.status(HttpStatus.CREATED).body(commentService.addComment(postId, commentRequest,authentication.getName()));
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        return ResponseEntity.status(HttpStatus.CREATED).body(commentService.addComment(postId, commentRequest,userDetails.getUserId()));
     }
 
     @PutMapping("/comments/{commentId}")
     public ResponseEntity<Void> editComment(@PathVariable Long commentId, Authentication authentication, @Valid @RequestBody CommentRequest commentRequest){
-        commentService.updateComment(commentId, authentication.getName(), commentRequest);
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        commentService.updateComment(commentId, userDetails.getUserId(), commentRequest);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/comments/{commentId}")
     public ResponseEntity<Void> deleteComment(@PathVariable Long commentId, Authentication authentication){
-        commentService.deleteComment(commentId,authentication.getName());
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        commentService.deleteComment(commentId,userDetails.getUserId());
         return ResponseEntity.noContent().build();
     }
 }

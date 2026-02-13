@@ -7,7 +7,6 @@ import org.socialbackend.dto.PostDTO;
 import org.socialbackend.model.Post;
 import org.socialbackend.model.User;
 import org.socialbackend.repository.PostRepository;
-import org.socialbackend.repository.UserLoginDataRepository;
 import org.socialbackend.repository.UserRepository;
 import org.socialbackend.request.PostRequest;
 import org.springframework.data.domain.Page;
@@ -21,11 +20,10 @@ import java.util.NoSuchElementException;
 public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
-    private final UserLoginDataRepository userLoginDataRepository;
 
     @Transactional
-    public PostDTO addPost(PostRequest postRequest, String email){
-        User owner = findUserByEmail(email);
+    public PostDTO addPost(PostRequest postRequest, Long userId){
+        User owner = findUserById(userId);
         Post post = new Post(owner, postRequest.getTitle(), postRequest.getContent());
         owner.addPost(post);
         postRepository.save(post);
@@ -37,17 +35,17 @@ public class PostService {
     }
 
     @Transactional
-    public void updatePost(Long postId, String email, PostRequest updatePostRequest){
+    public void updatePost(Long postId, Long userId, PostRequest updatePostRequest){
         Post foundPost = getPostEntity(postId);
-        validatePostOwner(foundPost,email);
+        validatePostOwner(foundPost,userId);
         foundPost.setTitle(updatePostRequest.getTitle());
         foundPost.setContent(updatePostRequest.getContent());
     }
 
     @Transactional
-    public void deletePost(Long postId, String email){
+    public void deletePost(Long postId, Long userId){
         Post postToDelete = getPostEntity(postId);
-        validatePostOwner(postToDelete,email);
+        validatePostOwner(postToDelete,userId);
         User owner = postToDelete.getUser();
         if(owner != null){
             owner.removePost(postToDelete);
@@ -64,8 +62,8 @@ public class PostService {
         return postRepository.findAllByUserOrderByCreatedAtDesc(user,pageable).map(this::mapToDTO);
     }
 
-    private void validatePostOwner(Post post, String email){
-        User owner = findUserByEmail(email);
+    private void validatePostOwner(Post post, Long userId){
+        User owner = findUserById(userId);
         if(!post.getUser().equals(owner)){throw new InvalidParameterException("You can only edit your posts.");}
     }
 
@@ -82,8 +80,5 @@ public class PostService {
 
     private User findUserById(Long userId){
         return userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User with that id don't exist"));
-    }
-    private User findUserByEmail(String email){
-        return userLoginDataRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("Current user not found.")).getUser();
     }
 }

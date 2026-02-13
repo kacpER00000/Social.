@@ -2,6 +2,7 @@ package org.socialbackend.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.socialbackend.details.AppUserDetails;
 import org.socialbackend.dto.PostDTO;
 import org.socialbackend.dto.PostLikeDTO;
 import org.socialbackend.request.PostRequest;
@@ -28,16 +29,19 @@ public class PostController {
     }
     @PostMapping
     public ResponseEntity<PostDTO> createPost(@Valid @RequestBody PostRequest postRequest, Authentication authentication){
-        return ResponseEntity.status(HttpStatus.CREATED).body(postService.addPost(postRequest, authentication.getName()));
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.addPost(postRequest, userDetails.getUserId()));
     }
     @PutMapping("/{postId}")
     public ResponseEntity<Void> updatePost(@PathVariable Long postId,@Valid @RequestBody PostRequest postRequest, Authentication authentication){
-        postService.updatePost(postId,authentication.getName(),postRequest);
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        postService.updatePost(postId,userDetails.getUserId(),postRequest);
         return ResponseEntity.ok().build();
     }
     @DeleteMapping("/{postId}")
     public ResponseEntity<Void> deletePost(@PathVariable Long postId,Authentication authentication){
-        postService.deletePost(postId,authentication.getName());
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        postService.deletePost(postId,userDetails.getUserId());
         return ResponseEntity.noContent().build();
     }
     @GetMapping("/latest")
@@ -50,12 +54,14 @@ public class PostController {
     }
     @PostMapping("/{postId}/like")
     public ResponseEntity<Void> likePost(@PathVariable Long postId, Authentication authentication){
-        postLikeService.likePost(postId,authentication.getName());
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        postLikeService.likePost(postId,userDetails.getUserId());
         return ResponseEntity.ok().build();
     }
     @DeleteMapping("/{postId}/like")
     public ResponseEntity<Void> unlikePost(@PathVariable Long postId, Authentication authentication){
-        postLikeService.unlikePost(postId,authentication.getName());
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        postLikeService.unlikePost(postId,userDetails.getUserId());
         return ResponseEntity.noContent().build();
     }
     @GetMapping("/{postId}/likes")

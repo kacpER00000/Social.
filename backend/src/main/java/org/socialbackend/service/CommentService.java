@@ -8,7 +8,6 @@ import org.socialbackend.model.Post;
 import org.socialbackend.model.User;
 import org.socialbackend.repository.CommentRepository;
 import org.socialbackend.repository.PostRepository;
-import org.socialbackend.repository.UserLoginDataRepository;
 import org.socialbackend.repository.UserRepository;
 import org.socialbackend.request.CommentRequest;
 import org.springframework.data.domain.Page;
@@ -22,10 +21,11 @@ import java.util.NoSuchElementException;
 public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
-    private final UserLoginDataRepository userLoginDataRepository;
+    private final UserRepository userRepository;
+
     @Transactional
-    public CommentDTO addComment(Long postId, CommentRequest commentRequest, String email){
-        User user = findUserByEmail(email);
+    public CommentDTO addComment(Long postId, CommentRequest commentRequest, Long userId){
+        User user = findUserById(userId);
         Post post = postRepository.findById(postId).orElseThrow(() -> new NoSuchElementException("Post with this id don't exist"));
         Comment comment = new Comment(post,user, commentRequest.getContent());
         post.addComment(comment);
@@ -35,16 +35,16 @@ public class CommentService {
     }
 
     @Transactional
-    public void updateComment(Long commentId, String email, CommentRequest commentRequest){
+    public void updateComment(Long commentId, Long userId, CommentRequest commentRequest){
         Comment comment = findCommentEntity(commentId);
-        validateCommentOwner(comment,email);
+        validateCommentOwner(comment,userId);
         comment.setContent(commentRequest.getContent());
     }
 
     @Transactional
-    public void deleteComment(Long commentId, String email){
+    public void deleteComment(Long commentId, Long userId){
         Comment comment = findCommentEntity(commentId);
-        validateCommentOwner(comment,email);
+        validateCommentOwner(comment,userId);
         Post post = comment.getPost();
         post.removeComment(comment);
         postRepository.decrementCommentCount(post.getPostId());
@@ -59,8 +59,8 @@ public class CommentService {
         return commentRepository.findAllByPost_PostIdOrderByCreatedAtAsc(postId,pageable).map(this::mapToDTO);
     }
 
-    private void validateCommentOwner(Comment comment, String email){
-        User user = findUserByEmail(email);
+    private void validateCommentOwner(Comment comment, Long userId){
+        User user = findUserById(userId);
         if(!comment.getUser().equals(user)){
             throw new IllegalStateException("You can't edit this comment");
         }
@@ -76,7 +76,7 @@ public class CommentService {
         String author = user.getFirstName() + " " + user.getLastName();
         return new CommentDTO(comment.getCommentId(), userId,author, comment.getContent(), comment.getCreatedAt());
     }
-    private User findUserByEmail(String email){
-        return userLoginDataRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("Current user not found.")).getUser();
+    private User findUserById(Long userId){
+        return userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User with that id don't exist"));
     }
 }
