@@ -1,34 +1,70 @@
-import {useLoaderData, useNavigate} from "react-router-dom";
-import {Comment, CommentResponse, Post} from "./types/types.ts";
+import {Comment, CommentResponse, Post, PostLike, PostLikeResponse, PostResultObj} from "./types/types.ts";
 import CommentItem from "./CommentItem.tsx";
 import {useState, useRef, useEffect} from "react";
 import {jwtDecode} from "jwt-decode";
 import Confirmation from "./Confirmation.tsx";
 import {FieldConfig} from "./types/types.ts";
 import EditModal from "./EditModal.tsx";
+import LikeList from "./LikeList.tsx";
 
-const SinglePostPage=()=>{
+type SinglePostPageProps = {
+    post: Post
+    onClose: (postResultObj: PostResultObj | null) => void
+}
+
+const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
     const decodedToken = jwtDecode(localStorage.getItem('token') as string)
-    const post = useLoaderData() as Post
-    const [title,setTitle] = useState(post.title);
-    const [content, setContent] = useState(post.content);
     const isTheOwnerOfPost = decodedToken.username === post.author
-    const [likeNum, setLikeNum] = useState(post.likesNum);
-    const [commentCount, setCommentCount] = useState(post.commentCount);
     const [comment, setComment] = useState("");
     const contentRef = useRef<HTMLParagraphElement>(null);
     const [isExpanded, setIsExpanded] = useState(false);
     const [isOverflowing, setIsOverflowing] = useState(false);
-    const [showComments, setShowComments] = useState(false);
     const [showMore, setShowMore] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false)
     const postFieldConfig = useRef<FieldConfig[]>([]);
     const [comments, setComments] = useState<Comment[]>([]);
     const [loading, setLoading] = useState(false);
+    const [liked, setLiked] = useState(post.isLiked);
+    const usersWhoListPostInit = useRef<PostLike[]>([]);
+    const [usersWhoLikePost, setUsersWhoLikePost] = useState<PostLike[]>([]);
+    const [showUsersWhoLikePost, setShowUsersWhoLikePost] = useState(false);
+    const updatedRef = useRef(false);
     const pageRef = useRef(0);
+    const usersWhoLikePostPageRef = useRef(0);
     const hasMorePagesRef = useRef(true);
-    const navigate = useNavigate();
+    const usersWhoLikePostHasMorePagesRef = useRef(true);
+
+    const fetchWhoLikePost = async () => {
+        try{
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${post.postId}/likes?page=${usersWhoLikePostPageRef.current}`,{
+                headers: {
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                }
+            })
+            if(response.ok){
+                const data = await response.json() as PostLikeResponse
+                if(usersWhoLikePost.length===0){usersWhoListPostInit.current=data.content}
+                setUsersWhoLikePost(prev => [...prev, ...data.content])
+                usersWhoLikePostPageRef.current += 1
+                usersWhoLikePostHasMorePagesRef.current = data.totalPages > usersWhoLikePostPageRef.current
+            } else {
+                usersWhoLikePostHasMorePagesRef.current = false
+            }
+        } catch (e) {
+            console.log("Error: " + e)
+        }
+    }
+
+    useEffect(() => {
+        fetchWhoLikePost()
+        fetchComments()
+        if(contentRef.current){
+            const hasOverflow = contentRef.current.scrollHeight > contentRef.current.clientHeight
+            setIsOverflowing(hasOverflow)
+        }
+    }, [])
+
 
     const fetchComments = async () => {
         if(loading || !hasMorePagesRef.current){return;}
@@ -54,18 +90,10 @@ const SinglePostPage=()=>{
         }
     }
 
-    useEffect(() => {
-        if(contentRef.current){
-            const hasOverflow = contentRef.current.scrollHeight > contentRef.current.clientHeight
-            setIsOverflowing(hasOverflow)
-        }
-    }, [])
-
     const addComment= async ()=>{
         const commentRequest = {
             content: comment
         }
-        setComment("")
         try{
             const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${post.postId}/comments`,{
                 method: "POST",
@@ -78,23 +106,14 @@ const SinglePostPage=()=>{
             if(response.ok){
                 const newComment = await response.json() as Comment
                 setComments(prev => [...prev, newComment])
-                setCommentCount(prev => prev + 1)
+                post.commentCount += 1
             }
         } catch (e) {
             console.log("Error ",e)
+        } finally {
+            setComment("")
         }
     }
-    const handleCommentSection=()=>{
-        if(!showComments){
-            fetchComments()
-        } else {
-            pageRef.current=0
-            hasMorePagesRef.current=true
-            setComments([])
-        }
-        setShowComments(prev => !prev)
-    }
-
     const handleDeletePost = async (state: boolean) => {
         if(state) {
             try {
@@ -104,8 +123,8 @@ const SinglePostPage=()=>{
                     },
                     method: "DELETE"
                 })
-                if(response.status === 204){
-                    navigate("/dashboard")
+                if(response.ok){
+                    closePost(true)
                 }
             } catch (e) {
                 console.log("Error " + e)
@@ -118,11 +137,11 @@ const SinglePostPage=()=>{
         setShowMore(false)
         const titleField: FieldConfig = {
             label: "Title",
-            value: title
+            value: post.title
         }
         const contentField: FieldConfig = {
             label: "Content",
-            value: content
+            value: post.content
         }
         postFieldConfig.current = [titleField,contentField]
         setShowEditModal(true)
@@ -143,14 +162,66 @@ const SinglePostPage=()=>{
                 body: JSON.stringify(updatePostRequest)
             })
             if(response.ok){
-                setTitle(fields[0].value)
-                setContent(fields[1].value)
+                post.title = fields[0].value
+                post.content = fields[1].value
+                updatedRef.current = true
             }
         } catch (e) {
             console.log("Error: ",e)
         } finally {
             setShowEditModal(false)
         }
+    }
+
+    const closePost = (toDelete: boolean) => {
+        if(toDelete || updatedRef.current){
+            const postResultObj: PostResultObj = {
+                status: toDelete ? "DELETED" : "UPDATED",
+                post: post
+            }
+            onClose(postResultObj)
+        } else {
+            onClose(null)
+        }
+    }
+
+    const handleLike = async () => {
+        updatedRef.current = true;
+        const previousLiked = liked;
+        const previousCount = post.likesNum;
+        setLiked(!previousLiked);
+        post.likesNum += !previousLiked ? 1 : -1;
+        post.isLiked = !previousLiked;
+
+        setUsersWhoLikePost(prev =>
+            !previousLiked
+                ? [...prev, { username: decodedToken.username } as PostLike]
+                : prev.filter(u => u.username !== decodedToken.username)
+        );
+        try {
+            const method = !previousLiked ? "POST" : "DELETE";
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${post.postId}/like`, {
+                method: method,
+                headers: {
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                }
+            });
+            if (!response.ok) {
+                console.log("Error")
+            }
+        } catch (e) {
+            console.log("Error: ",e)
+            setLiked(previousLiked);
+            post.likesNum = previousCount;
+            post.isLiked = previousLiked;
+        }
+    };
+
+    const handleCloseLikeList = () => {
+        setShowUsersWhoLikePost(false);
+        setUsersWhoLikePost(usersWhoListPostInit.current);
+        usersWhoLikePostPageRef.current = 1;
+        usersWhoLikePostHasMorePagesRef.current = true;
     }
 
     return (
@@ -164,85 +235,87 @@ const SinglePostPage=()=>{
                 <EditModal
                     fields={postFieldConfig.current}
                     onConfirm={editPost}
-                    onCancel={() => {setShowEditModal(false)}}
+                    onCancel={() => setShowEditModal(false)}
                 />
             }
-            <div className="relative shadow-xl max-w-2xl mx-auto my-8 p-8 rounded-3xl bg-white h-fit text-gray-800">
-                <div className="flex justify-between">
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="bg-blue-500 text-white rounded-full px-6 py-2 mb-6 hover:bg-blue-600 transition-colors duration-300 ease-in-out flex items-center gap-2 font-bold text-sm"
-                    >
-                        <span>&larr;</span> Go back
-                    </button>
-                    {isTheOwnerOfPost &&
-                        <button className={`${showMore ? "bg-blue-600" : "bg-blue-500"} text-white rounded-full px-6 py-2 mb-6 hover:bg-blue-600 transition-colors duration-300 ease-in-out flex items-center gap-2 font-bold text-sm`} onClick={()=> {setShowMore(prev => !prev)}}>More</button>
-                    }
-                </div>
-                {showMore &&
-                    <div className="absolute flex flex-col right-0 z-50 shadow-xl/30 bg-white rounded-xl">
-                        <button className="p-4 mr-8 w-full h-full rounded-xl hover:bg-blue-400 hover:text-white" onClick={showModal}>Edit comment</button>
-                        <hr className="border-gray-100"/>
-                        <button className="p-4 mr-8 w-full h-full rounded-xl hover:bg-red-400 hover:text-white" onClick={() => {setShowMore(false) ;setShowConfirmation(true)}}>Delete comment</button>
+            {showUsersWhoLikePost &&
+                <LikeList
+                    users={usersWhoLikePost}
+                    onClose={handleCloseLikeList}
+                    loadMore={fetchWhoLikePost}
+                    canLoadMore={usersWhoLikePostHasMorePagesRef.current}
+                />
+            }
+            <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+                <div className="relative shadow-xl w-1/2 h-3/4 overflow-y-auto mx-auto my-8 p-8 rounded-3xl bg-white  text-gray-800">
+                    <div className="flex justify-between">
+                        <button
+                            onClick={() => {closePost(false)}}
+                            className="bg-blue-500 text-white rounded-full px-6 py-2 mb-6 hover:bg-blue-600 transition-colors duration-300 ease-in-out flex items-center gap-2 font-bold text-sm"
+                        >
+                            <span>&larr;</span> Go back
+                        </button>
+                        {isTheOwnerOfPost &&
+                            <button className={`${showMore ? "bg-blue-600" : "bg-blue-500"} text-white rounded-full px-6 py-2 mb-6 hover:bg-blue-600 transition-colors duration-300 ease-in-out flex items-center gap-2 font-bold text-sm`} onClick={()=> {setShowMore(prev => !prev)}}>More</button>
+                        }
                     </div>
-                }
-                <div className="mb-4">
-                    <h2 className="font-bold text-xl text-gray-900">{post.author}</h2>
-                    <p className="text-xs text-gray-500 mt-1">{post.createdAt}</p>
-                </div>
+                    {showMore &&
+                        <div className="absolute flex flex-col right-0 z-50 shadow-xl/30 bg-white rounded-xl">
+                            <button className="p-4 mr-8 w-full h-full rounded-xl hover:bg-blue-400 hover:text-white" onClick={showModal}>Edit comment</button>
+                            <hr className="border-gray-100"/>
+                            <button className="p-4 mr-8 w-full h-full rounded-xl hover:bg-red-400 hover:text-white" onClick={() => {setShowMore(false) ;setShowConfirmation(true)}}>Delete comment</button>
+                        </div>
+                    }
+                    <div className="mb-4">
+                        <h2 className="font-bold text-xl text-gray-900">{post.author}</h2>
+                        <p className="text-xs text-gray-500 mt-1">{post.createdAt}</p>
+                    </div>
 
-                <hr className="border-gray-100 my-4" />
+                    <hr className="border-gray-100 my-4" />
 
-                <div className="mb-4">
-                    <p className="text-xl">{title}</p>
-                    <div
-                        className={`transition-all duration-300 ${!isExpanded ? "max-h-30 overflow-hidden relative" : ""}`}
-                        ref={contentRef}
-                    >
+                    <div className="mb-4">
+                        <p className="text-xl">{post.title}</p>
+                        <div
+                            className={`transition-all duration-300 ${!isExpanded ? "max-h-30 overflow-hidden relative" : ""}`}
+                            ref={contentRef}
+                        >
 
-                        <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                            {content}
-                        </p>
+                            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                                {post.content}
+                            </p>
 
-                        {!isExpanded && isOverflowing && (
-                            <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-white to-transparent pointer-events-none"/>
+                            {!isExpanded && isOverflowing && (
+                                <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-white to-transparent pointer-events-none"/>
+                            )}
+                        </div>
+
+                        {isOverflowing && (
+                            <button
+                                className="text-blue-500 font-semibold text-sm mt-2 hover:text-blue-700 hover:underline focus:outline-none"
+                                onClick={() => setIsExpanded(prev => !prev)}
+                            >
+                                {isExpanded ? "Show less" : "Show more"}
+                            </button>
                         )}
                     </div>
+                    <hr className="border-gray-100 my-4" />
+                    <div className="flex justify-between text-gray-500 text-sm font-medium px-2 mb-2">
+                        <div className="flex items-center gap-2">
+                            <i className="icon-thumbs-up-alt"></i>
+                            {usersWhoLikePost.length !== 0 &&
+                                <p className="hover:underline" onClick={() => {setShowUsersWhoLikePost(true)}}>{usersWhoLikePost[0].username} {usersWhoLikePost.length > 1 && "and others..."}</p>
+                            }
+                        </div>
 
-                    {isOverflowing && (
-                        <button
-                            className="text-blue-500 font-semibold text-sm mt-2 hover:text-blue-700 hover:underline focus:outline-none"
-                            onClick={() => setIsExpanded(prev => !prev)}
-                        >
-                            {isExpanded ? "Show less" : "Show more"}
-                        </button>
-                    )}
-                </div>
-
-                <hr className="border-gray-100 my-4" />
-
-                <div className="flex justify-between text-gray-500 text-sm font-medium px-2 mb-2">
-                    <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2">
+                            <span>{post.commentCount}</span>
+                            <i className="icon-comment"></i>
+                        </div>
+                    </div>
+                    <button className={`${liked ? "bg-blue-500 text-white" : "text-gray-500"} rounded-full px-8 py-2 hover:bg-blue-500 hover:text-white transition-all duration-300 shadow-md active:scale-95`} onClick={handleLike}>
                         <span>{post.likesNum}</span>
-                        <i className="icon-thumbs-up-alt"></i>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <span>{commentCount}</span>
-                        <i className="icon-comment"></i>
-                    </div>
-                </div>
-                <div className="flex justify-center gap-4 p-2 mb-4">
-                    <button className="bg-blue-500 text-white rounded-full px-8 py-2 hover:bg-blue-600 transition-all duration-300 shadow-md active:scale-95">
                         <i className="icon-thumbs-up-alt text-lg"></i>
                     </button>
-                    <button
-                        className={`${showComments ? "bg-blue-600" : "bg-blue-500"} text-white rounded-full px-8 py-2 hover:bg-blue-600 transition-all duration-300 shadow-md active:scale-95`}
-                        onClick={handleCommentSection}
-                    >
-                        <i className="icon-comment text-lg"></i>
-                    </button>
-                </div>
-                {showComments && (
                     <div className="bg-gray-50 shadow-inner p-6 rounded-3xl h-96 flex flex-col mt-4 border border-gray-100">
                         <div className={`overflow-y-auto overflow-x-hidden flex-1 min-h-0 mb-4 pr-2 ${comments.length === 0 ? "flex justify-center items-center" : ""}`}>
                             {comments.length === 0 ? (
@@ -292,7 +365,7 @@ const SinglePostPage=()=>{
                             </form>
                         </div>
                     </div>
-                )}
+                </div>
             </div>
         </>
     )
