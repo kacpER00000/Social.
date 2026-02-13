@@ -5,7 +5,8 @@ export interface Post{
     content: string,
     createdAt: string,
     likesNum: number,
-    commentCount: number
+    commentCount: number,
+    isLiked: boolean
 }
 
 export interface PostResponse{
@@ -32,4 +33,21 @@ export interface CommentResponse{
 export interface FieldConfig {
     label: string,
     value: string
+}
+
+export interface PostResultObj {
+    status: "UPDATED" | "DELETED",
+    post: Post
+}
+
+export interface PostLike{
+    username: string,
+    userId: number,
+    postId: number,
+    likedAt: string
+}
+
+export interface PostLikeResponse{
+    content: PostLike[],
+    totalPages: number
 }

@@ -1,4 +1,4 @@
-import {PostResponse} from "./types/types.ts";
+import {Post, PostResponse, PostResultObj} from "./types/types.ts";
 import PostItem from "./PostItem.tsx";
 import {useLoaderData} from "react-router-dom";
 import {useEffect, useRef, useState} from "react";
@@ -6,6 +6,7 @@ import {useEffect, useRef, useState} from "react";
 const Home = () =>{
     const postResponse = useLoaderData() as PostResponse;
     const [posts, setPosts] = useState(postResponse.content)
+    const [selectedPost, setSelectedPost] = useState<Post | null>(null)
     const sentinelRef = useRef(null)
     const loading = useRef(false)
     const page = useRef(1)
@@ -55,11 +56,40 @@ const Home = () =>{
             }
         };
     }, []);
+
+    const showPostComponent = (post: Post) => {
+        setSelectedPost(post)
+    }
+
+    const closePost = (postResultObj: PostResultObj | null) => {
+        if(postResultObj !== null){
+            if(postResultObj.status === "DELETED"){
+                setPosts(prev => prev.filter(post => post.postId !== postResultObj.post.postId))
+            }
+            if(postResultObj.status === "UPDATED"){
+                setPosts(prev =>
+                    prev.map(post =>
+                        post.postId === postResultObj.post.postId ?
+                            {...postResultObj.post}
+                            : post
+                    )
+                )
+            }
+        }
+        setSelectedPost(null)
+    }
+
     return (
         <>
+            {selectedPost &&
+                <SinglePostPage
+                    post={selectedPost}
+                    onClose={closePost}
+                />
+            }
             <div className="flex flex-col w-full">
                 {posts.map((item, idx) =>
-                    <PostItem post={item} key={idx}/>
+                    <PostItem post={item} key={idx} onSelect={showPostComponent}/>
                 )}
             </div>
             {loading.current &&
