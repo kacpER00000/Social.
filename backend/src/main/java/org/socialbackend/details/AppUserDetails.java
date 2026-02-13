@@ -16,6 +16,8 @@ public class AppUserDetails implements UserDetails {
         this.userLoginData = userLoginData;
     }
 
+    public Long getUserId(){return userLoginData.getUserId();}
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
