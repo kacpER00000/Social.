@@ -17,5 +17,5 @@ public class PostDTO {
     private LocalDateTime createdAt;
     private Long likesNum;
     private Long commentCount;
-    private boolean isLiked;
+    private Boolean isLiked;
 }
