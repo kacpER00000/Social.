@@ -6,10 +6,7 @@ import org.apache.tomcat.util.http.InvalidParameterException;
 import org.socialbackend.dto.PostDTO;
 import org.socialbackend.model.Post;
 import org.socialbackend.model.User;
-import org.socialbackend.repository.PostLikeRepository;
-import org.socialbackend.repository.PostRepository;
-import org.socialbackend.repository.UserLoginDataRepository;
-import org.socialbackend.repository.UserRepository;
+import org.socialbackend.repository.*;
 import org.socialbackend.request.PostRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +20,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final PostLikeRepository postLikeRepository;
+    private final FollowerRepository followerRepository;
 
     @Transactional
     public PostDTO addPost(PostRequest postRequest, Long userId){
@@ -79,7 +77,8 @@ public class PostService {
         Long commentCount = post.getCommentCount();
         String nickname = post.getUser().getFirstName() + " " + post.getUser().getLastName();
         boolean isLiked = postLikeRepository.existsByPost_postIdAndUser_userId(post.getPostId(), loggedUserId);
-        return new PostDTO(post.getPostId(),nickname,post.getTitle(),post.getContent(),post.getCreatedAt(),likesNumber,commentCount,isLiked);
+        boolean isAuthorFollowed = followerRepository.existsByFollower_UserIdAndFollowed_UserId(loggedUserId,post.getUser().getUserId());
+        return new PostDTO(post.getPostId(),post.getUser().getUserId(),nickname,post.getTitle(),post.getContent(),post.getCreatedAt(),likesNumber,commentCount, isLiked, isAuthorFollowed);
     }
 
     private User findUserById(Long userId){

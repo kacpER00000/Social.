@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class PostDTO {
     private Long postId;
+    private Long authorId;
     private String author;
     private String title;
     private String content;
@@ -18,4 +19,6 @@ public class PostDTO {
     private Long likesNum;
     private Long commentCount;
     private Boolean isLiked;
+    private Boolean isAuthorFollowed;
 }
+
