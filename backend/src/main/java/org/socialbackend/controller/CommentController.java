@@ -21,13 +21,15 @@ public class CommentController {
     private final CommentService commentService;
 
     @GetMapping("/posts/{postId}/comments")
-    public ResponseEntity<Page<CommentDTO>> getPostComments(@PathVariable Long postId, @PageableDefault(page=0) Pageable pageable){
-        return ResponseEntity.ok(commentService.findPostComments(postId,pageable));
+    public ResponseEntity<Page<CommentDTO>> getPostComments(@PathVariable Long postId, @PageableDefault(page=0) Pageable pageable, Authentication authentication){
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        return ResponseEntity.ok(commentService.findPostComments(postId,pageable, userDetails.getUserId()));
     }
 
     @GetMapping("/comments/{commentId}")
-    public ResponseEntity<CommentDTO> getComment(@PathVariable Long commentId){
-        return ResponseEntity.ok(commentService.findCommentByCommentId(commentId));
+    public ResponseEntity<CommentDTO> getComment(@PathVariable Long commentId, Authentication authentication){
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        return ResponseEntity.ok(commentService.findCommentByCommentId(commentId, userDetails.getUserId()));
     }
 
     @PostMapping("/posts/{postId}/comments")

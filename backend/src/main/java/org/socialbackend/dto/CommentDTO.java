@@ -12,7 +12,11 @@ import java.time.LocalDateTime;
 public class CommentDTO {
     private Long commentId;
     private Long postId;
+    private Long authorId;
     private String author;
     private String content;
     private LocalDateTime createdAt;
+    private boolean canEdit;
+    private boolean canDelete;
+    private boolean isAuthorFollowed;
 }
