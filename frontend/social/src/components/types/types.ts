@@ -1,12 +1,14 @@
 export interface Post{
     postId: number,
+    authorId: number,
     author: string,
     title: string,
     content: string,
     createdAt: string,
     likesNum: number,
     commentCount: number,
-    isLiked: boolean
+    isLiked: boolean,
+    isAuthorFollowed: boolean
 }
 
 export interface PostResponse{
@@ -19,9 +21,13 @@ export interface PostResponse{
 export interface Comment{
     commentId: number,
     postId: number,
+    authorId: number,
     author: string,
     content: string,
-    createdAt: string
+    createdAt: string,
+    canEdit: boolean,
+    canDelete: boolean,
+    isAuthorFollowed: boolean
 }
 
 export interface CommentResponse{
@@ -36,8 +42,8 @@ export interface FieldConfig {
 }
 
 export interface PostResultObj {
-    status: "UPDATED" | "DELETED",
-    post: Post
+    status: "UPDATED" | "DELETED" | "FOLLOWED",
+    post: Post,
 }
 
 export interface PostLike{

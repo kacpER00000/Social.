@@ -75,6 +75,15 @@ const Home = () =>{
                     )
                 )
             }
+            if(postResultObj.status === "FOLLOWED"){
+                setPosts(prev =>
+                    prev.map(post =>
+                        post.authorId === postResultObj.post.authorId ?
+                            {...post, isAuthorFollowed: postResultObj.post.isAuthorFollowed}
+                            : post
+                    )
+                )
+            }
         }
         setSelectedPost(null)
     }
@@ -88,8 +97,8 @@ const Home = () =>{
                 />
             }
             <div className="flex flex-col w-full">
-                {posts.map((item, idx) =>
-                    <PostItem post={item} key={idx} onSelect={showPostComponent}/>
+                {posts.map((item) =>
+                    <PostItem post={item} key={item.postId} onSelect={showPostComponent}/>
                 )}
             </div>
             {loading.current &&
