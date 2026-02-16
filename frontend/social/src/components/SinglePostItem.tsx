@@ -6,6 +6,9 @@ import Confirmation from "./Confirmation.tsx";
 import {FieldConfig} from "./types/types.ts";
 import EditModal from "./EditModal.tsx";
 import LikeList from "./LikeList.tsx";
+import MoreContext from "./MoreContext.tsx";
+import MoreButton from "./MoreButton.tsx";
+import FollowButton from "./FollowButton.tsx";
 
 type SinglePostPageProps = {
     post: Post
@@ -14,14 +17,15 @@ type SinglePostPageProps = {
 
 const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
     const decodedToken = jwtDecode(localStorage.getItem('token') as string)
-    const isTheOwnerOfPost = decodedToken.username === post.author
+    const isTheOwnerOfPost = decodedToken.userId === post.authorId
     const [comment, setComment] = useState("");
     const contentRef = useRef<HTMLParagraphElement>(null);
     const [isExpanded, setIsExpanded] = useState(false);
     const [isOverflowing, setIsOverflowing] = useState(false);
-    const [showMore, setShowMore] = useState(false);
+    const [showMorePost, setShowMorePost] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false)
+    const [isFollowing, setIsFollowing] = useState(post.isAuthorFollowed);
     const postFieldConfig = useRef<FieldConfig[]>([]);
     const [comments, setComments] = useState<Comment[]>([]);
     const [loading, setLoading] = useState(false);
@@ -29,7 +33,7 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
     const usersWhoListPostInit = useRef<PostLike[]>([]);
     const [usersWhoLikePost, setUsersWhoLikePost] = useState<PostLike[]>([]);
     const [showUsersWhoLikePost, setShowUsersWhoLikePost] = useState(false);
-    const updatedRef = useRef(false);
+    const closeStatusRef = useRef<string|null>(null);
     const pageRef = useRef(0);
     const usersWhoLikePostPageRef = useRef(0);
     const hasMorePagesRef = useRef(true);
@@ -63,6 +67,13 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
             const hasOverflow = contentRef.current.scrollHeight > contentRef.current.clientHeight
             setIsOverflowing(hasOverflow)
         }
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if(event.key === "Escape"){
+                onClose(null)
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown",handleKeyDown)
     }, [])
 
 
@@ -124,7 +135,7 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
                     method: "DELETE"
                 })
                 if(response.ok){
-                    closePost(true)
+                    closePost()
                 }
             } catch (e) {
                 console.log("Error " + e)
@@ -133,8 +144,8 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
         setShowConfirmation(false)
     }
 
-    const showModal = () => {
-        setShowMore(false)
+    const showEditPostModal = () => {
+        setShowMorePost(false)
         const titleField: FieldConfig = {
             label: "Title",
             value: post.title
@@ -164,7 +175,7 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
             if(response.ok){
                 post.title = fields[0].value
                 post.content = fields[1].value
-                updatedRef.current = true
+                closeStatusRef.current = "UPDATED"
             }
         } catch (e) {
             console.log("Error: ",e)
@@ -173,10 +184,10 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
         }
     }
 
-    const closePost = (toDelete: boolean) => {
-        if(toDelete || updatedRef.current){
+    const closePost = () => {
+        if(closeStatusRef.current){
             const postResultObj: PostResultObj = {
-                status: toDelete ? "DELETED" : "UPDATED",
+                status: closeStatusRef.current as "UPDATED" | "DELETED" | "FOLLOWED",
                 post: post
             }
             onClose(postResultObj)
@@ -186,7 +197,7 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
     }
 
     const handleLike = async () => {
-        updatedRef.current = true;
+        closeStatusRef.current = "UPDATED";
         const previousLiked = liked;
         const previousCount = post.likesNum;
         setLiked(!previousLiked);
@@ -224,6 +235,58 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
         usersWhoLikePostHasMorePagesRef.current = true;
     }
 
+    const deleteComment = async (commentId: number) => {
+        try{
+            const response = await fetch (`${import.meta.env.VITE_API_URL}/social/comments/${commentId}`,{
+                headers: {
+                    "Authorization": "Bearer " + localStorage.getItem('token')
+                },
+                method: "DELETE"
+            })
+            if(response.ok){
+                setComments(prev => prev.filter(comment => comment.commentId !== commentId))
+                post.commentCount -= 1
+            }
+        } catch (e) {
+            console.log("Error: " + e)
+        }
+    }
+
+    const handleFollow = async () => {
+        const method = isFollowing ? "DELETE" : "POST";
+        const followState = !isFollowing;
+        setIsFollowing(followState);
+        try{
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users/${post.authorId}/follow`,{
+                headers:{
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+                method: method
+            })
+            if(response.ok){
+                post.isAuthorFollowed=followState
+                closeStatusRef.current = "FOLLOWED"
+            } else{
+                setIsFollowing(prev => !prev);
+            }
+        } catch (e) {
+            console.log("Error: " + e)
+            setIsFollowing(prev => !prev);
+        }
+    }
+
+    const updateFollowStateFromCommentOwner = (authorId: number, state: boolean) => {
+        setComments(prev =>
+            prev.map(comment =>
+                comment.authorId === authorId ?
+                    {...comment, isAuthorFollowed: state}
+                    :
+                    comment
+            )
+        )
+
+    }
+
     return (
         <>
             {showConfirmation &&
@@ -250,24 +313,36 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
                 <div className="relative shadow-xl w-1/2 h-3/4 overflow-y-auto mx-auto my-8 p-8 rounded-3xl bg-white  text-gray-800">
                     <div className="flex justify-between">
                         <button
-                            onClick={() => {closePost(false)}}
+                            onClick={closePost}
                             className="bg-blue-500 text-white rounded-full px-6 py-2 mb-6 hover:bg-blue-600 transition-colors duration-300 ease-in-out flex items-center gap-2 font-bold text-sm"
                         >
-                            <span>&larr;</span> Go back
+                            <span>&larr;</span>
                         </button>
                         {isTheOwnerOfPost &&
-                            <button className={`${showMore ? "bg-blue-600" : "bg-blue-500"} text-white rounded-full px-6 py-2 mb-6 hover:bg-blue-600 transition-colors duration-300 ease-in-out flex items-center gap-2 font-bold text-sm`} onClick={()=> {setShowMore(prev => !prev)}}>More</button>
+                            <MoreButton
+                                show={showMorePost}
+                                onShowClicked={() => setShowMorePost(prev => !prev)}
+                            />
                         }
                     </div>
-                    {showMore &&
-                        <div className="absolute flex flex-col right-0 z-50 shadow-xl/30 bg-white rounded-xl">
-                            <button className="p-4 mr-8 w-full h-full rounded-xl hover:bg-blue-400 hover:text-white" onClick={showModal}>Edit comment</button>
-                            <hr className="border-gray-100"/>
-                            <button className="p-4 mr-8 w-full h-full rounded-xl hover:bg-red-400 hover:text-white" onClick={() => {setShowMore(false) ;setShowConfirmation(true)}}>Delete comment</button>
-                        </div>
+                    {showMorePost &&
+                        <MoreContext
+                            editPermission={true}
+                            deletePermission={true}
+                            onEdit={showEditPostModal}
+                            onDelete={() => {setShowMorePost(false); setShowConfirmation(true)}}
+                        />
                     }
                     <div className="mb-4">
-                        <h2 className="font-bold text-xl text-gray-900">{post.author}</h2>
+                        <div className="flex gap-10">
+                            <h2 className="font-bold text-xl text-gray-900">{post.author}</h2>
+                            {!isTheOwnerOfPost &&
+                                <FollowButton
+                                    isFollowing={isFollowing}
+                                    handleFollow={handleFollow}
+                                />
+                            }
+                        </div>
                         <p className="text-xs text-gray-500 mt-1">{post.createdAt}</p>
                     </div>
 
@@ -312,7 +387,7 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
                             <i className="icon-comment"></i>
                         </div>
                     </div>
-                    <button className={`${liked ? "bg-blue-500 text-white" : "text-gray-500"} rounded-full px-8 py-2 hover:bg-blue-500 hover:text-white transition-all duration-300 shadow-md active:scale-95`} onClick={handleLike}>
+                    <button className={`${liked ? "bg-blue-500 text-white" : "bg-grey-500"} rounded-full px-8 py-2 hover:bg-blue-500 hover:text-white transition-all duration-300 shadow-md active:scale-95`} onClick={handleLike}>
                         <span>{post.likesNum}</span>
                         <i className="icon-thumbs-up-alt text-lg"></i>
                     </button>
@@ -322,8 +397,13 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
                                 <p className="text-gray-400 italic">Be first to write a comment!</p>
                             ) : (
                                 <div className="space-y-3">
-                                    {comments.map((item, key) => (
-                                        <CommentItem comment={item} key={key} />
+                                    {comments.map((item) => (
+                                        <CommentItem
+                                            comment={item}
+                                            key={item.commentId}
+                                            onDelete={deleteComment}
+                                            onFollow={updateFollowStateFromCommentOwner}
+                                        />
                                     ))}
                                 </div>
                             )}
@@ -356,6 +436,7 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
                                         className="shadow-sm p-3 w-full rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-24"
                                         type="text"
                                         placeholder="Write a comment..."
+                                        value={comment}
                                         onChange={(e) => {setComment(e.target.value)}}
                                     />
                                     <button type="button" disabled={comment.trim().length===0} className="absolute right-1 top-1/2 -translate-y-1/2 bg-blue-500 text-white rounded-full px-6 py-2 mb-6 hover:bg-blue-600 transition-colors duration-300 ease-in-out flex items-center gap-2 font-bold text-sm disabled:bg-gray-400 disabled:cursor-not-allowed" onClick={addComment}>
