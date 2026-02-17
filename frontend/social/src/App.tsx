@@ -2,22 +2,11 @@ import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import PublicLayout from "./components/PublicLayout.tsx";
 import Login from "./components/Login.tsx";
 import Register from "./components/Register.tsx";
-import Home from "./components/Home.tsx";
+import Dashboard from "./components/Dashboard.tsx";
 import ProtectedLayout from "./components/ProtectedLayout.tsx";
 import {redirect} from "react-router-dom";
-import {jwtDecode} from "jwt-decode";
-
-const isAuthenticated=()=>{
-    const token = localStorage.getItem("token")
-    if(token === null){return false;}
-    try{
-        const decoded = jwtDecode(token)
-        const currentTime = new Date()/1000
-        return decoded.exp > currentTime
-    } catch (e) {
-        return false
-    }
-}
+import {FollowProvider} from "./contexts/FollowerContext.tsx";
+import {isInvalid} from "./utils/isInvalid.ts";
 
 const router = createBrowserRouter([
     {
@@ -27,7 +16,7 @@ const router = createBrowserRouter([
                 path: "/login",
                 element: <Login/>,
                 loader: async () => {
-                    if(isAuthenticated()){
+                    if(!isInvalid()){
                         return redirect("/dashboard")
                     }
                     return null
@@ -42,15 +31,15 @@ const router = createBrowserRouter([
     {
         element: <ProtectedLayout/>,
         loader: async ()=>{
-            if(!isAuthenticated()){
+            if(isInvalid()){
                 return redirect("/login")
             }
             return null
         },
         children: [
             {
-                path: "/home",
-                element: <Home/>,
+                path: "/dashboard",
+                element: <Dashboard/>,
                 loader: async () =>{
                     return await fetch(`${import.meta.env.VITE_API_URL}/social/posts/latest`,{
                         headers: {
@@ -58,7 +47,7 @@ const router = createBrowserRouter([
                         }
                     })
                 }
-            }
+            },
         ]
     }
 ])
@@ -66,9 +55,9 @@ const router = createBrowserRouter([
 function App() {
 
     return (
-        <>
+        <FollowProvider>
             <RouterProvider router={router}/>
-        </>
+        </FollowProvider>
     )
 }
 
