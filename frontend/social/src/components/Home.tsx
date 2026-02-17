@@ -1,9 +1,13 @@
-import {Post, PostResponse, PostResultObj} from "./types/types.ts";
+import {Post, PostResponse, PostResultObj} from "../types/types.ts";
 import PostItem from "./PostItem.tsx";
 import {useLoaderData} from "react-router-dom";
 import {useEffect, useRef, useState} from "react";
+import {useFollowSystem} from "../contexts/FollowerContext.tsx";
+import {formatDate} from "../utils/formatDate.ts";
+import PostModal from "./Post.tsx";
 
 const Home = () =>{
+    const { addFollowedUsers } = useFollowSystem();
     const postResponse = useLoaderData() as PostResponse;
     const [posts, setPosts] = useState(postResponse.content)
     const [selectedPost, setSelectedPost] = useState<Post | null>(null)
@@ -22,10 +26,14 @@ const Home = () =>{
                 }
             })
             if(response.ok){
-                const data = await response.json()
+                const data = await response.json() as PostResponse
                 setPosts(prev => [...prev, ...data.content])
-                console.log(page.current)
-                console.log(data.content)
+                const followedIds = getFollowedIds(data.content)
+                const uniqueFollowedIds = Array.from(new Set(followedIds))
+                console.log(uniqueFollowedIds)
+                if(uniqueFollowedIds.length > 0){
+                    addFollowedUsers(uniqueFollowedIds)
+                }
                 page.current += 1
                 hasMorePages.current = postResponse.totalPages > page.current
             }
@@ -37,6 +45,9 @@ const Home = () =>{
     }
 
     useEffect(() => {
+        setPosts(prev =>
+            prev.map(post => ({...post, createdAt: formatDate(post.createdAt)}))
+        )
         const observer = new IntersectionObserver((entries) => {
             const entry = entries[0];
             if (entry.isIntersecting) {
@@ -50,12 +61,19 @@ const Home = () =>{
         if (sentinelRef.current) {
             observer.observe(sentinelRef.current);
         }
+        addFollowedUsers(getFollowedIds(posts))
         return () => {
             if (sentinelRef.current) {
                 observer.unobserve(sentinelRef.current);
             }
         };
     }, []);
+
+    const getFollowedIds = (posts: Post[]) => {
+        return posts
+            .filter(post => post.isAuthorFollowed)
+            .map(post => post.authorId)
+    }
 
     const showPostComponent = (post: Post) => {
         setSelectedPost(post)
@@ -91,7 +109,7 @@ const Home = () =>{
     return (
         <>
             {selectedPost &&
-                <SinglePostPage
+                <PostModal
                     post={selectedPost}
                     onClose={closePost}
                 />

@@ -1,4 +1,4 @@
-import {Post} from "./types/types.ts";
+import {Post} from "../types/types.ts";
 import {useNavigate} from "react-router-dom";
 
 type PostProps = {

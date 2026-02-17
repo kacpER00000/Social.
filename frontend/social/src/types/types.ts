@@ -57,3 +57,18 @@ export interface PostLikeResponse{
     content: PostLike[],
     totalPages: number
 }
+
+export interface JWTPayload{
+    userId: number;
+    username: string;
+    sub: string;
+    iat: number;
+    exp: number;
+}
+
+export interface FollowContextType {
+    followedIds: Set<number>;
+    toggleFollow: (userId: number) => void;
+    checkIfFollowed: (userId: number) => boolean;
+    addFollowedUsers: (userIds: number[]) => void;
+}
