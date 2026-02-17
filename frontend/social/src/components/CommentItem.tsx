@@ -1,32 +1,27 @@
-import {Comment} from "./types/types.ts";
-import {useEffect, useState} from "react";
+import {Comment, JWTPayload} from "../types/types.ts";
+import {useState} from "react";
 import MoreContext from "./MoreContext.tsx";
 import MoreButton from "./MoreButton.tsx";
 import Confirmation from "./Confirmation.tsx";
 import {jwtDecode} from "jwt-decode";
 import FollowButton from "./FollowButton.tsx";
+import {useFollowSystem} from "../contexts/FollowerContext.tsx";
 
 type CommentProps = {
     comment: Comment,
-    key: number,
     onDelete: (commentId: number) => void,
-    onFollow: (authorId: number, state: boolean) => void
+    onUpdate: (commentId: number, newContent: string) => void
 }
 
-const CommentItem = ({comment, key,onDelete, onFollow}: CommentProps) =>{
-    const decodedToken = jwtDecode(localStorage.getItem("token") as string);
-    // @ts-ignore
+const CommentItem = ({comment,onDelete,onUpdate}: CommentProps) =>{
+    const decodedToken = jwtDecode(localStorage.getItem("token") as string) as JWTPayload;
+    const { checkIfFollowed, toggleFollow } = useFollowSystem();
     const isTheOwnerOfComment = decodedToken.userId === comment.authorId;
     const [showMore, setShowMore] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [contentError, setContentError] = useState(false);
     const [showConfirmation, setConfirmation] = useState(false);
     const [newContent, setNewContent] = useState(comment.content);
-    const [isFollowing, setIsFollowing] = useState(comment.isAuthorFollowed);
-
-    useEffect(() => {
-        setIsFollowing(comment.isAuthorFollowed);
-    }, [comment.isAuthorFollowed]);
 
     const showMoreClicked = () => {
         setShowMore(prev => !prev)
@@ -56,7 +51,7 @@ const CommentItem = ({comment, key,onDelete, onFollow}: CommentProps) =>{
                 body: JSON.stringify(updateCommentRequest)
             })
             if(response.ok){
-                comment.content = newContent
+                onUpdate(comment.commentId, newContent)
                 setIsEditing(false);
             }
         } catch (e) {
@@ -71,45 +66,22 @@ const CommentItem = ({comment, key,onDelete, onFollow}: CommentProps) =>{
             onDelete(comment.commentId);
         }
     }
-
-    const handleFollow = async () => {
-        const method = isFollowing ? "DELETE" : "POST";
-        const followState = !isFollowing;
-        setIsFollowing(followState);
-        try{
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users/${comment.authorId}/follow`,{
-                headers:{
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                },
-                method: method
-            })
-            if(response.ok){
-                onFollow(comment.authorId, followState);
-            } else{
-                setIsFollowing(prev => !prev);
-            }
-        } catch (e) {
-            console.log("Error: " + e)
-            setIsFollowing(prev => !prev);
-        }
-    }
-
     return(
         <>
             {
                 showConfirmation &&
                 <Confirmation onChoose={handleDelete}/>
             }
-            <div className="relative shadow rounded-xl m-5 p-5" key={key}>
+            <div className="relative shadow rounded-xl m-5 p-5">
                 <div className="flex justify-between">
-                    <div className="flex gap-5 items-center">
+                    <div className="flex gap-3 items-center">
                         <p className="font-bold">
                             {comment.author}
                         </p>
                         {!isTheOwnerOfComment &&
                             <FollowButton
-                                isFollowing={isFollowing}
-                                handleFollow={handleFollow} />
+                                isFollowing={checkIfFollowed(comment.authorId)}
+                                handleFollow={() => toggleFollow(comment.authorId)} />
                         }
                     </div>
                     {isTheOwnerOfComment && !isEditing &&

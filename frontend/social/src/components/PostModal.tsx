@@ -1,22 +1,28 @@
-import {Comment, CommentResponse, Post, PostLike, PostLikeResponse, PostResultObj} from "./types/types.ts";
+import {Comment, CommentResponse, JWTPayload, Post, PostLike, PostLikeResponse, PostResultObj} from "../types/types.ts";
 import CommentItem from "./CommentItem.tsx";
 import {useState, useRef, useEffect} from "react";
 import {jwtDecode} from "jwt-decode";
 import Confirmation from "./Confirmation.tsx";
-import {FieldConfig} from "./types/types.ts";
+import {FieldConfig} from "../types/types.ts";
 import EditModal from "./EditModal.tsx";
 import LikeList from "./LikeList.tsx";
 import MoreContext from "./MoreContext.tsx";
 import MoreButton from "./MoreButton.tsx";
 import FollowButton from "./FollowButton.tsx";
+import {useFollowSystem} from "../contexts/FollowerContext.tsx";
+import {isInvalid} from "../utils/isInvalid.ts";
+import {useNavigate} from "react-router-dom";
+import {formatDate} from "../utils/formatDate.ts";
 
-type SinglePostPageProps = {
+type PostModalProps = {
     post: Post
     onClose: (postResultObj: PostResultObj | null) => void
 }
 
-const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
-    const decodedToken = jwtDecode(localStorage.getItem('token') as string)
+const PostModal=({post, onClose}:PostModalProps)=>{
+    const [currentPost, setCurrentPost] = useState<Post>(post);
+    const { checkIfFollowed, toggleFollow } = useFollowSystem();
+    const decodedToken = jwtDecode(localStorage.getItem('token') as string) as JWTPayload
     const isTheOwnerOfPost = decodedToken.userId === post.authorId
     const [comment, setComment] = useState("");
     const contentRef = useRef<HTMLParagraphElement>(null);
@@ -25,12 +31,11 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
     const [showMorePost, setShowMorePost] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false)
-    const [isFollowing, setIsFollowing] = useState(post.isAuthorFollowed);
     const postFieldConfig = useRef<FieldConfig[]>([]);
     const [comments, setComments] = useState<Comment[]>([]);
     const [loading, setLoading] = useState(false);
     const [liked, setLiked] = useState(post.isLiked);
-    const usersWhoListPostInit = useRef<PostLike[]>([]);
+    const usersWhoLikePostListInit = useRef<PostLike[]>([]);
     const [usersWhoLikePost, setUsersWhoLikePost] = useState<PostLike[]>([]);
     const [showUsersWhoLikePost, setShowUsersWhoLikePost] = useState(false);
     const closeStatusRef = useRef<string|null>(null);
@@ -38,17 +43,27 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
     const usersWhoLikePostPageRef = useRef(0);
     const hasMorePagesRef = useRef(true);
     const usersWhoLikePostHasMorePagesRef = useRef(true);
+    const navigate = useNavigate();
+
+    const checkIfTokenInvalid=()=>{
+        if(isInvalid()){
+            navigate("/login");
+            return true
+        }
+        return false
+    }
 
     const fetchWhoLikePost = async () => {
+        if(checkIfTokenInvalid()){return;}
         try{
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${post.postId}/likes?page=${usersWhoLikePostPageRef.current}`,{
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}/likes?page=${usersWhoLikePostPageRef.current}`,{
                 headers: {
                     "Authorization": "Bearer " + localStorage.getItem("token")
                 }
             })
             if(response.ok){
                 const data = await response.json() as PostLikeResponse
-                if(usersWhoLikePost.length===0){usersWhoListPostInit.current=data.content}
+                if(usersWhoLikePost.length===0){usersWhoLikePostListInit.current=data.content}
                 setUsersWhoLikePost(prev => [...prev, ...data.content])
                 usersWhoLikePostPageRef.current += 1
                 usersWhoLikePostHasMorePagesRef.current = data.totalPages > usersWhoLikePostPageRef.current
@@ -61,6 +76,7 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
     }
 
     useEffect(() => {
+        if(checkIfTokenInvalid()){return;}
         fetchWhoLikePost()
         fetchComments()
         if(contentRef.current){
@@ -78,17 +94,18 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
 
 
     const fetchComments = async () => {
+        if(checkIfTokenInvalid()){return;}
         if(loading || !hasMorePagesRef.current){return;}
         setLoading(true)
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${post.postId}/comments?page=${pageRef.current}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}/comments?page=${pageRef.current}`, {
                 headers: {
                     "Authorization": `Bearer ${localStorage.getItem('token')}`
                 }
             })
             if (response.ok) {
                 const data = await response.json() as CommentResponse
-                setComments(prev => [...prev, ...data.content])
+                setComments(prev => [...prev, ...data.content.map(comment => ({...comment, createdAt: formatDate(comment.createdAt)}))])
                 pageRef.current += 1
                 hasMorePagesRef.current = data.totalPages > pageRef.current
             } else {
@@ -101,12 +118,13 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
         }
     }
 
-    const addComment= async ()=>{
+    const addComment = async ()=>{
+        if(checkIfTokenInvalid()){return;}
         const commentRequest = {
             content: comment
         }
         try{
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${post.postId}/comments`,{
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}/comments`,{
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -116,8 +134,12 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
             })
             if(response.ok){
                 const newComment = await response.json() as Comment
-                setComments(prev => [...prev, newComment])
-                post.commentCount += 1
+                const modifiedNewComment = {...newComment, createdAt: formatDate(newComment.createdAt)};
+                setComments(prev => [...prev, modifiedNewComment])
+                setCurrentPost(prev => ({
+                    ...prev,
+                    commentCount: prev.commentCount + 1
+                }));
             }
         } catch (e) {
             console.log("Error ",e)
@@ -126,9 +148,10 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
         }
     }
     const handleDeletePost = async (state: boolean) => {
+        if(checkIfTokenInvalid()){return;}
         if(state) {
             try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${post.postId}`, {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}`, {
                     headers: {
                         "Authorization": "Bearer " + localStorage.getItem("token")
                     },
@@ -145,26 +168,28 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
     }
 
     const showEditPostModal = () => {
+        if(checkIfTokenInvalid()){return;}
         setShowMorePost(false)
         const titleField: FieldConfig = {
             label: "Title",
-            value: post.title
+            value: currentPost.title
         }
         const contentField: FieldConfig = {
             label: "Content",
-            value: post.content
+            value: currentPost.content
         }
         postFieldConfig.current = [titleField,contentField]
         setShowEditModal(true)
     }
 
     const editPost= async (fields: FieldConfig[])=>{
+        if(checkIfTokenInvalid()){return;}
         const updatePostRequest = {
             title: fields[0].value,
             content: fields[1].value
         }
         try{
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${post.postId}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}`, {
                 headers:{
                     "Content-Type": "application/json",
                     "Authorization": "Bearer " + localStorage.getItem("token")
@@ -173,8 +198,11 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
                 body: JSON.stringify(updatePostRequest)
             })
             if(response.ok){
-                post.title = fields[0].value
-                post.content = fields[1].value
+                setCurrentPost(prev => ({
+                    ...prev,
+                    title: fields[0].value,
+                    content: fields[1].value
+                }));
                 closeStatusRef.current = "UPDATED"
             }
         } catch (e) {
@@ -185,10 +213,11 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
     }
 
     const closePost = () => {
+        if(checkIfTokenInvalid()){return;}
         if(closeStatusRef.current){
             const postResultObj: PostResultObj = {
                 status: closeStatusRef.current as "UPDATED" | "DELETED" | "FOLLOWED",
-                post: post
+                post: currentPost
             }
             onClose(postResultObj)
         } else {
@@ -197,13 +226,16 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
     }
 
     const handleLike = async () => {
+        if(checkIfTokenInvalid()){return;}
         closeStatusRef.current = "UPDATED";
         const previousLiked = liked;
-        const previousCount = post.likesNum;
+        const previousCount = currentPost.likesNum;
         setLiked(!previousLiked);
-        post.likesNum += !previousLiked ? 1 : -1;
-        post.isLiked = !previousLiked;
-
+        setCurrentPost(prev => ({
+            ...prev,
+            likesNum: prev.likesNum + (!previousLiked ? 1 : -1),
+            isLiked: !previousLiked
+        }));
         setUsersWhoLikePost(prev =>
             !previousLiked
                 ? [...prev, { username: decodedToken.username } as PostLike]
@@ -211,7 +243,7 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
         );
         try {
             const method = !previousLiked ? "POST" : "DELETE";
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${post.postId}/like`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}/like`, {
                 method: method,
                 headers: {
                     "Authorization": "Bearer " + localStorage.getItem("token")
@@ -223,19 +255,24 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
         } catch (e) {
             console.log("Error: ",e)
             setLiked(previousLiked);
-            post.likesNum = previousCount;
-            post.isLiked = previousLiked;
+            setCurrentPost(prev => ({
+                ...prev,
+                likesNum: previousCount,
+                isLiked: previousLiked
+            }));
         }
     };
 
     const handleCloseLikeList = () => {
+        if(checkIfTokenInvalid()){return;}
         setShowUsersWhoLikePost(false);
-        setUsersWhoLikePost(usersWhoListPostInit.current);
+        setUsersWhoLikePost(usersWhoLikePostListInit.current);
         usersWhoLikePostPageRef.current = 1;
         usersWhoLikePostHasMorePagesRef.current = true;
     }
 
     const deleteComment = async (commentId: number) => {
+        if(checkIfTokenInvalid()){return;}
         try{
             const response = await fetch (`${import.meta.env.VITE_API_URL}/social/comments/${commentId}`,{
                 headers: {
@@ -245,46 +282,23 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
             })
             if(response.ok){
                 setComments(prev => prev.filter(comment => comment.commentId !== commentId))
-                post.commentCount -= 1
+                setCurrentPost(prev => ({
+                    ...prev,
+                    commentCount: prev.commentCount - 1
+                }));
             }
         } catch (e) {
             console.log("Error: " + e)
         }
     }
 
-    const handleFollow = async () => {
-        const method = isFollowing ? "DELETE" : "POST";
-        const followState = !isFollowing;
-        setIsFollowing(followState);
-        try{
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users/${post.authorId}/follow`,{
-                headers:{
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                },
-                method: method
-            })
-            if(response.ok){
-                post.isAuthorFollowed=followState
-                closeStatusRef.current = "FOLLOWED"
-            } else{
-                setIsFollowing(prev => !prev);
-            }
-        } catch (e) {
-            console.log("Error: " + e)
-            setIsFollowing(prev => !prev);
-        }
-    }
-
-    const updateFollowStateFromCommentOwner = (authorId: number, state: boolean) => {
-        setComments(prev =>
-            prev.map(comment =>
-                comment.authorId === authorId ?
-                    {...comment, isAuthorFollowed: state}
-                    :
-                    comment
-            )
-        )
-
+    const handleCommentUpdate = (commentId: number, newContent: string) => {
+        if(checkIfTokenInvalid()){return;}
+        setComments(prev => prev.map(c =>
+            c.commentId === commentId
+                ? { ...c, content: newContent }
+                : c
+        ));
     }
 
     return (
@@ -333,32 +347,29 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
                             onDelete={() => {setShowMorePost(false); setShowConfirmation(true)}}
                         />
                     }
-                    <div className="mb-4">
-                        <div className="flex gap-10">
-                            <h2 className="font-bold text-xl text-gray-900">{post.author}</h2>
+                    <div>
+                        <div className="flex gap-3">
+                            <h2 className="font-bold text-xl text-gray-900">{currentPost.author}</h2>
                             {!isTheOwnerOfPost &&
                                 <FollowButton
-                                    isFollowing={isFollowing}
-                                    handleFollow={handleFollow}
+                                    isFollowing={checkIfFollowed(currentPost.authorId)}
+                                    handleFollow={() => {toggleFollow(currentPost.authorId)}}
                                 />
                             }
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">{post.createdAt}</p>
+                        <p className="text-xs text-gray-500">{currentPost.createdAt}</p>
                     </div>
 
                     <hr className="border-gray-100 my-4" />
-
                     <div className="mb-4">
-                        <p className="text-xl">{post.title}</p>
+                        <p className="text-xl">{currentPost.title}</p>
                         <div
                             className={`transition-all duration-300 ${!isExpanded ? "max-h-30 overflow-hidden relative" : ""}`}
                             ref={contentRef}
                         >
-
                             <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                                {post.content}
+                                {currentPost.content}
                             </p>
-
                             {!isExpanded && isOverflowing && (
                                 <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-white to-transparent pointer-events-none"/>
                             )}
@@ -383,12 +394,12 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <span>{post.commentCount}</span>
+                            <span>{currentPost.commentCount}</span>
                             <i className="icon-comment"></i>
                         </div>
                     </div>
                     <button className={`${liked ? "bg-blue-500 text-white" : "bg-grey-500"} rounded-full px-8 py-2 hover:bg-blue-500 hover:text-white transition-all duration-300 shadow-md active:scale-95`} onClick={handleLike}>
-                        <span>{post.likesNum}</span>
+                        <span>{currentPost.likesNum}</span>
                         <i className="icon-thumbs-up-alt text-lg"></i>
                     </button>
                     <div className="bg-gray-50 shadow-inner p-6 rounded-3xl h-96 flex flex-col mt-4 border border-gray-100">
@@ -401,8 +412,8 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
                                         <CommentItem
                                             comment={item}
                                             key={item.commentId}
+                                            onUpdate={handleCommentUpdate}
                                             onDelete={deleteComment}
-                                            onFollow={updateFollowStateFromCommentOwner}
                                         />
                                     ))}
                                 </div>
@@ -439,7 +450,7 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
                                         value={comment}
                                         onChange={(e) => {setComment(e.target.value)}}
                                     />
-                                    <button type="button" disabled={comment.trim().length===0} className="absolute right-1 top-1/2 -translate-y-1/2 bg-blue-500 text-white rounded-full px-6 py-2 mb-6 hover:bg-blue-600 transition-colors duration-300 ease-in-out flex items-center gap-2 font-bold text-sm disabled:bg-gray-400 disabled:cursor-not-allowed" onClick={addComment}>
+                                    <button type="button" disabled={comment.trim().length===0} className="absolute right-1 top-1/2 -translate-y-1/2 bg-blue-500 text-white rounded-full px-6 py-2 hover:bg-blue-600 transition-colors duration-300 ease-in-out flex items-center gap-2 font-bold text-sm disabled:bg-gray-400 disabled:cursor-not-allowed" onClick={addComment}>
                                         <i className="icon-comment text-lg"></i>
                                     </button>
                                 </div>
@@ -451,4 +462,4 @@ const SinglePostPage=({post, onClose}:SinglePostPageProps)=>{
         </>
     )
 }
-export default SinglePostPage;
+export default PostModal;

@@ -1,4 +1,4 @@
-import {PostLike} from "./types/types.ts";
+import {PostLike} from "../types/types.ts";
 
 type LikeListProps = {
     users: PostLike[],
