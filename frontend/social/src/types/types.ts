@@ -1,4 +1,4 @@
-export interface Post{
+export interface PostDTO {
     postId: number,
     authorId: number,
     author: string,
@@ -12,13 +12,13 @@ export interface Post{
 }
 
 export interface PostResponse{
-    content: Post[],
+    content: PostDTO[],
     last: boolean,
     number: number,
     totalPages: number
 }
 
-export interface Comment{
+export interface CommentDTO {
     commentId: number,
     postId: number,
     authorId: number,
@@ -31,10 +31,21 @@ export interface Comment{
 }
 
 export interface CommentResponse{
-    content: Comment[],
+    content: CommentDTO[],
     number: number,
     totalPages: number
 }
+
+export interface UserDTO {
+    userId: number,
+    firstName: string,
+    lastName: string,
+    birthDate: string,
+    sex: string,
+    followersCount: number,
+    followingCount: number
+}
+
 
 export interface FieldConfig {
     label: string,
@@ -43,10 +54,10 @@ export interface FieldConfig {
 
 export interface PostResultObj {
     status: "UPDATED" | "DELETED" | "FOLLOWED",
-    post: Post,
+    post: PostDTO,
 }
 
-export interface PostLike{
+export interface PostLikeDTO {
     username: string,
     userId: number,
     postId: number,
@@ -54,7 +65,7 @@ export interface PostLike{
 }
 
 export interface PostLikeResponse{
-    content: PostLike[],
+    content: PostLikeDTO[],
     totalPages: number
 }
 
@@ -71,4 +82,15 @@ export interface FollowContextType {
     toggleFollow: (userId: number) => void;
     checkIfFollowed: (userId: number) => boolean;
     addFollowedUsers: (userIds: number[]) => void;
+}
+
+export interface FollowDTO{
+    userId: number,
+    followerUsername: string,
+    startFollowDate: string
+}
+
+export interface FollowResponse{
+    content: FollowDTO[];
+    totalPages: number;
 }

@@ -4,7 +4,7 @@ import {useLoaderData} from "react-router-dom";
 import {useEffect, useRef, useState} from "react";
 import {useFollowSystem} from "../contexts/FollowerContext.tsx";
 import {formatDate} from "../utils/formatDate.ts";
-import PostModal from "./Post.tsx";
+import PostModal from "./PostModal.tsx";
 
 const Home = () =>{
     const { addFollowedUsers } = useFollowSystem();
