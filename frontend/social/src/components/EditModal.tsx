@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {FieldConfig} from "../types/types.ts";;
+import {FieldConfig} from "../types/types.ts";
 type EditModalProps = {
     fields: FieldConfig[],
     onConfirm: (fields: FieldConfig[]) => void,

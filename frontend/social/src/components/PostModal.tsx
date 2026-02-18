@@ -1,4 +1,4 @@
-import {Comment, CommentResponse, JWTPayload, Post, PostLike, PostLikeResponse, PostResultObj} from "../types/types.ts";
+import {CommentDTO, CommentResponse, JWTPayload, PostDTO, PostLikeDTO, PostLikeResponse, PostResultObj} from "../types/types.ts";
 import CommentItem from "./CommentItem.tsx";
 import {useState, useRef, useEffect} from "react";
 import {jwtDecode} from "jwt-decode";
@@ -15,12 +15,12 @@ import {useNavigate} from "react-router-dom";
 import {formatDate} from "../utils/formatDate.ts";
 
 type PostModalProps = {
-    post: Post
+    post: PostDTO
     onClose: (postResultObj: PostResultObj | null) => void
 }
 
 const PostModal=({post, onClose}:PostModalProps)=>{
-    const [currentPost, setCurrentPost] = useState<Post>(post);
+    const [currentPost, setCurrentPost] = useState<PostDTO>(post);
     const { checkIfFollowed, toggleFollow } = useFollowSystem();
     const decodedToken = jwtDecode(localStorage.getItem('token') as string) as JWTPayload
     const isTheOwnerOfPost = decodedToken.userId === post.authorId
@@ -32,11 +32,11 @@ const PostModal=({post, onClose}:PostModalProps)=>{
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false)
     const postFieldConfig = useRef<FieldConfig[]>([]);
-    const [comments, setComments] = useState<Comment[]>([]);
+    const [comments, setComments] = useState<CommentDTO[]>([]);
     const [loading, setLoading] = useState(false);
     const [liked, setLiked] = useState(post.isLiked);
-    const usersWhoLikePostListInit = useRef<PostLike[]>([]);
-    const [usersWhoLikePost, setUsersWhoLikePost] = useState<PostLike[]>([]);
+    const usersWhoLikePostListInit = useRef<PostLikeDTO[]>([]);
+    const [usersWhoLikePost, setUsersWhoLikePost] = useState<PostLikeDTO[]>([]);
     const [showUsersWhoLikePost, setShowUsersWhoLikePost] = useState(false);
     const closeStatusRef = useRef<string|null>(null);
     const pageRef = useRef(0);
@@ -133,7 +133,7 @@ const PostModal=({post, onClose}:PostModalProps)=>{
                 body: JSON.stringify(commentRequest)
             })
             if(response.ok){
-                const newComment = await response.json() as Comment
+                const newComment = await response.json() as CommentDTO
                 const modifiedNewComment = {...newComment, createdAt: formatDate(newComment.createdAt)};
                 setComments(prev => [...prev, modifiedNewComment])
                 setCurrentPost(prev => ({
@@ -238,7 +238,7 @@ const PostModal=({post, onClose}:PostModalProps)=>{
         }));
         setUsersWhoLikePost(prev =>
             !previousLiked
-                ? [...prev, { username: decodedToken.username } as PostLike]
+                ? [...prev, { username: decodedToken.username } as PostLikeDTO]
                 : prev.filter(u => u.username !== decodedToken.username)
         );
         try {

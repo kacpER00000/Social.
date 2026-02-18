@@ -1,7 +1,7 @@
-import {PostLike} from "../types/types.ts";
+import {PostLikeDTO} from "../types/types.ts";
 
 type LikeListProps = {
-    users: PostLike[],
+    users: PostLikeDTO[],
     onClose: ()=>void,
     loadMore: ()=>void,
     canLoadMore: boolean

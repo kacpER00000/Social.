@@ -1,4 +1,4 @@
-import {Comment, JWTPayload} from "../types/types.ts";
+import {CommentDTO, JWTPayload} from "../types/types.ts";
 import {useState} from "react";
 import MoreContext from "./MoreContext.tsx";
 import MoreButton from "./MoreButton.tsx";
@@ -8,7 +8,7 @@ import FollowButton from "./FollowButton.tsx";
 import {useFollowSystem} from "../contexts/FollowerContext.tsx";
 
 type CommentProps = {
-    comment: Comment,
+    comment: CommentDTO,
     onDelete: (commentId: number) => void,
     onUpdate: (commentId: number, newContent: string) => void
 }
