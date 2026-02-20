@@ -1,14 +1,17 @@
 import {PostLikeDTO} from "../types/types.ts";
+import {createPortal} from "react-dom";
 
 type LikeListProps = {
     users: PostLikeDTO[],
     onClose: ()=>void,
     loadMore: ()=>void,
-    canLoadMore: boolean
+    canLoadMore: boolean,
+    show: boolean
 }
 
-const LikeList = ({users, onClose, canLoadMore, loadMore}: LikeListProps) => {
-    return(
+const LikeList = ({users, onClose, canLoadMore, loadMore, show}: LikeListProps) => {
+    if(!show){return null;}
+    return createPortal(
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-999 transition-opacity">
             <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh] animate-in fade-in zoom-in duration-200">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-white">
@@ -51,7 +54,7 @@ const LikeList = ({users, onClose, canLoadMore, loadMore}: LikeListProps) => {
                 </div>
             </div>
         </div>
-    );
+        , document.body)
 }
 
 export default LikeList

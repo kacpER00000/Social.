@@ -297,14 +297,6 @@ const PostModal=({post, onClose}:PostModalProps)=>{
 
     return (
         <>
-            {showUsersWhoLikePost &&
-                <LikeList
-                    users={usersWhoLikePost}
-                    onClose={handleCloseLikeList}
-                    loadMore={fetchWhoLikePost}
-                    canLoadMore={usersWhoLikePostHasMorePagesRef.current}
-                />
-            }
             <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
                 <div className="relative shadow-xl w-1/2 h-3/4 overflow-y-auto mx-auto my-8 p-8 rounded-3xl bg-white  text-gray-800">
                     <div className="flex justify-between">
@@ -452,6 +444,13 @@ const PostModal=({post, onClose}:PostModalProps)=>{
             <Confirmation
                 onChoose={handleDeletePost}
                 show={showConfirmation}
+            />
+            <LikeList
+                users={usersWhoLikePost}
+                onClose={handleCloseLikeList}
+                loadMore={fetchWhoLikePost}
+                canLoadMore={usersWhoLikePostHasMorePagesRef.current}
+                show={showUsersWhoLikePost}
             />
         </>
     )
