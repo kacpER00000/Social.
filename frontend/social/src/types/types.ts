@@ -47,9 +47,9 @@ export interface UserDTO {
 }
 
 
-export interface FieldConfig {
-    label: string,
-    value: string
+export interface EditPostData {
+    title: string,
+    content: string
 }
 
 export interface PostResultObj {
