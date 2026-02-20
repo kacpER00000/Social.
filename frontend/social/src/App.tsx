@@ -1,4 +1,4 @@
-import {createBrowserRouter, RouterProvider} from "react-router-dom";
+import {createBrowserRouter, LoaderFunctionArgs, RouterProvider} from "react-router-dom";
 import PublicLayout from "./components/PublicLayout.tsx";
 import Login from "./components/Login.tsx";
 import Register from "./components/Register.tsx";
@@ -7,6 +7,7 @@ import ProtectedLayout from "./components/ProtectedLayout.tsx";
 import {redirect} from "react-router-dom";
 import {FollowProvider} from "./contexts/FollowerContext.tsx";
 import {isInvalid} from "./utils/isInvalid.ts";
+import Profile from "./components/Profile.tsx";
 
 const router = createBrowserRouter([
     {
@@ -42,6 +43,17 @@ const router = createBrowserRouter([
                 element: <Home/>,
                 loader: async () =>{
                     return await fetch(`${import.meta.env.VITE_API_URL}/social/posts/latest`,{
+                        headers: {
+                            "Authorization": "Bearer " + localStorage.getItem("token")
+                        }
+                    })
+                }
+            },
+            {
+                path: "/profile/:userId",
+                element: <Profile/>,
+                loader: async ({ params }: LoaderFunctionArgs<number>) => {
+                    return await fetch(`${import.meta.env.VITE_API_URL}/social/users/${params.userId}`,{
                         headers: {
                             "Authorization": "Bearer " + localStorage.getItem("token")
                         }

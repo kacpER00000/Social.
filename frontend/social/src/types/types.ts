@@ -82,6 +82,7 @@ export interface FollowContextType {
     toggleFollow: (userId: number) => void;
     checkIfFollowed: (userId: number) => boolean;
     addFollowedUsers: (userIds: number[]) => void;
+    clearContext: () => void
 }
 
 export interface FollowDTO{
@@ -93,4 +94,11 @@ export interface FollowDTO{
 export interface FollowResponse{
     content: FollowDTO[];
     totalPages: number;
+}
+
+export type EditProfileData={
+    firstName: string,
+    lastName: string,
+    sex: string,
+    birthDate: string
 }
