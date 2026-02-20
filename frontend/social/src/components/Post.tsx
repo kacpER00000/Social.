@@ -12,7 +12,13 @@ type PostProps = {
 
 const Post = ({postResponse, path}: PostProps) => {
     const { addFollowedUsers } = useFollowSystem();
-    const [posts, setPosts] = useState(postResponse.content)
+    const [posts, setPosts] = useState<PostDTO[]>(() =>
+        postResponse.content.map(post => ({
+            ...post,
+            createdAt: formatDate(post.createdAt)
+        }))
+    );
+
     const [selectedPost, setSelectedPost] = useState<PostDTO | null>(null)
     const sentinelRef = useRef(null)
     const loading = useRef(false)
@@ -30,15 +36,14 @@ const Post = ({postResponse, path}: PostProps) => {
             })
             if(response.ok){
                 const data = await response.json() as PostResponse
-                setPosts(prev => [...prev, ...data.content])
+                setPosts(prev => [...prev, ...data.content.map(post => ({...post, createdAt: formatDate(post.createdAt)}))])
                 const followedIds = getFollowedIds(data.content)
                 const uniqueFollowedIds = Array.from(new Set(followedIds))
-                console.log(uniqueFollowedIds)
                 if(uniqueFollowedIds.length > 0){
                     addFollowedUsers(uniqueFollowedIds)
                 }
                 page.current += 1
-                hasMorePages.current = postResponse.totalPages > page.current
+                hasMorePages.current = data.totalPages > page.current
             }
         } catch (e){
             console.log("Error: " + e)
@@ -48,9 +53,6 @@ const Post = ({postResponse, path}: PostProps) => {
     }
 
     useEffect(() => {
-        setPosts(prev =>
-            prev.map(post => ({...post, createdAt: formatDate(post.createdAt)}))
-        )
         const observer = new IntersectionObserver((entries) => {
             const entry = entries[0];
             if (entry.isIntersecting) {
@@ -61,10 +63,12 @@ const Post = ({postResponse, path}: PostProps) => {
             rootMargin: "0px",
             threshold: 1.0,
         });
+
         if (sentinelRef.current) {
             observer.observe(sentinelRef.current);
         }
         addFollowedUsers(getFollowedIds(posts))
+
         return () => {
             if (sentinelRef.current) {
                 observer.unobserve(sentinelRef.current);

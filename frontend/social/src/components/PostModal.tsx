@@ -3,8 +3,7 @@ import CommentItem from "./CommentItem.tsx";
 import {useState, useRef, useEffect} from "react";
 import {jwtDecode} from "jwt-decode";
 import Confirmation from "./Confirmation.tsx";
-import {FieldConfig} from "../types/types.ts";
-import EditModal from "./EditModal.tsx";
+import {EditPostData} from "../types/types.ts";
 import LikeList from "./LikeList.tsx";
 import MoreContext from "./MoreContext.tsx";
 import MoreButton from "./MoreButton.tsx";
@@ -13,6 +12,7 @@ import {useFollowSystem} from "../contexts/FollowerContext.tsx";
 import {isInvalid} from "../utils/isInvalid.ts";
 import {useNavigate} from "react-router-dom";
 import {formatDate} from "../utils/formatDate.ts";
+import EditPostModal from "./EditPostModal.tsx";
 
 type PostModalProps = {
     post: PostDTO
@@ -21,6 +21,10 @@ type PostModalProps = {
 
 const PostModal=({post, onClose}:PostModalProps)=>{
     const [currentPost, setCurrentPost] = useState<PostDTO>(post);
+    let postData: EditPostData = {
+        title: post.title,
+        content: post.content
+    }
     const { checkIfFollowed, toggleFollow } = useFollowSystem();
     const decodedToken = jwtDecode(localStorage.getItem('token') as string) as JWTPayload
     const isTheOwnerOfPost = decodedToken.userId === post.authorId
@@ -31,7 +35,6 @@ const PostModal=({post, onClose}:PostModalProps)=>{
     const [showMorePost, setShowMorePost] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false)
-    const postFieldConfig = useRef<FieldConfig[]>([]);
     const [comments, setComments] = useState<CommentDTO[]>([]);
     const [loading, setLoading] = useState(false);
     const [liked, setLiked] = useState(post.isLiked);
@@ -83,14 +86,17 @@ const PostModal=({post, onClose}:PostModalProps)=>{
             const hasOverflow = contentRef.current.scrollHeight > contentRef.current.clientHeight
             setIsOverflowing(hasOverflow)
         }
+    }, [])
+
+    useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if(event.key === "Escape"){
-                onClose(null)
+                closePost()
             }
         };
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown",handleKeyDown)
-    }, [])
+    }, [currentPost]);
 
 
     const fetchComments = async () => {
@@ -158,6 +164,7 @@ const PostModal=({post, onClose}:PostModalProps)=>{
                     method: "DELETE"
                 })
                 if(response.ok){
+                    closeStatusRef.current = "DELETED"
                     closePost()
                 }
             } catch (e) {
@@ -169,25 +176,11 @@ const PostModal=({post, onClose}:PostModalProps)=>{
 
     const showEditPostModal = () => {
         if(checkIfTokenInvalid()){return;}
-        setShowMorePost(false)
-        const titleField: FieldConfig = {
-            label: "Title",
-            value: currentPost.title
-        }
-        const contentField: FieldConfig = {
-            label: "Content",
-            value: currentPost.content
-        }
-        postFieldConfig.current = [titleField,contentField]
         setShowEditModal(true)
     }
 
-    const editPost= async (fields: FieldConfig[])=>{
+    const editPost= async (data: EditPostData)=>{
         if(checkIfTokenInvalid()){return;}
-        const updatePostRequest = {
-            title: fields[0].value,
-            content: fields[1].value
-        }
         try{
             const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}`, {
                 headers:{
@@ -195,14 +188,15 @@ const PostModal=({post, onClose}:PostModalProps)=>{
                     "Authorization": "Bearer " + localStorage.getItem("token")
                 },
                 method: "PUT",
-                body: JSON.stringify(updatePostRequest)
+                body: JSON.stringify(data)
             })
             if(response.ok){
                 setCurrentPost(prev => ({
                     ...prev,
-                    title: fields[0].value,
-                    content: fields[1].value
+                    title: data.title,
+                    content: data.content
                 }));
+                postData = data;
                 closeStatusRef.current = "UPDATED"
             }
         } catch (e) {
@@ -303,26 +297,6 @@ const PostModal=({post, onClose}:PostModalProps)=>{
 
     return (
         <>
-            {showConfirmation &&
-                <Confirmation
-                    onChoose={handleDeletePost}
-                />
-            }
-            {showEditModal &&
-                <EditModal
-                    fields={postFieldConfig.current}
-                    onConfirm={editPost}
-                    onCancel={() => setShowEditModal(false)}
-                />
-            }
-            {showUsersWhoLikePost &&
-                <LikeList
-                    users={usersWhoLikePost}
-                    onClose={handleCloseLikeList}
-                    loadMore={fetchWhoLikePost}
-                    canLoadMore={usersWhoLikePostHasMorePagesRef.current}
-                />
-            }
             <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
                 <div className="relative shadow-xl w-1/2 h-3/4 overflow-y-auto mx-auto my-8 p-8 rounded-3xl bg-white  text-gray-800">
                     <div className="flex justify-between">
@@ -459,6 +433,25 @@ const PostModal=({post, onClose}:PostModalProps)=>{
                     </div>
                 </div>
             </div>
+            {showEditModal && (
+                <EditPostModal
+                    postData={postData}
+                    onConfirm={editPost}
+                    onCancel={() => setShowEditModal(false)}
+                    show={showEditModal}
+                />
+            )}
+            <Confirmation
+                onChoose={handleDeletePost}
+                show={showConfirmation}
+            />
+            <LikeList
+                users={usersWhoLikePost}
+                onClose={handleCloseLikeList}
+                loadMore={fetchWhoLikePost}
+                canLoadMore={usersWhoLikePostHasMorePagesRef.current}
+                show={showUsersWhoLikePost}
+            />
         </>
     )
 }

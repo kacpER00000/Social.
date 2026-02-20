@@ -143,14 +143,14 @@ const Register = () => {
                         </div>
                         <div className="flex items-center gap-2">
                             <input
-                                id="sexW"
+                                id="sexF"
                                 type="radio"
                                 name="sex"
-                                value="W"
-                                checked={sex === "W"}
+                                value="F"
+                                checked={sex === "F"}
                                 onChange={(e) => setSex(e.target.value)}
                             />
-                            <label htmlFor="sexW">Female</label>
+                            <label htmlFor="sexF">Female</label>
                         </div>
                     </div>
 
