@@ -335,7 +335,7 @@ const PostModal=({post, onClose}:PostModalProps)=>{
                     }
                     <div>
                         <div className="flex gap-3">
-                            <h2 className="font-bold text-xl text-gray-900 hover:underline">{currentPost.author}</h2>
+                            <h2 className="font-bold text-xl text-gray-900">{currentPost.author}</h2>
                             {!isTheOwnerOfPost &&
                                 <FollowButton
                                     isFollowing={checkIfFollowed(currentPost.authorId)}

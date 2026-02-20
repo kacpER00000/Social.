@@ -1,5 +1,4 @@
 import {PostDTO} from "../types/types.ts";
-import {useNavigate} from "react-router-dom";
 
 type PostProps = {
     post: PostDTO,
@@ -7,11 +6,10 @@ type PostProps = {
 }
 
 const PostItem=({post, onSelect}: PostProps)=>{
-    const navigate = useNavigate();
     return(
         <div className="shadow-xl rounded-3xl p-5 m-3 cursor-pointer">
             <div>
-                <p className="font-bold hover:underline" onClick={() => {navigate(`/profile/${post.authorId}`)}}>{post.author}</p>
+                <p className="font-bold">{post.author}</p>
             </div>
             <div onClick={() => {onSelect(post)}}>
                 <p className="text-xs">{post.createdAt}</p>
