@@ -164,6 +164,7 @@ const PostModal=({post, onClose}:PostModalProps)=>{
                     method: "DELETE"
                 })
                 if(response.ok){
+                    closeStatusRef.current = "DELETED"
                     closePost()
                 }
             } catch (e) {
@@ -296,11 +297,6 @@ const PostModal=({post, onClose}:PostModalProps)=>{
 
     return (
         <>
-            {showConfirmation &&
-                <Confirmation
-                    onChoose={handleDeletePost}
-                />
-            }
             {showUsersWhoLikePost &&
                 <LikeList
                     users={usersWhoLikePost}
@@ -453,6 +449,10 @@ const PostModal=({post, onClose}:PostModalProps)=>{
                     show={showEditModal}
                 />
             )}
+            <Confirmation
+                onChoose={handleDeletePost}
+                show={showConfirmation}
+            />
         </>
     )
 }

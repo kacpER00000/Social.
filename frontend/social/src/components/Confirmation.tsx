@@ -1,9 +1,12 @@
+import {createPortal} from "react-dom";
 type ConfirmationProps = {
-    onChoose: (state: boolean)=>void
+    onChoose: (state: boolean)=>void,
+    show: boolean
 }
 
-const Confirmation = ({onChoose}: ConfirmationProps) => {
-    return(
+const Confirmation = ({onChoose, show}: ConfirmationProps) => {
+    if(!show){return null;}
+    return createPortal(
         <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/50 z-999">
             <div className="bg-white text-center w-11/12 max-w-md rounded-3xl p-4 shadow-2xl">
                 <p className="font-bold text-2xl mb-4">Are you sure?</p>
@@ -13,6 +16,6 @@ const Confirmation = ({onChoose}: ConfirmationProps) => {
                 </div>
             </div>
         </div>
-    );
+        ,document.body)
 }
 export default Confirmation;
