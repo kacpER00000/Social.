@@ -6,7 +6,7 @@ import Home from "./components/Home.tsx";
 import ProtectedLayout from "./components/ProtectedLayout.tsx";
 import {redirect} from "react-router-dom";
 import {FollowProvider} from "./contexts/FollowerContext.tsx";
-import {isInvalid} from "./utils/isInvalid.ts";
+import {checkTokenValidity} from "./hooks/useToken.ts";
 
 const router = createBrowserRouter([
     {
@@ -16,8 +16,8 @@ const router = createBrowserRouter([
                 path: "/login",
                 element: <Login/>,
                 loader: async () => {
-                    if(!isInvalid()){
-                        return redirect("/dashboard")
+                    if(!checkTokenValidity().isInvalid){
+                        return redirect("/login")
                     }
                     return null
                 }
@@ -31,7 +31,7 @@ const router = createBrowserRouter([
     {
         element: <ProtectedLayout/>,
         loader: async ()=>{
-            if(isInvalid()){
+            if(checkTokenValidity().isInvalid){
                 return redirect("/login")
             }
             return null

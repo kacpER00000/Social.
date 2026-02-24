@@ -1,7 +1,6 @@
-import {CommentDTO, CommentResponse, JWTPayload, PostDTO, PostLikeDTO, PostLikeResponse, PostResultObj} from "../types/types.ts";
+import {CommentDTO, CommentResponse, PostDTO, PostLikeDTO, PostLikeResponse, PostResultObj} from "../types/types.ts";
 import CommentItem from "./CommentItem.tsx";
-import {useState, useRef, useEffect} from "react";
-import {jwtDecode} from "jwt-decode";
+import {useState, useRef, useEffect, useCallback} from "react";
 import Confirmation from "./Confirmation.tsx";
 import {EditPostData} from "../types/types.ts";
 import LikeList from "./LikeList.tsx";
@@ -9,10 +8,10 @@ import MoreContext from "./MoreContext.tsx";
 import MoreButton from "./MoreButton.tsx";
 import FollowButton from "./FollowButton.tsx";
 import {useFollowSystem} from "../contexts/FollowerContext.tsx";
-import {isInvalid} from "../utils/isInvalid.ts";
 import {useNavigate} from "react-router-dom";
 import {formatDate} from "../utils/formatDate.ts";
 import EditPostModal from "./EditPostModal.tsx";
+import {useToken} from "../hooks/useToken.ts";
 
 type PostModalProps = {
     post: PostDTO
@@ -26,8 +25,8 @@ const PostModal=({post, onClose}:PostModalProps)=>{
         content: post.content
     }
     const { checkIfFollowed, toggleFollow } = useFollowSystem();
-    const decodedToken = jwtDecode(localStorage.getItem('token') as string) as JWTPayload
-    const isTheOwnerOfPost = decodedToken.userId === post.authorId
+    const {decoded, isInvalid} = useToken();
+    const isTheOwnerOfPost = decoded?.userId === post.authorId
     const [comment, setComment] = useState("");
     const contentRef = useRef<HTMLParagraphElement>(null);
     const [isExpanded, setIsExpanded] = useState(false);
@@ -48,59 +47,19 @@ const PostModal=({post, onClose}:PostModalProps)=>{
     const usersWhoLikePostHasMorePagesRef = useRef(true);
     const navigate = useNavigate();
 
-    const checkIfTokenInvalid=()=>{
-        if(isInvalid()){
-            navigate("/login");
-            return true
-        }
-        return false
-    }
-
-    const fetchWhoLikePost = async () => {
-        if(checkIfTokenInvalid()){return;}
-        try{
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}/likes?page=${usersWhoLikePostPageRef.current}`,{
-                headers: {
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                }
-            })
-            if(response.ok){
-                const data = await response.json() as PostLikeResponse
-                if(usersWhoLikePost.length===0){usersWhoLikePostListInit.current=data.content}
-                setUsersWhoLikePost(prev => [...prev, ...data.content])
-                usersWhoLikePostPageRef.current += 1
-                usersWhoLikePostHasMorePagesRef.current = data.totalPages > usersWhoLikePostPageRef.current
-            } else {
-                usersWhoLikePostHasMorePagesRef.current = false
+    const closePost = useCallback(() => {
+        if(closeStatusRef.current){
+            const postResultObj: PostResultObj = {
+                status: closeStatusRef.current as "UPDATED" | "DELETED" | "FOLLOWED",
+                post: currentPost
             }
-        } catch (e) {
-            console.log("Error: " + e)
+            onClose(postResultObj)
+        } else {
+            onClose(null)
         }
-    }
+    }, [currentPost, onClose])
 
-    useEffect(() => {
-        if(checkIfTokenInvalid()){return;}
-        fetchWhoLikePost()
-        fetchComments()
-        if(contentRef.current){
-            const hasOverflow = contentRef.current.scrollHeight > contentRef.current.clientHeight
-            setIsOverflowing(hasOverflow)
-        }
-    }, [])
-
-    useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if(event.key === "Escape"){
-                closePost()
-            }
-        };
-        window.addEventListener("keydown", handleKeyDown);
-        return () => window.removeEventListener("keydown",handleKeyDown)
-    }, [currentPost]);
-
-
-    const fetchComments = async () => {
-        if(checkIfTokenInvalid()){return;}
+    const fetchComments = useCallback(async () => {
         if(loading || !hasMorePagesRef.current){return;}
         setLoading(true)
         try {
@@ -122,10 +81,61 @@ const PostModal=({post, onClose}:PostModalProps)=>{
         } finally {
             setLoading(false)
         }
+    },[currentPost.postId, loading])
+
+    const fetchWhoLikePost = useCallback(async () => {
+        try{
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}/likes?page=${usersWhoLikePostPageRef.current}`,{
+                headers: {
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                }
+            })
+            if(response.ok){
+                const data = await response.json() as PostLikeResponse
+                if(usersWhoLikePost.length===0){usersWhoLikePostListInit.current=data.content}
+                setUsersWhoLikePost(prev => [...prev, ...data.content])
+                usersWhoLikePostPageRef.current += 1
+                usersWhoLikePostHasMorePagesRef.current = data.totalPages > usersWhoLikePostPageRef.current
+            } else {
+                usersWhoLikePostHasMorePagesRef.current = false
+            }
+        } catch (e) {
+            console.log("Error: " + e)
+        }
+    }, [currentPost.postId, usersWhoLikePost.length])
+
+
+    useEffect(() => {
+        if(isInvalid){
+            navigate('/login')
+        }
+    }, [isInvalid,navigate]);
+
+
+    useEffect(() => {
+        fetchWhoLikePost()
+        fetchComments()
+        if(contentRef.current){
+            const hasOverflow = contentRef.current.scrollHeight > contentRef.current.clientHeight
+            setIsOverflowing(hasOverflow)
+        }
+    }, [fetchComments, fetchWhoLikePost])
+
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if(event.key === "Escape"){
+                closePost()
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown",handleKeyDown)
+    }, [closePost, currentPost]);
+
+    if(!decoded || isInvalid){
+        return null;
     }
 
     const addComment = async ()=>{
-        if(checkIfTokenInvalid()){return;}
         const commentRequest = {
             content: comment
         }
@@ -154,7 +164,6 @@ const PostModal=({post, onClose}:PostModalProps)=>{
         }
     }
     const handleDeletePost = async (state: boolean) => {
-        if(checkIfTokenInvalid()){return;}
         if(state) {
             try {
                 const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}`, {
@@ -175,12 +184,10 @@ const PostModal=({post, onClose}:PostModalProps)=>{
     }
 
     const showEditPostModal = () => {
-        if(checkIfTokenInvalid()){return;}
         setShowEditModal(true)
     }
 
     const editPost= async (data: EditPostData)=>{
-        if(checkIfTokenInvalid()){return;}
         try{
             const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}`, {
                 headers:{
@@ -206,21 +213,7 @@ const PostModal=({post, onClose}:PostModalProps)=>{
         }
     }
 
-    const closePost = () => {
-        if(checkIfTokenInvalid()){return;}
-        if(closeStatusRef.current){
-            const postResultObj: PostResultObj = {
-                status: closeStatusRef.current as "UPDATED" | "DELETED" | "FOLLOWED",
-                post: currentPost
-            }
-            onClose(postResultObj)
-        } else {
-            onClose(null)
-        }
-    }
-
     const handleLike = async () => {
-        if(checkIfTokenInvalid()){return;}
         closeStatusRef.current = "UPDATED";
         const previousLiked = liked;
         const previousCount = currentPost.likesNum;
@@ -232,8 +225,8 @@ const PostModal=({post, onClose}:PostModalProps)=>{
         }));
         setUsersWhoLikePost(prev =>
             !previousLiked
-                ? [...prev, { username: decodedToken.username } as PostLikeDTO]
-                : prev.filter(u => u.username !== decodedToken.username)
+                ? [...prev, { username: decoded.username } as PostLikeDTO]
+                : prev.filter(u => u.username !== decoded.username)
         );
         try {
             const method = !previousLiked ? "POST" : "DELETE";
@@ -258,7 +251,6 @@ const PostModal=({post, onClose}:PostModalProps)=>{
     };
 
     const handleCloseLikeList = () => {
-        if(checkIfTokenInvalid()){return;}
         setShowUsersWhoLikePost(false);
         setUsersWhoLikePost(usersWhoLikePostListInit.current);
         usersWhoLikePostPageRef.current = 1;
@@ -266,7 +258,6 @@ const PostModal=({post, onClose}:PostModalProps)=>{
     }
 
     const deleteComment = async (commentId: number) => {
-        if(checkIfTokenInvalid()){return;}
         try{
             const response = await fetch (`${import.meta.env.VITE_API_URL}/social/comments/${commentId}`,{
                 headers: {
@@ -287,7 +278,6 @@ const PostModal=({post, onClose}:PostModalProps)=>{
     }
 
     const handleCommentUpdate = (commentId: number, newContent: string) => {
-        if(checkIfTokenInvalid()){return;}
         setComments(prev => prev.map(c =>
             c.commentId === commentId
                 ? { ...c, content: newContent }

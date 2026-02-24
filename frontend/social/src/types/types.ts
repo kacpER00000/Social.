@@ -82,7 +82,9 @@ export interface FollowContextType {
     toggleFollow: (userId: number) => void;
     checkIfFollowed: (userId: number) => boolean;
     addFollowedUsers: (userIds: number[]) => void;
+    clearContext: () => void
 }
+
 
 export interface FollowDTO{
     userId: number,
