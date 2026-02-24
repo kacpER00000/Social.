@@ -53,8 +53,6 @@ public class FollowerService {
         Follower f = followerRepository.findByFollower_UserIdAndFollowed_UserId(followerId,followedId).orElseThrow(() -> new IllegalStateException("Relation not found"));
         follower.unfollow(f);
         followed.removeFollower(f);
-        userRepository.decrementFollowingCount(followerId);
-        userRepository.decrementFollowersCount(followedId);
         followerRepository.delete(f);
     }
 
