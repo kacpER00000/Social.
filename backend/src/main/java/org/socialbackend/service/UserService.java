@@ -37,37 +37,37 @@ public class UserService {
         u.setUserLoginData(newUserLoginData);
         userRepository.save(u);
     }
-    public UserDTO findUserById(Long userId){
-        return userRepository.findById(userId).map(this::mapToDTO).orElseThrow(() -> new NoSuchElementException("User with this id don't exist"));
+    public UserDTO findUserById(Long userId, Long loggedUserId){
+        return userRepository.findById(userId).map(u -> mapToDTO(u,loggedUserId)).orElseThrow(() -> new NoSuchElementException("User with this id don't exist"));
     }
     public UserDTO findUserByEmail(String email){
         UserLoginData userLoginData = userLoginDataRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("User with this email don't exist."));
-        return mapToDTO(userLoginData.getUser());
+        return mapToDTO(userLoginData.getUser(), userLoginData.getUserId());
     }
-    public List<UserDTO> findUsersByFirstNameOrLastName(String query) {
+    public List<UserDTO> findUsersByFirstNameOrLastName(String query, Long loggedUserId) {
         if (query == null || query.isBlank()) {
             throw new InvalidParameterException("Search query cannot be empty");
         }
-        return userRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(query, query).stream().map(this::mapToDTO).toList();
+        return userRepository.findByFirstNameStartingWithIgnoreCaseOrLastNameStartingWithIgnoreCase(query, query).stream().map(u -> mapToDTO(u, loggedUserId)).toList();
     }
     @Transactional
-    public void updateUser(String email, UpdateUserRequest updateUserRequest){
-        User foundUser = getUserEntityByEmail(email);
+    public void updateUser(Long userId, UpdateUserRequest updateUserRequest){
+        User foundUser = getUserEntity(userId);
         foundUser.setFirstName(updateUserRequest.getFirstName());
         foundUser.setLastName(updateUserRequest.getLastName());
         foundUser.setSex(updateUserRequest.getSex());
         foundUser.setBirthDate(updateUserRequest.getBirthDate());
     }
     @Transactional
-    public void deleteUser(String email){
-        User userToDelete = getUserEntityByEmail(email);
+    public void deleteUser(Long userId){
+        User userToDelete = getUserEntity(userId);
         userRepository.delete(userToDelete);
     }
-    private UserDTO mapToDTO(User u){
-        return new UserDTO(u.getUserId(),u.getFirstName(),u.getLastName(),u.getBirthDate(),u.getSex(),u.getFollowersCount(),u.getFollowingCount());
+    private UserDTO mapToDTO(User u, Long loggedUserId){
+        boolean canEdit = u.getUserId().equals(loggedUserId);
+        return new UserDTO(u.getUserId(),u.getFirstName(),u.getLastName(),u.getBirthDate(),u.getSex(),u.getFollowersCount(),u.getFollowingCount(), canEdit);
     }
-    private User getUserEntityByEmail(String email){
-        UserLoginData userLoginData = userLoginDataRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("User with this email don't exist"));
-        return userLoginData.getUser();
+    private User getUserEntity(Long userId){
+        return userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User with this id don't exist"));
     }
 }

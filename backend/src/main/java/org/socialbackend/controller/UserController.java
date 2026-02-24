@@ -3,6 +3,8 @@ package org.socialbackend.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
+import org.socialbackend.details.AppUserDetails;
+import org.socialbackend.dto.FollowStatus;
 import org.socialbackend.dto.FollowerDTO;
 import org.socialbackend.dto.UserDTO;
 import org.socialbackend.model.User;
@@ -30,32 +32,38 @@ public class UserController {
     private final FollowerService followerService;
 
     @GetMapping("/{userId}")
-    public ResponseEntity<UserDTO> getUser(@PathVariable Long userId){
-        return ResponseEntity.ok(userService.findUserById(userId));
+    public ResponseEntity<UserDTO> getUser(@PathVariable Long userId, Authentication authentication){
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        return ResponseEntity.ok(userService.findUserById(userId, userDetails.getUserId()));
     }
 
     @PutMapping()
     public ResponseEntity<Void> updateUser(@Valid @RequestBody UpdateUserRequest updateUserRequest, Authentication authentication){
-        userService.updateUser(authentication.getName(), updateUserRequest);
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        userService.updateUser(userDetails.getUserId(), updateUserRequest);
         return ResponseEntity.ok().build();
     }
     @DeleteMapping()
     public ResponseEntity<Void> deleteUser(Authentication authentication){
-        userService.deleteUser(authentication.getName());
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        userService.deleteUser(userDetails.getUserId());
         return ResponseEntity.noContent().build();
     }
     @GetMapping("/search")
-    public ResponseEntity<List<UserDTO>> findUsersByFirstNameOrLastName(@RequestParam String query){
-        return ResponseEntity.ok(userService.findUsersByFirstNameOrLastName(query));
+    public ResponseEntity<List<UserDTO>> findUsersByFirstNameOrLastName(@RequestParam String query, Authentication authentication){
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        return ResponseEntity.ok(userService.findUsersByFirstNameOrLastName(query, userDetails.getUserId()));
     }
     @PostMapping("/{targetUserId}/follow")
     public ResponseEntity<Void> follow(@PathVariable Long targetUserId, Authentication authentication){
-        followerService.follow(authentication.getName(), targetUserId);
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        followerService.follow(userDetails.getUserId(), targetUserId);
         return ResponseEntity.ok().build();
     }
     @DeleteMapping("/{targetUserId}/follow")
     public ResponseEntity<Void> unfollow(@PathVariable Long targetUserId, Authentication authentication){
-        followerService.unfollow(authentication.getName(), targetUserId);
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        followerService.unfollow(userDetails.getUserId(), targetUserId);
         return ResponseEntity.noContent().build();
     }
     @GetMapping("/{userId}/followers")
@@ -65,5 +73,10 @@ public class UserController {
     @GetMapping("/{userId}/following")
     public ResponseEntity<Page<FollowerDTO>> getUserFollowing(@PathVariable Long userId,@PageableDefault Pageable pageable){
         return ResponseEntity.ok(followerService.findUserFollowing(userId, pageable));
+    }
+    @GetMapping("/{userId}/follow-status")
+    public ResponseEntity<FollowStatus> getFollowStatus(@PathVariable Long userId, Authentication authentication){
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        return ResponseEntity.ok(followerService.getFollowInfo(userId, userDetails.getUserId()));
     }
 }

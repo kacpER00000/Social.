@@ -2,28 +2,29 @@ package org.socialbackend.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.socialbackend.dto.FollowStatus;
 import org.socialbackend.dto.FollowerDTO;
 import org.socialbackend.model.Follower;
 import org.socialbackend.model.User;
 import org.socialbackend.repository.FollowerRepository;
-import org.socialbackend.repository.UserLoginDataRepository;
 import org.socialbackend.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class FollowerService {
     private final FollowerRepository followerRepository;
     private final UserRepository userRepository;
-    private final UserLoginDataRepository userLoginDataRepository;
+
     @Transactional
-    public void follow(String email, Long followedId){
-        User follower = getUserByEmail(email);
-        Long followerId = follower.getUserId();
+    public void follow(Long followerId, Long followedId){
+        User follower = getUserById(followerId);
         if(followerId.equals(followedId)){
             throw new IllegalStateException("You cannot follow yourself.");
         }
@@ -40,9 +41,8 @@ public class FollowerService {
     }
 
     @Transactional
-    public void unfollow(String email, Long followedId){
-        User follower = getUserByEmail(email);
-        Long followerId = follower.getUserId();
+    public void unfollow(Long followerId, Long followedId){
+        User follower = getUserById(followerId);
         if(followerId.equals(followedId)){
             throw new IllegalStateException("You cannot unfollow yourself.");
         }
@@ -70,8 +70,21 @@ public class FollowerService {
         return followerRepository.findAllByFollowed_UserId(userId,pageable).map(f -> mapToDTO(f,false));
     }
 
-    private User getUserByEmail(String email){
-        return userLoginDataRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("Current user not found")).getUser();
+    public FollowStatus getFollowInfo(Long userId, Long loggedUserId){
+        boolean isFollowing = followerRepository.existsByFollower_UserIdAndFollowed_UserId(loggedUserId, userId);
+        boolean isFollowingBy = followerRepository.existsByFollower_UserIdAndFollowed_UserId(userId, loggedUserId);
+        LocalDateTime followedSince=null;
+        Optional<Follower> followInfo = followerRepository.findByFollower_UserIdAndFollowed_UserId(loggedUserId, userId);
+        if(isFollowing && followInfo.isPresent()) {
+            followedSince=followInfo.get().getStartFollowDate();
+        }
+        User u = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User with this id don't exist."));
+        Long followersCount = u.getFollowersCount();
+        return new FollowStatus(isFollowing,isFollowingBy,followedSince,followersCount);
+    }
+
+    private User getUserById(Long userId){
+        return userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("Current user not found"));
     }
 
     private FollowerDTO mapToDTO(Follower follower, boolean isFollower){

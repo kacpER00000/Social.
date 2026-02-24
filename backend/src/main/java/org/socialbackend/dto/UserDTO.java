@@ -17,4 +17,6 @@ public class UserDTO {
     private Character sex;
     private Long followersCount;
     private Long followingCount;
+    private boolean canEdit;
+
 }
