@@ -85,6 +85,12 @@ export interface FollowContextType {
     clearContext: () => void
 }
 
+export interface FollowStatus{
+    following: boolean,
+    followingBy: boolean,
+    followedSince: string | null,
+    followersCount: number
+}
 
 export interface FollowDTO{
     userId: number,
