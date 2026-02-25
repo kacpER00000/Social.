@@ -19,6 +19,7 @@ const Profile = () => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
     const [userPostResponse, setUserPostResponse] = useState<PostResponse | undefined>(undefined);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const userData: EditProfileData={
         firstName: user.firstName,
@@ -34,6 +35,7 @@ const Profile = () => {
     }, [isInvalid, navigate]);
 
     useEffect(() => {
+        setLoading(true);
         const fetchUserPostsInit = async () => {
             try{
                 const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${userId}/latest`,{
@@ -82,11 +84,17 @@ const Profile = () => {
                 console.log("Error: " + e)
             }
         }
+        const loadAllProfileData = async () => {
+            await Promise.all([
+                fetchUserPostsInit(),
+                fetchFollowing(),
+                fetchFollowers()
+            ]);
+            setLoading(false);
+        };
+        loadAllProfileData()
+    }, [addFollowedUsers, userId]);
 
-        fetchUserPostsInit()
-        fetchFollowing()
-        fetchFollowers()
-    }, [userId]);
     const editProfile = async (data: EditProfileData) => {
         setShowEditModal(false);
         try{
@@ -160,17 +168,36 @@ const Profile = () => {
                         <FollowCard
                             users={following}
                             type={"Following"}
+                            loading={loading}
                         />
                         <FollowCard
                             users={followers}
                             type={"Followers"}
+                            loading={loading}
                         />
                     </div>
                     <div>
                         <div className="p-5 m-3 shadow-xl rounded-3xl">
                             <h2 className="text-3xl text-center font-bold">Posts</h2>
                         </div>
-                        {userPostResponse &&
+                        {loading &&
+                            <div className="shadow-2xl rounded-3xl p-5 m-5">
+                                <div className="flex animate-pulse space-x-4">
+                                    <div className="flex-1 space-y-6 py-1">
+                                        <div className="h-2 rounded bg-gray-200"></div>
+                                        <div className="h-2 rounded bg-gray-200"></div>
+                                        <div className="h-2 rounded bg-gray-200"></div>
+                                        <div className="space-y-3">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="col-span-1 h-2 rounded bg-gray-200"></div>
+                                                <div className="col-span-1 h-2 rounded bg-gray-200"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        {userPostResponse && !loading &&
                             <Post
                                 postResponse={userPostResponse}
                                 path={`${userId}/latest`}
