@@ -1,6 +1,7 @@
 import {PostDTO} from "../types/types.ts";
 import InspectCard from "./InspectCard.tsx";
 import {useInspect} from "../hooks/useInspect.ts";
+import {useNavigate} from "react-router-dom";
 
 type PostProps = {
     post: PostDTO,
@@ -9,12 +10,12 @@ type PostProps = {
 
 const PostItem=({post, onSelect}: PostProps)=>{
     const {show, cords, handlers} = useInspect();
-
+    const navigate = useNavigate();
     return(
         <>
             <div className="shadow-xl rounded-3xl p-5 m-3 cursor-pointer">
                 <p className="w-fit font-bold hover:underline cursor-pointer"
-                   onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave}>{post.author}</p>
+                   onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave} onClick={() => {navigate(`/profile/${post.authorId}`)}}>{post.author}</p>
                 <div onClick={() => {onSelect(post)}}>
                     <p className="text-xs">{post.createdAt}</p>
                     <hr/>

@@ -1,4 +1,5 @@
 import {MouseEvent, useCallback, useEffect, useRef, useState} from 'react';
+import {useLocation} from "react-router-dom";
 type UseInspectReturn = {
     show: boolean,
     cords: {top: number, left: number},
@@ -14,6 +15,17 @@ export const useInspect = (): UseInspectReturn => {
     const [cords, setCords] = useState({ top: 0, left: 0 });
     const timeoutRef = useRef<number | null>(null);
     const showTimeoutRef = useRef<number | null>(null);
+    const location = useLocation();
+
+    useEffect(() => {
+        setShowInspect(false);
+        if(timeoutRef.current){
+            clearTimeout(timeoutRef.current);
+        }
+        if(showTimeoutRef.current){
+            clearTimeout(showTimeoutRef.current);
+        }
+    }, [location.pathname]);
 
     useEffect(() => {
         if (!show) {

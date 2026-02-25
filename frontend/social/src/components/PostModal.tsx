@@ -316,7 +316,7 @@ const PostModal=({post, onClose}:PostModalProps)=>{
                     }
                     <div>
                         <div className="flex gap-3">
-                            <h2 className="font-bold text-xl text-gray-900 hover:underline" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave}>{currentPost.author}</h2>
+                            <h2 className="w-fit font-bold text-xl text-gray-900 hover:underline cursor-pointer" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave} onClick={() => {navigate(`/profile/${currentPost.authorId}`)}}>{currentPost.author}</h2>
                             {!isTheOwnerOfPost &&
                                 <FollowButton
                                     isFollowing={checkIfFollowed(currentPost.authorId)}

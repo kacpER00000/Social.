@@ -90,7 +90,7 @@ const CommentItem = ({comment,onDelete,onUpdate}: CommentProps) =>{
             <div className="relative shadow rounded-xl m-5 p-5">
                 <div className="flex justify-between">
                     <div className="flex gap-3 items-center">
-                        <p className="font-bold hover:underline" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave}>
+                        <p className="w-fit font-bold cursor-pointer hover:underline" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave} onClick={() => {navigate(`/profile/${comment.authorId}`)}}>
                             {comment.author}
                         </p>
                         {!isTheOwnerOfComment &&

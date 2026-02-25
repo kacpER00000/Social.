@@ -115,6 +115,7 @@ const Profile = () => {
     }
 
     const deleteProfile = async (state: boolean) => {
+        setShowDeleteConfirmation(false);
         if(state){
             try{
                 const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users`, {
