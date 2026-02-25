@@ -1,4 +1,4 @@
-import {MouseEvent, useEffect, useRef, useState} from 'react';
+import {MouseEvent, useCallback, useEffect, useRef, useState} from 'react';
 type UseInspectReturn = {
     show: boolean,
     cords: {top: number, left: number},
@@ -26,7 +26,7 @@ export const useInspect = (): UseInspectReturn => {
         return () => window.removeEventListener("scroll", hideOnScroll);
     }, [show]);
 
-    const onMouseEnter = (e: MouseEvent<HTMLDivElement>) => {
+    const onMouseEnter = useCallback((e: MouseEvent<HTMLDivElement>) => {
         if(timeoutRef.current){
             clearTimeout(timeoutRef.current)
         }
@@ -43,9 +43,9 @@ export const useInspect = (): UseInspectReturn => {
         showTimeoutRef.current = window.setTimeout(() => {
             setShowInspect(true)
         },1000);
-    }
+    },[])
 
-    const onMouseLeave = () => {
+    const onMouseLeave = useCallback(() => {
         timeoutRef.current = window.setTimeout(() => {
             setShowInspect(false);
             setCords({top: 0, left: 0})
@@ -53,13 +53,14 @@ export const useInspect = (): UseInspectReturn => {
         if(showTimeoutRef.current){
             clearTimeout(showTimeoutRef.current)
         }
-    }
+    },[])
 
-    const onMouseCardEnter = () => {
+    const onMouseCardEnter = useCallback(() => {
         if(timeoutRef.current){
             clearTimeout(timeoutRef.current)
         }
-    }
+    },[])
+
     return {
         show,
         cords,

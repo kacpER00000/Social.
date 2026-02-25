@@ -1,11 +1,17 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import {createContext, useContext, useState, ReactNode, useCallback} from "react";
 import {FollowContextType} from "../types/types.ts";
 
 const FollowContext = createContext<FollowContextType | undefined>(undefined);
 export const FollowProvider = ({ children }: { children: ReactNode }) => {
     const [followedIds, setFollowedIds] = useState<Set<number>>(new Set());
 
-    const toggleFollow = async (userId: number) => {
+    const checkIfFollowed = useCallback((userId: number | undefined) => {
+        if(!userId){return false;}
+        return followedIds.has(userId);
+    },[followedIds]);
+
+    const toggleFollow = useCallback(async (userId: number | undefined) => {
+        if(!userId){return;}
         const method = checkIfFollowed(userId) ? "DELETE" : "POST";
         try{
             const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users/${userId}/follow`,{
@@ -27,24 +33,19 @@ export const FollowProvider = ({ children }: { children: ReactNode }) => {
             }
         } catch (e) {
             console.log("Error: " + e)
-        }
-    };
+        }}, [checkIfFollowed])
 
-    const addFollowedUsers = (userIds: number[]) => {
+    const addFollowedUsers = useCallback((userIds: number[]) => {
         setFollowedIds(prev => {
             const newSet = new Set(prev);
             userIds.forEach(id => newSet.add(id));
             return newSet;
         })
-    };
+    },[])
 
-    const checkIfFollowed = (userId: number) => {
-        return followedIds.has(userId);
-    };
-
-    const clearContext = () => {
+    const clearContext = useCallback(() => {
         setFollowedIds(new Set());
-    }
+    },[])
 
     return (
         <FollowContext.Provider value={{ followedIds, toggleFollow, checkIfFollowed, addFollowedUsers, clearContext }}>
