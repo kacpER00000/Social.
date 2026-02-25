@@ -11,7 +11,7 @@ import java.util.List;
 
 @Repository
 public interface UserRepository extends JpaRepository<User,Long> {
-    List<User> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(String firstName, String lastName);
+    List<User> findByFirstNameStartingWithIgnoreCaseOrLastNameStartingWithIgnoreCase(String firstName, String lastName);
     @Modifying
     @Query("UPDATE User u SET u.followersCount = u.followersCount + 1 WHERE u.userId = :userId")
     void incrementFollowersCount(@Param("userId") Long userId);

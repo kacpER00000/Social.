@@ -42,8 +42,12 @@ export const FollowProvider = ({ children }: { children: ReactNode }) => {
         return followedIds.has(userId);
     };
 
+    const clearContext = () => {
+        setFollowedIds(new Set());
+    }
+
     return (
-        <FollowContext.Provider value={{ followedIds, toggleFollow, checkIfFollowed, addFollowedUsers }}>
+        <FollowContext.Provider value={{ followedIds, toggleFollow, checkIfFollowed, addFollowedUsers, clearContext }}>
             {children}
         </FollowContext.Provider>
     );

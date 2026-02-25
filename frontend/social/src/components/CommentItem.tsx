@@ -1,11 +1,14 @@
-import {CommentDTO, JWTPayload} from "../types/types.ts";
-import {useState} from "react";
+import {CommentDTO} from "../types/types.ts";
+import {useEffect, useState} from "react";
 import MoreContext from "./MoreContext.tsx";
 import MoreButton from "./MoreButton.tsx";
 import Confirmation from "./Confirmation.tsx";
-import {jwtDecode} from "jwt-decode";
 import FollowButton from "./FollowButton.tsx";
 import {useFollowSystem} from "../contexts/FollowerContext.tsx";
+import InspectCard from "./InspectCard.tsx";
+import {useInspect} from "../hooks/useInspect.ts";
+import {useToken} from "../hooks/useToken.ts";
+import {useNavigate} from "react-router-dom";
 
 type CommentProps = {
     comment: CommentDTO,
@@ -14,14 +17,26 @@ type CommentProps = {
 }
 
 const CommentItem = ({comment,onDelete,onUpdate}: CommentProps) =>{
-    const decodedToken = jwtDecode(localStorage.getItem("token") as string) as JWTPayload;
+    const {decoded, isInvalid} = useToken();
     const { checkIfFollowed, toggleFollow } = useFollowSystem();
-    const isTheOwnerOfComment = decodedToken.userId === comment.authorId;
+    const isTheOwnerOfComment = decoded?.userId === comment.authorId;
     const [showMore, setShowMore] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [contentError, setContentError] = useState(false);
     const [showConfirmation, setConfirmation] = useState(false);
     const [newContent, setNewContent] = useState(comment.content);
+    const {show, cords, handlers} = useInspect();
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        if(isInvalid){
+            navigate('/login')
+        }
+    }, [isInvalid,navigate]);
+
+    if(!decoded || isInvalid){
+        return null;
+    }
 
     const showMoreClicked = () => {
         setShowMore(prev => !prev)
@@ -70,12 +85,12 @@ const CommentItem = ({comment,onDelete,onUpdate}: CommentProps) =>{
         <>
             {
                 showConfirmation &&
-                <Confirmation onChoose={handleDelete}/>
+                <Confirmation onChoose={handleDelete} show={showConfirmation}/>
             }
             <div className="relative shadow rounded-xl m-5 p-5">
                 <div className="flex justify-between">
                     <div className="flex gap-3 items-center">
-                        <p className="font-bold">
+                        <p className="font-bold hover:underline" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave}>
                             {comment.author}
                         </p>
                         {!isTheOwnerOfComment &&
@@ -118,6 +133,17 @@ const CommentItem = ({comment,onDelete,onUpdate}: CommentProps) =>{
                     </p>
                 }
             </div>
+            {show &&
+                <InspectCard
+                    top={cords.top}
+                    left={cords.left}
+                    username={comment.author}
+                    userId={comment.authorId}
+                    onMouseEnter={handlers.onMouseCardEnter}
+                    onMouseLeave={handlers.onMouseLeave}
+                    show={show}
+                />
+            }
         </>
     )
 }

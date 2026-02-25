@@ -12,13 +12,11 @@ type PostProps = {
 
 const Post = ({postResponse, path}: PostProps) => {
     const { addFollowedUsers } = useFollowSystem();
-    const [posts, setPosts] = useState<PostDTO[]>(() =>
-        postResponse.content.map(post => ({
-            ...post,
-            createdAt: formatDate(post.createdAt)
-        }))
-    );
-
+    const [posts, setPosts] = useState(() =>
+        postResponse?.content?.map(post => ({
+            ...post, createdAt: formatDate(post.createdAt)
+        })) || []
+    )
     const [selectedPost, setSelectedPost] = useState<PostDTO | null>(null)
     const sentinelRef = useRef(null)
     const loading = useRef(false)
@@ -43,7 +41,7 @@ const Post = ({postResponse, path}: PostProps) => {
                     addFollowedUsers(uniqueFollowedIds)
                 }
                 page.current += 1
-                hasMorePages.current = data.totalPages > page.current
+                hasMorePages.current = postResponse.totalPages > page.current
             }
         } catch (e){
             console.log("Error: " + e)
@@ -51,6 +49,20 @@ const Post = ({postResponse, path}: PostProps) => {
             loading.current = false
         }
     }
+
+    useEffect(() => {
+        loading.current=true;
+        if(postResponse?.content){
+            setPosts(postResponse.content.map(post => ({
+                ...post,
+                createdAt: formatDate(post.createdAt)
+            })));
+            page.current = 1;
+            hasMorePages.current = postResponse.totalPages > 1;
+
+        }
+        loading.current=false
+    }, [postResponse]);
 
     useEffect(() => {
         const observer = new IntersectionObserver((entries) => {
@@ -63,12 +75,10 @@ const Post = ({postResponse, path}: PostProps) => {
             rootMargin: "0px",
             threshold: 1.0,
         });
-
         if (sentinelRef.current) {
             observer.observe(sentinelRef.current);
         }
         addFollowedUsers(getFollowedIds(posts))
-
         return () => {
             if (sentinelRef.current) {
                 observer.unobserve(sentinelRef.current);
@@ -122,12 +132,12 @@ const Post = ({postResponse, path}: PostProps) => {
                 />
             }
             <div className="flex flex-col w-full">
-                {posts.map((item) =>
+                {posts?.map((item) =>
                     <PostItem post={item} key={item.postId} onSelect={showPostComponent}/>
                 )}
             </div>
             {loading.current &&
-                <div className="border rounded-3xl p-5 m-5">
+                <div className="shadow-2xl rounded-3xl p-5 m-5">
                     <div className="flex animate-pulse space-x-4">
                         <div className="flex-1 space-y-6 py-1">
                             <div className="h-2 rounded bg-gray-200"></div>
@@ -147,4 +157,5 @@ const Post = ({postResponse, path}: PostProps) => {
         </>
     )
 }
+
 export default Post;
