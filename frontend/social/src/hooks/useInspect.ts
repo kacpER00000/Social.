@@ -13,6 +13,7 @@ export const useInspect = (): UseInspectReturn => {
     const [show, setShowInspect] = useState(false);
     const [cords, setCords] = useState({ top: 0, left: 0 });
     const timeoutRef = useRef<number | null>(null);
+    const showTimeoutRef = useRef<number | null>(null);
 
     useEffect(() => {
         if (!show) {
@@ -39,7 +40,9 @@ export const useInspect = (): UseInspectReturn => {
             tempLeft = rect.left - 10
         }
         setCords({top: tempTop, left: tempLeft})
-        setShowInspect(true);
+        showTimeoutRef.current = window.setTimeout(() => {
+            setShowInspect(true)
+        },1000);
     }
 
     const onMouseLeave = () => {
@@ -47,6 +50,9 @@ export const useInspect = (): UseInspectReturn => {
             setShowInspect(false);
             setCords({top: 0, left: 0})
         },200)
+        if(showTimeoutRef.current){
+            clearTimeout(showTimeoutRef.current)
+        }
     }
 
     const onMouseCardEnter = () => {

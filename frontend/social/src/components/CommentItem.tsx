@@ -5,6 +5,8 @@ import MoreButton from "./MoreButton.tsx";
 import Confirmation from "./Confirmation.tsx";
 import FollowButton from "./FollowButton.tsx";
 import {useFollowSystem} from "../contexts/FollowerContext.tsx";
+import InspectCard from "./InspectCard.tsx";
+import {useInspect} from "../hooks/useInspect.ts";
 import {useToken} from "../hooks/useToken.ts";
 import {useNavigate} from "react-router-dom";
 
@@ -23,6 +25,7 @@ const CommentItem = ({comment,onDelete,onUpdate}: CommentProps) =>{
     const [contentError, setContentError] = useState(false);
     const [showConfirmation, setConfirmation] = useState(false);
     const [newContent, setNewContent] = useState(comment.content);
+    const {show, cords, handlers} = useInspect();
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -87,7 +90,7 @@ const CommentItem = ({comment,onDelete,onUpdate}: CommentProps) =>{
             <div className="relative shadow rounded-xl m-5 p-5">
                 <div className="flex justify-between">
                     <div className="flex gap-3 items-center">
-                        <p className="font-bold hover:underline">
+                        <p className="font-bold hover:underline" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave}>
                             {comment.author}
                         </p>
                         {!isTheOwnerOfComment &&
@@ -130,6 +133,17 @@ const CommentItem = ({comment,onDelete,onUpdate}: CommentProps) =>{
                     </p>
                 }
             </div>
+            {show &&
+                <InspectCard
+                    top={cords.top}
+                    left={cords.left}
+                    username={comment.author}
+                    userId={comment.authorId}
+                    onMouseEnter={handlers.onMouseCardEnter}
+                    onMouseLeave={handlers.onMouseLeave}
+                    show={show}
+                />
+            }
         </>
     )
 }

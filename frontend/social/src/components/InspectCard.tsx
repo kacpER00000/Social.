@@ -30,7 +30,8 @@ const InspectCard=({username, userId,top, left, show, onMouseEnter, onMouseLeave
             })
             if(response.ok){
                 const data = await response.json() as FollowStatus
-                setFollowInfo(data)
+                const formatedData = {...data, followedSince: data.followedSince === null ? null : formatDate(data.followedSince).split("T")[0]}
+                setFollowInfo(formatedData)
             }
         } catch (e) {
             console.log("Error: ", e)
@@ -43,6 +44,16 @@ const InspectCard=({username, userId,top, left, show, onMouseEnter, onMouseLeave
             setFetched(true);
         }
     }, [fetchFollowInfo, show, fetched, decoded?.userId, userId]);
+
+    const handleFollow = () => {
+        const followState = checkIfFollowed(userId);
+        toggleFollow(userId);
+        setFollowInfo(prev => prev === null ? prev : {...prev,
+            following: !followState,
+            followersCount: prev.followersCount + (followState ? -1 : 1),
+            followedSince: followState ? null : formatDate(new Date().toISOString())
+        })
+    }
 
     if(!decoded || !show || !top || !left){return null;}
     return createPortal(
@@ -65,14 +76,14 @@ const InspectCard=({username, userId,top, left, show, onMouseEnter, onMouseLeave
                         <div>
                             <p>{followInfo.followersCount} followers</p>
                             {followInfo.following &&
-                                <p>Following since: {formatDate(followInfo.followedSince as string).split("T")[0]}</p>
+                                <p>Following since: {followInfo.followedSince}</p>
                             }
                             {followInfo.following && followInfo.followingBy &&
                                 <p>You are following each other!</p>
                             }
                             <FollowButton
                                 isFollowing={checkIfFollowed(userId)}
-                                handleFollow={() => toggleFollow(userId)}
+                                handleFollow={handleFollow}
                             />
                         </div>
                     }

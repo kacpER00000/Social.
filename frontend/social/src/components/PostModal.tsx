@@ -10,6 +10,8 @@ import FollowButton from "./FollowButton.tsx";
 import {useFollowSystem} from "../contexts/FollowerContext.tsx";
 import {useNavigate} from "react-router-dom";
 import {formatDate} from "../utils/formatDate.ts";
+import {useInspect} from "../hooks/useInspect.ts";
+import InspectCard from "./InspectCard.tsx";
 import EditPostModal from "./EditPostModal.tsx";
 import {useToken} from "../hooks/useToken.ts";
 
@@ -46,6 +48,7 @@ const PostModal=({post, onClose}:PostModalProps)=>{
     const hasMorePagesRef = useRef(true);
     const usersWhoLikePostHasMorePagesRef = useRef(true);
     const navigate = useNavigate();
+    const {show, cords, handlers} = useInspect();
 
     const closePost = useCallback(() => {
         if(closeStatusRef.current){
@@ -313,7 +316,7 @@ const PostModal=({post, onClose}:PostModalProps)=>{
                     }
                     <div>
                         <div className="flex gap-3">
-                            <h2 className="font-bold text-xl text-gray-900">{currentPost.author}</h2>
+                            <h2 className="font-bold text-xl text-gray-900 hover:underline" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave}>{currentPost.author}</h2>
                             {!isTheOwnerOfPost &&
                                 <FollowButton
                                     isFollowing={checkIfFollowed(currentPost.authorId)}
@@ -423,6 +426,17 @@ const PostModal=({post, onClose}:PostModalProps)=>{
                     </div>
                 </div>
             </div>
+            {show &&
+                <InspectCard
+                    top={cords.top}
+                    left={cords.left}
+                    username={currentPost.author}
+                    userId={currentPost.authorId}
+                    onMouseEnter={handlers.onMouseCardEnter}
+                    onMouseLeave={handlers.onMouseLeave}
+                    show={show}
+                />
+            }
             {showEditModal && (
                 <EditPostModal
                     postData={postData}
