@@ -1,23 +1,23 @@
-import {useLoaderData} from "react-router-dom";
-import {EditProfileData, FollowDTO, FollowResponse, JWTPayload, PostResponse, UserDTO} from "../types/types.ts";
+import {useLoaderData, useParams} from "react-router-dom";
+import {EditProfileData, FollowDTO, FollowResponse, PostResponse, UserDTO} from "../types/types.ts";
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import Post from "./Post.tsx";
-import {jwtDecode} from "jwt-decode";
 import FollowCard from "./FollowCard.tsx";
 import EditProfileModal from "./EditProfileModal.tsx";
 import Confirmation from "./Confirmation.tsx";
 import {useFollowSystem} from "../contexts/FollowerContext.tsx";
+import {useToken} from "../hooks/useToken.ts";
 
 const Profile = () => {
-    const decoded = jwtDecode(localStorage.getItem("token") as string) as JWTPayload;
-    const { clearContext } = useFollowSystem();
+    const { userId } = useParams();
+    const {decoded, isInvalid} = useToken();
+    const { addFollowedUsers,clearContext } = useFollowSystem();
     const user = useLoaderData() as UserDTO;
     const [following, setFollowing] = useState<FollowDTO[]>([]);
     const [followers, setFollowers] = useState<FollowDTO[]>([]);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-    const isOwnerOfProfile = decoded.userId === user.userId;
     const [userPostResponse, setUserPostResponse] = useState<PostResponse | undefined>(undefined);
     const navigate = useNavigate();
     const userData: EditProfileData={
@@ -28,58 +28,65 @@ const Profile = () => {
     };
 
     useEffect(() => {
+        if(isInvalid){
+            navigate("/login")
+        }
+    }, [isInvalid, navigate]);
+
+    useEffect(() => {
+        const fetchUserPostsInit = async () => {
+            try{
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${userId}/latest`,{
+                    headers: {
+                        "Authorization": "Bearer " + localStorage.getItem("token")
+                    }
+                })
+                if(response.ok){
+                    setUserPostResponse(await response.json() as PostResponse);
+                }
+            } catch (e) {
+                console.log("Error: " + e)
+            }
+        }
+
+        const fetchFollowing = async () => {
+            try{
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users/${userId}/following`, {
+                    headers:{
+                        "Authorization": "Bearer " + localStorage.getItem("token")
+                    }
+                })
+                if(response.ok){
+                    const data = await response.json() as FollowResponse
+                    const followedUserIds = data.content.map(follow => follow.userId);
+                    addFollowedUsers(followedUserIds);
+                    setFollowing(data.content)
+                }
+            } catch (e) {
+                console.log("Error: " + e)
+            }
+        }
+
+        const fetchFollowers = async () => {
+            try{
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users/${userId}/followers`, {
+                    headers:{
+                        "Authorization": "Bearer " + localStorage.getItem("token")
+                    }
+                })
+                if(response.ok){
+                    const data = await response.json() as FollowResponse
+                    setFollowers(data.content)
+                }
+            } catch (e) {
+                console.log("Error: " + e)
+            }
+        }
+
         fetchUserPostsInit()
         fetchFollowing()
         fetchFollowers()
-    }, []);
-
-    const fetchUserPostsInit = async () => {
-        try{
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${user.userId}/latest`,{
-                headers: {
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                }
-            })
-            if(response.ok){
-                setUserPostResponse(await response.json() as PostResponse);
-            }
-        } catch (e) {
-            console.log("Error: " + e)
-        }
-    }
-
-    const fetchFollowing = async () => {
-        try{
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users/${user.userId}/following`, {
-                headers:{
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                }
-            })
-            if(response.ok){
-                const data = await response.json() as FollowResponse
-                setFollowing(data.content)
-            }
-        } catch (e) {
-            console.log("Error: " + e)
-        }
-    }
-
-    const fetchFollowers = async () => {
-        try{
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users/${user.userId}/followers`, {
-                headers:{
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                }
-            })
-            if(response.ok){
-                const data = await response.json() as FollowResponse
-                setFollowers(data.content)
-            }
-        } catch (e) {
-            console.log("Error: " + e)
-        }
-    }
-
+    }, [userId]);
     const editProfile = async (data: EditProfileData) => {
         setShowEditModal(false);
         try{
@@ -100,7 +107,6 @@ const Profile = () => {
     }
 
     const deleteProfile = async (state: boolean) => {
-        setShowDeleteConfirmation(false);
         if(state){
             try{
                 const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users`, {
@@ -111,13 +117,17 @@ const Profile = () => {
                 })
                 if(response.ok){
                     clearContext()
-                    navigate("/login")
                     localStorage.removeItem("token")
+                    navigate("/login")
                 }
             } catch (e) {
                 console.log("Error: " + e)
             }
         }
+    }
+
+    if(!decoded || isInvalid){
+        return null;
     }
 
     return(
@@ -133,7 +143,7 @@ const Profile = () => {
                             <h4>Following: {user.followingCount} &nbsp;Followers: {user.followersCount}</h4>
                         </div>
                     </div>
-                    {isOwnerOfProfile &&
+                    {user.canEdit &&
                         <div className="flex flex-col w-1/10">
                             <button className="bg-blue-500 font-bold p-1 m-1 rounded-3xl text-white transition-colors duration-500 hover:bg-blue-600" onClick={() => {setShowEditModal(true)}}>Edit profile</button>
                             <button className="bg-red-500 font-bold p-1 m-1 rounded-3xl text-white transition-colors duration-500 hover:bg-red-600" onClick={() => setShowDeleteConfirmation(true)}>Delete profile</button>
@@ -163,7 +173,7 @@ const Profile = () => {
                         {userPostResponse &&
                             <Post
                                 postResponse={userPostResponse}
-                                path={`${user.userId}/latest`}
+                                path={`${userId}/latest`}
                             />
                         }
                     </div>

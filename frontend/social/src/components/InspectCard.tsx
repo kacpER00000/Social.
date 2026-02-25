@@ -9,8 +9,8 @@ import {useToken} from "../hooks/useToken.ts";
 type InspectCardProps = {
     top: number | undefined,
     left:number | undefined,
-    username: string,
-    userId: number
+    username: string | undefined,
+    userId: number | undefined,
     show: boolean,
     onMouseEnter: () => void,
     onMouseLeave: () => void
@@ -39,7 +39,7 @@ const InspectCard=({username, userId,top, left, show, onMouseEnter, onMouseLeave
     },[userId])
 
     useEffect(() => {
-        if(show && !fetched && decoded?.userId !== userId){
+        if(show && !fetched && userId &&decoded?.userId !== userId){
             fetchFollowInfo()
             setFetched(true);
         }
@@ -55,7 +55,7 @@ const InspectCard=({username, userId,top, left, show, onMouseEnter, onMouseLeave
         })
     }
 
-    if(!decoded || !show || !top || !left){return null;}
+    if(!decoded || !show || !top || !left || !username || !userId){return null;}
     return createPortal(
         <div
             onMouseEnter={onMouseEnter}

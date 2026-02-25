@@ -43,7 +43,8 @@ export interface UserDTO {
     birthDate: string,
     sex: string,
     followersCount: number,
-    followingCount: number
+    followingCount: number,
+    canEdit: boolean
 }
 
 
@@ -77,13 +78,6 @@ export interface JWTPayload{
     exp: number;
 }
 
-export interface FollowContextType {
-    followedIds: Set<number>;
-    toggleFollow: (userId: number) => void;
-    checkIfFollowed: (userId: number) => boolean;
-    addFollowedUsers: (userIds: number[]) => void;
-    clearContext: () => void
-}
 
 export interface FollowStatus{
     following: boolean,
@@ -95,7 +89,7 @@ export interface FollowStatus{
 export interface FollowDTO{
     userId: number,
     followerUsername: string,
-    startFollowDate: string
+    startFollowDate: string,
 }
 
 export interface FollowResponse{
@@ -108,4 +102,12 @@ export type EditProfileData={
     lastName: string,
     sex: string,
     birthDate: string
+}
+
+export interface FollowContextType {
+    followedIds: Set<number>;
+    toggleFollow: (userId: number | undefined) => void;
+    checkIfFollowed: (userId: number | undefined) => boolean;
+    addFollowedUsers: (userIds: number[]) => void;
+    clearContext: () => void
 }

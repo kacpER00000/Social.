@@ -30,7 +30,7 @@ const Navbar=()=>{
                 </form>
             </div>
             <NavLink
-                to="/dashboard"
+                to="/home"
                 className={({ isActive }) => `
             self-stretch flex items-center px-6 text-3xl font-bold transition-all duration-300 border-b-4
             ${isActive

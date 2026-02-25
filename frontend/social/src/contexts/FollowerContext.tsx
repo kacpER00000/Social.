@@ -5,7 +5,8 @@ const FollowContext = createContext<FollowContextType | undefined>(undefined);
 export const FollowProvider = ({ children }: { children: ReactNode }) => {
     const [followedIds, setFollowedIds] = useState<Set<number>>(new Set());
 
-    const toggleFollow = async (userId: number) => {
+    const toggleFollow = async (userId: number | undefined) => {
+        if(!userId){return;}
         const method = checkIfFollowed(userId) ? "DELETE" : "POST";
         try{
             const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users/${userId}/follow`,{
@@ -38,7 +39,8 @@ export const FollowProvider = ({ children }: { children: ReactNode }) => {
         })
     };
 
-    const checkIfFollowed = (userId: number) => {
+    const checkIfFollowed = (userId: number | undefined) => {
+        if(!userId){return false;}
         return followedIds.has(userId);
     };
 
