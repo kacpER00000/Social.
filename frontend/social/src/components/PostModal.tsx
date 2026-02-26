@@ -94,18 +94,20 @@ const PostModal=({post, onClose}:PostModalProps)=>{
                 }
             })
             if(response.ok){
-                const data = await response.json() as PostLikeResponse
-                if(usersWhoLikePost.length===0){usersWhoLikePostListInit.current=data.content}
-                setUsersWhoLikePost(prev => [...prev, ...data.content])
-                usersWhoLikePostPageRef.current += 1
-                usersWhoLikePostHasMorePagesRef.current = data.totalPages > usersWhoLikePostPageRef.current
+                const data = await response.json() as PostLikeResponse;
+                if (usersWhoLikePostPageRef.current === 1) {
+                    usersWhoLikePostListInit.current = data.content;
+                }
+                setUsersWhoLikePost(prev => [...prev, ...data.content]);
+                usersWhoLikePostPageRef.current += 1;
+                usersWhoLikePostHasMorePagesRef.current = data.totalPages > usersWhoLikePostPageRef.current;
             } else {
-                usersWhoLikePostHasMorePagesRef.current = false
+                usersWhoLikePostHasMorePagesRef.current = false;
             }
         } catch (e) {
-            console.log("Error: " + e)
+            console.log("Error: " + e);
         }
-    }, [currentPost.postId, usersWhoLikePost.length])
+    }, [currentPost.postId]);
 
 
     useEffect(() => {

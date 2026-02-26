@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useRef, useState} from "react";
 import {useNavigate} from "react-router-dom";
 
 const Login=()=>{
@@ -9,6 +9,7 @@ const Login=()=>{
     const [passwordError, setPasswordError] = useState(false)
     const [loginError, setLoginError] = useState(false)
     const [loading, setLoadingState] = useState(false)
+    const loadingLock = useRef(false);
     const navigate = useNavigate();
 
     const validate = () => {
@@ -18,14 +19,16 @@ const Login=()=>{
         setPasswordError(isPasswordInvalid);
         return isEmailEmpty || isPasswordInvalid;
     }
+
     const handleLogin= async()=>{
-        if(validate()){return;}
+        if(loadingLock.current || validate()){return;}
+        loadingLock.current=true;
+        setLoadingState(true)
         const loginRequest = {
             email: email,
             password: password
         }
         try {
-            setLoadingState(true)
             const response = await fetch(`${import.meta.env.VITE_API_URL}/social/auth/login`, {
                 method: "POST",
                 headers: {
@@ -37,13 +40,14 @@ const Login=()=>{
                 const data = await response.json()
                 localStorage.setItem("token",data.token)
                 setLoginError(false)
-                navigate("/home")
+                navigate("/dashboard")
             } else {
                 setLoginError(true)
             }
         } catch (e) {
             console.log("Network error: ",e)
         } finally {
+            loadingLock.current=false;
             setLoadingState(false)
         }
     }

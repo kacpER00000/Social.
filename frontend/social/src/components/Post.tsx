@@ -1,6 +1,6 @@
 import {PostDTO, PostResponse, PostResultObj} from "../types/types.ts";
 import PostItem from "./PostItem.tsx";
-import {useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import {useFollowSystem} from "../contexts/FollowerContext.tsx";
 import {formatDate} from "../utils/formatDate.ts";
 import PostModal from "./PostModal.tsx";
@@ -19,13 +19,15 @@ const Post = ({postResponse, path}: PostProps) => {
     )
     const [selectedPost, setSelectedPost] = useState<PostDTO | null>(null)
     const sentinelRef = useRef(null)
-    const loading = useRef(false)
+    const loadingLock = useRef(false)
+    const [isFetchingMore, setIsFetchingMore] = useState(false);
     const page = useRef(1)
     const hasMorePages = useRef(postResponse.totalPages > 1)
 
-    const fetchMorePosts = async () => {
-        if(loading.current || !hasMorePages.current){return}
-        loading.current = true
+    const fetchMorePosts = useCallback(async () => {
+        if(loadingLock.current || !hasMorePages.current){return}
+        loadingLock.current = true
+        setIsFetchingMore(true);
         try{
             const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${path}?page=${page.current}`,{
                 headers: {
@@ -41,17 +43,16 @@ const Post = ({postResponse, path}: PostProps) => {
                     addFollowedUsers(uniqueFollowedIds)
                 }
                 page.current += 1
-                hasMorePages.current = postResponse.totalPages > page.current
+                hasMorePages.current = data.totalPages > page.current
             }
         } catch (e){
             console.log("Error: " + e)
         } finally {
-            loading.current = false
-        }
-    }
+            loadingLock.current = false
+            setIsFetchingMore(false);
+        }},[addFollowedUsers, path])
 
     useEffect(() => {
-        loading.current=true;
         if(postResponse?.content){
             setPosts(postResponse.content.map(post => ({
                 ...post,
@@ -59,10 +60,13 @@ const Post = ({postResponse, path}: PostProps) => {
             })));
             page.current = 1;
             hasMorePages.current = postResponse.totalPages > 1;
-
+            const followedIds = getFollowedIds(postResponse.content);
+            const uniqueFollowedIds = Array.from(new Set(followedIds));
+            if(uniqueFollowedIds.length > 0){
+                addFollowedUsers(uniqueFollowedIds);
+            }
         }
-        loading.current=false
-    }, [postResponse]);
+    }, [addFollowedUsers, postResponse]);
 
     useEffect(() => {
         const observer = new IntersectionObserver((entries) => {
@@ -78,13 +82,12 @@ const Post = ({postResponse, path}: PostProps) => {
         if (sentinelRef.current) {
             observer.observe(sentinelRef.current);
         }
-        addFollowedUsers(getFollowedIds(posts))
         return () => {
             if (sentinelRef.current) {
                 observer.unobserve(sentinelRef.current);
             }
         };
-    }, []);
+    }, [addFollowedUsers, fetchMorePosts]);
 
     const getFollowedIds = (posts: PostDTO[]) => {
         return posts
@@ -136,7 +139,7 @@ const Post = ({postResponse, path}: PostProps) => {
                     <PostItem post={item} key={item.postId} onSelect={showPostComponent}/>
                 )}
             </div>
-            {loading.current &&
+            {isFetchingMore &&
                 <div className="shadow-2xl rounded-3xl p-5 m-5">
                     <div className="flex animate-pulse space-x-4">
                         <div className="flex-1 space-y-6 py-1">

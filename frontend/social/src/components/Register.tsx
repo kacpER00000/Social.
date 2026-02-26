@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useRef, useState} from "react";
 import { useNavigate } from "react-router-dom";
 
 const Register = () => {
@@ -15,6 +15,7 @@ const Register = () => {
     const [birthDateError, setBirthDateError] = useState(false);
     const [accountExistenceError, setAccountExistenceError] = useState(false);
     const [loading, setLoadingState] = useState(false)
+    const loadingLock = useRef(false);
     const navigate = useNavigate();
     const today = new Date();
     today.setFullYear(today.getFullYear() - 18);
@@ -40,7 +41,9 @@ const Register = () => {
         return isEmailEmpty || isPasswordInvalid || isFirstNameEmpty || isLastNameEmpty;
     }
     const handleRegister = async () => {
-        if (validate()) { return; }
+        if (loadingLock.current || validate()) { return; }
+        setLoadingState(true);
+        loadingLock.current = true;
         const registerRequest = {
             firstName: firstName,
             lastName: lastName,
@@ -50,7 +53,6 @@ const Register = () => {
             password: password
         }
         try {
-            setLoadingState(true)
             const response = await fetch(`${import.meta.env.VITE_API_URL}/social/auth/register`, {
                 method: "POST",
                 headers: {
@@ -69,6 +71,7 @@ const Register = () => {
             console.log("Error: ", e)
         } finally {
             setLoadingState(false)
+            loadingLock.current=false
         }
     }
 
@@ -162,7 +165,6 @@ const Register = () => {
                         max={maxDate}
                         defaultValue={maxDate}
                         className={`border rounded-3xl px-3 py-2 transition-all duration-500 ease-in-out focus:shadow-2xl ${birthDateError ? 'border-red-500 animate-shake' : 'border-gray-300'}`}
-                        value={birthDate}
                         onChange={(e) => setBirthDate(e.target.value)}
                     />
 
