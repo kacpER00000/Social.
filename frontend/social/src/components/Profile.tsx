@@ -168,12 +168,14 @@ const Profile = () => {
                         </div>
                         <FollowCard
                             users={following}
-                            type={"Following"}
+                            type={"following"}
+                            profileUserId={userId}
                             loading={loading}
                         />
                         <FollowCard
                             users={followers}
-                            type={"Followers"}
+                            type={"followers"}
+                            profileUserId={userId}
                             loading={loading}
                         />
                     </div>

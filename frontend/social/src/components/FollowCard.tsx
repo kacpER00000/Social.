@@ -6,10 +6,11 @@ import {useState} from "react";
 
 type FollowCardProps = {
     users: FollowDTO[],
-    type: "Following" | "Followers",
+    type: "following" | "followers",
+    profileUserId: number,
     loading: boolean
 }
-const FollowCard=({users, type, loading}: FollowCardProps) => {
+const FollowCard=({users, type, profileUserId,loading}: FollowCardProps) => {
     const {show, cords, handlers} = useInspect();
     const [currentUsername, setCurrentUsername] = useState<string | undefined>(undefined)
     const [currentUserId, setCurrentUserId] = useState<number | undefined>(undefined)
@@ -19,7 +20,7 @@ const FollowCard=({users, type, loading}: FollowCardProps) => {
             <div className="bg-white p-4 rounded-3xl shadow-md w-full h-fit mb-5">
                 <div className="flex justify-between items-center mb-3">
                     <h3 className="font-bold text-3xl">{type}</h3>
-                    <span className="text-blue-500 text-sm cursor-pointer hover:underline">See all</span>
+                    <span className="text-blue-500 text-sm cursor-pointer hover:underline" onClick={() => navigate(`/${type}/${profileUserId}`)}>See all</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                     {loading ?

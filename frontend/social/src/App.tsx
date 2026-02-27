@@ -8,6 +8,7 @@ import {redirect} from "react-router-dom";
 import {FollowProvider} from "./contexts/FollowerContext.tsx";
 import {checkTokenValidity} from "./hooks/useToken.ts";
 import Profile from "./components/Profile.tsx";
+import FollowList from "./components/FollowList.tsx";
 
 const router = createBrowserRouter([
     {
@@ -54,6 +55,28 @@ const router = createBrowserRouter([
                 element: <Profile/>,
                 loader: async ({ params }: LoaderFunctionArgs<number>) => {
                     return await fetch(`${import.meta.env.VITE_API_URL}/social/users/${params.userId}`,{
+                        headers: {
+                            "Authorization": "Bearer " + localStorage.getItem("token")
+                        }
+                    })
+                }
+            },
+            {
+                path: "/following/:userId",
+                element: <FollowList/>,
+                loader: async ({params}: LoaderFunctionArgs<number>) => {
+                    return await fetch(`${import.meta.env.VITE_API_URL}/social/users/${params.userId}/following`, {
+                        headers: {
+                            "Authorization": "Bearer " + localStorage.getItem("token")
+                        }
+                    })
+                }
+            },
+            {
+                path: "/followers/:userId",
+                element: <FollowList/>,
+                loader: async ({params}: LoaderFunctionArgs<number>) => {
+                    return await fetch(`${import.meta.env.VITE_API_URL}/social/users/${params.userId}/followers`, {
                         headers: {
                             "Authorization": "Bearer " + localStorage.getItem("token")
                         }
