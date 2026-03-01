@@ -11,7 +11,7 @@ export interface PostDTO {
     isAuthorFollowed: boolean
 }
 
-export interface PostResponse{
+export interface PostResponse {
     content: PostDTO[],
     last: boolean,
     number: number,
@@ -30,7 +30,7 @@ export interface CommentDTO {
     isAuthorFollowed: boolean
 }
 
-export interface CommentResponse{
+export interface CommentResponse {
     content: CommentDTO[],
     number: number,
     totalPages: number
@@ -65,12 +65,12 @@ export interface PostLikeDTO {
     likedAt: string
 }
 
-export interface PostLikeResponse{
+export interface PostLikeResponse {
     content: PostLikeDTO[],
     totalPages: number
 }
 
-export interface JWTPayload{
+export interface JWTPayload {
     userId: number;
     username: string;
     sub: string;
@@ -78,26 +78,21 @@ export interface JWTPayload{
     exp: number;
 }
 
-
-export interface FollowStatus{
+export interface FollowDTO {
+    userId: number,
+    followerUsername: string,
     following: boolean,
     followingBy: boolean,
     followedSince: string | null,
     followersCount: number
 }
 
-export interface FollowDTO{
-    userId: number,
-    followerUsername: string,
-    startFollowDate: string,
-}
-
-export interface FollowResponse{
+export interface FollowResponse {
     content: FollowDTO[];
     totalPages: number;
 }
 
-export type EditProfileData={
+export type EditProfileData = {
     firstName: string,
     lastName: string,
     sex: string,

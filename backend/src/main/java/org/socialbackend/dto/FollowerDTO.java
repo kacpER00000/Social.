@@ -12,5 +12,8 @@ import java.time.LocalDateTime;
 public class FollowerDTO {
     private Long userId;
     private String followerUsername;
-    private LocalDateTime startFollowDate;
+    private LocalDateTime followedSince;
+    private boolean isFollowing;
+    private boolean isFollowingBy;
+    private Long followersCount;
 }
