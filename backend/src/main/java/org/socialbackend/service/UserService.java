@@ -10,9 +10,11 @@ import org.socialbackend.request.UpdateUserRequest;
 import org.socialbackend.repository.UserLoginDataRepository;
 import org.socialbackend.repository.UserRepository;
 import org.socialbackend.request.RegisterUserRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.List;
+
 import java.util.NoSuchElementException;
 
 @Service
@@ -21,9 +23,10 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserLoginDataRepository userLoginDataRepository;
     private final PasswordEncoder passwordEncoder;
+
     @Transactional
-    public void addUser(RegisterUserRequest registerUserRequest){
-        if(userLoginDataRepository.existsByEmail(registerUserRequest.getEmail())){
+    public void addUser(RegisterUserRequest registerUserRequest) {
+        if (userLoginDataRepository.existsByEmail(registerUserRequest.getEmail())) {
             throw new IllegalStateException("User with this email already exists");
         }
         User u = new User();
@@ -37,37 +40,55 @@ public class UserService {
         u.setUserLoginData(newUserLoginData);
         userRepository.save(u);
     }
-    public UserDTO findUserById(Long userId, Long loggedUserId){
-        return userRepository.findById(userId).map(u -> mapToDTO(u,loggedUserId)).orElseThrow(() -> new NoSuchElementException("User with this id don't exist"));
+
+    public UserDTO findUserById(Long userId, Long loggedUserId) {
+        return userRepository.findById(userId).map(u -> mapToDTO(u, loggedUserId))
+                .orElseThrow(() -> new NoSuchElementException("User with this id don't exist"));
     }
-    public UserDTO findUserByEmail(String email){
-        UserLoginData userLoginData = userLoginDataRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("User with this email don't exist."));
+
+    public UserDTO findUserByEmail(String email) {
+        UserLoginData userLoginData = userLoginDataRepository.findByEmail(email)
+                .orElseThrow(() -> new NoSuchElementException("User with this email don't exist."));
         return mapToDTO(userLoginData.getUser(), userLoginData.getUserId());
     }
-    public List<UserDTO> findUsersByFirstNameOrLastName(String query, Long loggedUserId) {
+
+    public Page<UserDTO> findUsersByFirstNameOrLastName(String query, Long loggedUserId, Pageable pageable) {
         if (query == null || query.isBlank()) {
             throw new InvalidParameterException("Search query cannot be empty");
         }
-        return userRepository.findByFirstNameStartingWithIgnoreCaseOrLastNameStartingWithIgnoreCase(query, query).stream().map(u -> mapToDTO(u, loggedUserId)).toList();
+        if (query.contains(" ")) {
+            String[] names = query.split(" ");
+            return userRepository.searchByFirstNameAndLastName(names[0], names[1], pageable)
+                    .map(u -> mapToDTO(u, loggedUserId));
+        } else {
+            return userRepository.searchByFirstNameOrLastName(query, pageable)
+                    .map(u -> mapToDTO(u, loggedUserId));
+        }
     }
+
     @Transactional
-    public void updateUser(Long userId, UpdateUserRequest updateUserRequest){
+    public void updateUser(Long userId, UpdateUserRequest updateUserRequest) {
         User foundUser = getUserEntity(userId);
         foundUser.setFirstName(updateUserRequest.getFirstName());
         foundUser.setLastName(updateUserRequest.getLastName());
         foundUser.setSex(updateUserRequest.getSex());
         foundUser.setBirthDate(updateUserRequest.getBirthDate());
     }
+
     @Transactional
-    public void deleteUser(Long userId){
+    public void deleteUser(Long userId) {
         User userToDelete = getUserEntity(userId);
         userRepository.delete(userToDelete);
     }
-    private UserDTO mapToDTO(User u, Long loggedUserId){
+
+    private UserDTO mapToDTO(User u, Long loggedUserId) {
         boolean canEdit = u.getUserId().equals(loggedUserId);
-        return new UserDTO(u.getUserId(),u.getFirstName(),u.getLastName(),u.getBirthDate(),u.getSex(),u.getFollowersCount(),u.getFollowingCount(), canEdit);
+        return new UserDTO(u.getUserId(), u.getFirstName(), u.getLastName(), u.getBirthDate(), u.getSex(),
+                u.getFollowersCount(), u.getFollowingCount(), canEdit);
     }
-    private User getUserEntity(Long userId){
-        return userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User with this id don't exist"));
+
+    private User getUserEntity(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User with this id don't exist"));
     }
 }

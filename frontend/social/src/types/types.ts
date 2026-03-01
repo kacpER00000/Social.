@@ -47,6 +47,10 @@ export interface UserDTO {
     canEdit: boolean
 }
 
+export interface UserResponse {
+    content: UserDTO[];
+}
+
 
 export interface EditPostData {
     title: string,

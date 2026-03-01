@@ -9,12 +9,12 @@ import org.socialbackend.request.UpdateUserRequest;
 import org.socialbackend.service.FollowerService;
 import org.socialbackend.service.UserService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
 @RequestMapping("/social/users")
@@ -45,10 +45,11 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<UserDTO>> findUsersByFirstNameOrLastName(@RequestParam String query,
+    public ResponseEntity<Page<UserDTO>> findUsersByFirstNameOrLastName(@RequestParam String query,
             Authentication authentication) {
         AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
-        return ResponseEntity.ok(userService.findUsersByFirstNameOrLastName(query, userDetails.getUserId()));
+        Pageable pageable = PageRequest.of(0, 5);
+        return ResponseEntity.ok(userService.findUsersByFirstNameOrLastName(query, userDetails.getUserId(), pageable));
     }
 
     @PostMapping("/{targetUserId}/follow")

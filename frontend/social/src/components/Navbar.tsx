@@ -1,9 +1,10 @@
-import {NavLink, useNavigate} from "react-router-dom";
-import {useFollowSystem} from "../contexts/FollowerContext.tsx";
-import {useToken} from "../hooks/useToken.ts";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useFollowSystem } from "../contexts/FollowerContext.tsx";
+import { useToken } from "../hooks/useToken.ts";
+import SearchBar from "./SearchBar.tsx";
 
-const Navbar=()=>{
-    const {decoded, isInvalid} = useToken();
+const Navbar = () => {
+    const { decoded, isInvalid } = useToken();
     const navigate = useNavigate();
     const { clearContext } = useFollowSystem();
 
@@ -13,30 +14,24 @@ const Navbar=()=>{
         navigate("/login")
     }
 
-    if(!decoded || isInvalid){
+    if (!decoded || isInvalid) {
         return null;
     }
 
-    return(
+    return (
         <div className="sticky top-0 z-50 flex justify-between items-center bg-blue-500 w-full shadow-md">
             <div className="flex justify-between items-center">
                 <p className="text-white text-5xl font-bold px-5 py-4">Social.</p>
-                <form onSubmit={(e) => e.preventDefault()}>
-                    <input
-                        type="text"
-                        className="shadow-sm bg-white p-3 w-full rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-24"
-                        placeholder="Search for users in Social."
-                    />
-                </form>
+                <SearchBar />
             </div>
             <NavLink
                 to="/home"
                 className={({ isActive }) => `
             self-stretch flex items-center px-6 text-3xl font-bold transition-all duration-300 border-b-4
             ${isActive
-                    ? "text-white border-white"
-                    : "text-gray-400 border-transparent hover:text-gray-200"
-                }
+                        ? "text-white border-white"
+                        : "text-gray-400 border-transparent hover:text-gray-200"
+                    }
         `}
             >
                 Home
@@ -46,9 +41,9 @@ const Navbar=()=>{
                 className={({ isActive }) => `
             self-stretch flex items-center px-6 text-3xl font-bold transition-all duration-300 border-b-4
             ${isActive
-                    ? "text-white border-white"
-                    : "text-gray-400 border-transparent hover:text-gray-200"
-                }
+                        ? "text-white border-white"
+                        : "text-gray-400 border-transparent hover:text-gray-200"
+                    }
         `}
             >
                 Profile
