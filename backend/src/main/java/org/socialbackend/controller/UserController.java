@@ -84,4 +84,20 @@ public class UserController {
         AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
         return ResponseEntity.ok(followerService.getFollowInfo(userId, userDetails.getUserId()));
     }
+
+    @GetMapping("/search/following")
+    public ResponseEntity<Page<FollowerDTO>> searchFollowing(@RequestParam String query, @RequestParam Long userId,
+            Authentication authentication, @PageableDefault Pageable pageable) {
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        return ResponseEntity
+                .ok(followerService.findFollowingByUsername(query, userId, userDetails.getUserId(), pageable));
+    }
+
+    @GetMapping("/search/followers")
+    public ResponseEntity<Page<FollowerDTO>> searchFollowers(@RequestParam String query, @RequestParam Long userId,
+            Authentication authentication, @PageableDefault Pageable pageable) {
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        return ResponseEntity
+                .ok(followerService.findFollowersByUsername(query, userId, userDetails.getUserId(), pageable));
+    }
 }

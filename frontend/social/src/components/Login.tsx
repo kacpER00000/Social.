@@ -1,11 +1,11 @@
-import {useRef, useState} from "react";
-import {useNavigate} from "react-router-dom";
+import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const Login=()=>{
+const Login = () => {
 
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
-    const [emailError,setEmailError] = useState(false)
+    const [emailError, setEmailError] = useState(false)
     const [passwordError, setPasswordError] = useState(false)
     const [loginError, setLoginError] = useState(false)
     const [loading, setLoadingState] = useState(false)
@@ -20,9 +20,9 @@ const Login=()=>{
         return isEmailEmpty || isPasswordInvalid;
     }
 
-    const handleLogin= async()=>{
-        if(loadingLock.current || validate()){return;}
-        loadingLock.current=true;
+    const handleLogin = async () => {
+        if (loadingLock.current || validate()) { return; }
+        loadingLock.current = true;
         setLoadingState(true)
         const loginRequest = {
             email: email,
@@ -36,22 +36,22 @@ const Login=()=>{
                 },
                 body: JSON.stringify(loginRequest)
             })
-            if(response.ok){
+            if (response.ok) {
                 const data = await response.json()
-                localStorage.setItem("token",data.token)
+                localStorage.setItem("token", data.token)
                 setLoginError(false)
-                navigate("/dashboard")
+                navigate("/home")
             } else {
                 setLoginError(true)
             }
         } catch (e) {
-            console.log("Network error: ",e)
+            console.log("Network error: ", e)
         } finally {
-            loadingLock.current=false;
+            loadingLock.current = false;
             setLoadingState(false)
         }
     }
-    return(
+    return (
         <div className="login-layout grid grid-cols-[2fr_1fr] min-h-screen transition-all duration-500 ease-in-out">
             <div className="flex justify-center items-center bg-blue-500">
                 <div className="flex flex-col">
@@ -98,7 +98,7 @@ const Login=()=>{
                                 "Login"
                             }
                         </button>
-                        {!loading && <button className="w-20 flex justify-center items-center bg-blue-500 text-white rounded-3xl py-2 cursor-pointer hover:bg-blue-600 transition-all duration-500 ease-in-out" onClick={()=>{navigate("/register")}}>
+                        {!loading && <button className="w-20 flex justify-center items-center bg-blue-500 text-white rounded-3xl py-2 cursor-pointer hover:bg-blue-600 transition-all duration-500 ease-in-out" onClick={() => { navigate("/register") }}>
                             Register
                         </button>}
                     </div>

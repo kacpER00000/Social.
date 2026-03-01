@@ -1,39 +1,39 @@
-import {createBrowserRouter, LoaderFunctionArgs, RouterProvider} from "react-router-dom";
+import { createBrowserRouter, LoaderFunctionArgs, RouterProvider } from "react-router-dom";
 import PublicLayout from "./components/PublicLayout.tsx";
 import Login from "./components/Login.tsx";
 import Register from "./components/Register.tsx";
 import Home from "./components/Home.tsx";
 import ProtectedLayout from "./components/ProtectedLayout.tsx";
-import {redirect} from "react-router-dom";
-import {FollowProvider} from "./contexts/FollowerContext.tsx";
-import {checkTokenValidity} from "./hooks/useToken.ts";
+import { redirect } from "react-router-dom";
+import { FollowProvider } from "./contexts/FollowerContext.tsx";
+import { checkTokenValidity } from "./hooks/useToken.ts";
 import Profile from "./components/Profile.tsx";
 import FollowList from "./components/FollowList.tsx";
 
 const router = createBrowserRouter([
     {
-        element: <PublicLayout/>,
+        element: <PublicLayout />,
         children: [
             {
                 path: "/login",
-                element: <Login/>,
+                element: <Login />,
                 loader: async () => {
-                    if(!checkTokenValidity().isInvalid){
-                        return redirect("/login")
+                    if (!checkTokenValidity().isInvalid) {
+                        return redirect("/home")
                     }
                     return null
                 }
             },
             {
                 path: "/register",
-                element: <Register/>
+                element: <Register />
             }
         ]
     },
     {
-        element: <ProtectedLayout/>,
-        loader: async ()=>{
-            if(checkTokenValidity().isInvalid){
+        element: <ProtectedLayout />,
+        loader: async () => {
+            if (checkTokenValidity().isInvalid) {
                 return redirect("/login")
             }
             return null
@@ -41,9 +41,9 @@ const router = createBrowserRouter([
         children: [
             {
                 path: "/Home",
-                element: <Home/>,
-                loader: async () =>{
-                    return await fetch(`${import.meta.env.VITE_API_URL}/social/posts/latest`,{
+                element: <Home />,
+                loader: async () => {
+                    return await fetch(`${import.meta.env.VITE_API_URL}/social/posts/latest`, {
                         headers: {
                             "Authorization": "Bearer " + localStorage.getItem("token")
                         }
@@ -52,9 +52,9 @@ const router = createBrowserRouter([
             },
             {
                 path: "/profile/:userId",
-                element: <Profile/>,
+                element: <Profile />,
                 loader: async ({ params }: LoaderFunctionArgs<number>) => {
-                    return await fetch(`${import.meta.env.VITE_API_URL}/social/users/${params.userId}`,{
+                    return await fetch(`${import.meta.env.VITE_API_URL}/social/users/${params.userId}`, {
                         headers: {
                             "Authorization": "Bearer " + localStorage.getItem("token")
                         }
@@ -63,8 +63,8 @@ const router = createBrowserRouter([
             },
             {
                 path: "/following/:userId",
-                element: <FollowList/>,
-                loader: async ({params}: LoaderFunctionArgs<number>) => {
+                element: <FollowList />,
+                loader: async ({ params }: LoaderFunctionArgs<number>) => {
                     return await fetch(`${import.meta.env.VITE_API_URL}/social/users/${params.userId}/following`, {
                         headers: {
                             "Authorization": "Bearer " + localStorage.getItem("token")
@@ -74,8 +74,8 @@ const router = createBrowserRouter([
             },
             {
                 path: "/followers/:userId",
-                element: <FollowList/>,
-                loader: async ({params}: LoaderFunctionArgs<number>) => {
+                element: <FollowList />,
+                loader: async ({ params }: LoaderFunctionArgs<number>) => {
                     return await fetch(`${import.meta.env.VITE_API_URL}/social/users/${params.userId}/followers`, {
                         headers: {
                             "Authorization": "Bearer " + localStorage.getItem("token")
@@ -91,7 +91,7 @@ function App() {
 
     return (
         <FollowProvider>
-            <RouterProvider router={router}/>
+            <RouterProvider router={router} />
         </FollowProvider>
     )
 }

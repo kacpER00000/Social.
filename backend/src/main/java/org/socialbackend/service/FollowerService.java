@@ -72,6 +72,32 @@ public class FollowerService {
         return followerRepository.findAllByFollowed_UserId(userId, pageable).map(f -> mapToDTO(f, false, loggedUserId));
     }
 
+    public Page<FollowerDTO> findFollowingByUsername(String query, Long userId, Long loggedUserId, Pageable pageable) {
+        if (!userRepository.existsById(userId)) {
+            throw new NoSuchElementException("User with this id don't exist.");
+        }
+        if (query.contains(" ")) {
+            String[] names = query.split(" ");
+            return followerRepository.findFollowingByUsername(names[0], names[1], userId, pageable)
+                    .map(f -> mapToDTO(f, true, loggedUserId));
+        }
+        return followerRepository.findFollowingByUsername(query, userId, pageable)
+                .map(f -> mapToDTO(f, true, loggedUserId));
+    }
+
+    public Page<FollowerDTO> findFollowersByUsername(String query, Long userId, Long loggedUserId, Pageable pageable) {
+        if (!userRepository.existsById(userId)) {
+            throw new NoSuchElementException("User with this id don't exist.");
+        }
+        if (query.contains(" ")) {
+            String[] names = query.split(" ");
+            return followerRepository.findFollowersByUsername(names[0], names[1], userId, pageable)
+                    .map(f -> mapToDTO(f, false, loggedUserId));
+        }
+        return followerRepository.findFollowersByUsername(query, userId, pageable)
+                .map(f -> mapToDTO(f, false, loggedUserId));
+    }
+
     public FollowerDTO getFollowInfo(Long userId, Long loggedUserId) {
         Optional<Follower> followInfo = followerRepository.findByFollower_UserIdAndFollowed_UserId(loggedUserId,
                 userId);
