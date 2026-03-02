@@ -1,7 +1,7 @@
 import { useLoaderData, useLocation } from "react-router-dom";
 import { FollowResponse } from "../types/types.ts";
 import { useCallback, useEffect, useRef, useState } from "react";
-import FollowSearchItem from "./FollowSearchItem.tsx";
+import UserSearchItem from "./UserSearchItem.tsx";
 
 const FollowList = () => {
     const followResponse = useLoaderData<FollowResponse>();
@@ -120,7 +120,7 @@ const FollowList = () => {
                     <p className="text-center text-gray-500 p-5">There are no search results for the phrase: <span className="font-bold">{query}</span></p>
                     :
                     followList.map((item) =>
-                        <FollowSearchItem key={item.userId} item={item} />
+                        <UserSearchItem key={item.userId} username={item.followerUsername} userId={item.userId} />
                     )
                 }
                 {isFetching &&

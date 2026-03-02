@@ -49,6 +49,7 @@ export interface UserDTO {
 
 export interface UserResponse {
     content: UserDTO[];
+    totalPages: number;
 }
 
 

@@ -9,6 +9,7 @@ import { FollowProvider } from "./contexts/FollowerContext.tsx";
 import { checkTokenValidity } from "./hooks/useToken.ts";
 import Profile from "./components/Profile.tsx";
 import FollowList from "./components/FollowList.tsx";
+import SearchList from "./components/SearchList.tsx";
 
 const router = createBrowserRouter([
     {
@@ -77,6 +78,19 @@ const router = createBrowserRouter([
                 element: <FollowList />,
                 loader: async ({ params }: LoaderFunctionArgs<number>) => {
                     return await fetch(`${import.meta.env.VITE_API_URL}/social/users/${params.userId}/followers`, {
+                        headers: {
+                            "Authorization": "Bearer " + localStorage.getItem("token")
+                        }
+                    })
+                }
+            },
+            {
+                path: "/search",
+                element: <SearchList />,
+                loader: async ({ request }: LoaderFunctionArgs) => {
+                    const url = new URL(request.url);
+                    const query = url.searchParams.get("q");
+                    return await fetch(`${import.meta.env.VITE_API_URL}/social/users/search?query=${query}`, {
                         headers: {
                             "Authorization": "Bearer " + localStorage.getItem("token")
                         }
