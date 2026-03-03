@@ -11,10 +11,10 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    @Query("SELECT u FROM User u WHERE u.firstName LIKE %:query% OR u.lastName LIKE %:query%")
+    @Query("SELECT u FROM User u WHERE u.firstName ILIKE %:query% OR u.lastName ILIKE %:query%")
     Page<User> searchByFirstNameOrLastName(@Param("query") String query, Pageable pageable);
 
-    @Query("SELECT u FROM User u WHERE u.firstName LIKE %:firstName% AND u.lastName LIKE %:lastName%")
+    @Query("SELECT u FROM User u WHERE u.firstName ILIKE %:firstName% AND u.lastName ILIKE %:lastName%")
     Page<User> searchByFirstNameAndLastName(@Param("firstName") String firstName, @Param("lastName") String lastName,
             Pageable pageable);
 

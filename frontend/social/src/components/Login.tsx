@@ -70,7 +70,7 @@ const Login = () => {
                 Incorrect login or password!
             </div>
             <div className="flex justify-center items-center">
-                <form className="flex flex-col gap-4 w-64">
+                <form className="flex flex-col gap-4 w-64" onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
                     <label htmlFor="email-input">E-mail</label>
                     <input
                         id="email-input"
@@ -88,7 +88,7 @@ const Login = () => {
                         onChange={(e) => setPassword(e.target.value)}
                     />
                     <div className="flex justify-between">
-                        <button type="button" className={`${loading ? 'w-full' : 'w-20'} flex justify-center items-center bg-blue-500 text-white rounded-3xl py-2 cursor-pointer hover:bg-blue-600 transition-all duration-500 ease-in-out`} onClick={handleLogin} disabled={loading}>
+                        <button type="submit" className={`${loading ? 'w-full' : 'w-20'} flex justify-center items-center bg-blue-500 text-white rounded-3xl py-2 cursor-pointer hover:bg-blue-600 transition-all duration-500 ease-in-out`} disabled={loading}>
                             {loading ?
                                 <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -98,7 +98,7 @@ const Login = () => {
                                 "Login"
                             }
                         </button>
-                        {!loading && <button className="w-20 flex justify-center items-center bg-blue-500 text-white rounded-3xl py-2 cursor-pointer hover:bg-blue-600 transition-all duration-500 ease-in-out" onClick={() => { navigate("/register") }}>
+                        {!loading && <button type="button" className="w-20 flex justify-center items-center bg-blue-500 text-white rounded-3xl py-2 cursor-pointer hover:bg-blue-600 transition-all duration-500 ease-in-out" onClick={() => { navigate("/register") }}>
                             Register
                         </button>}
                     </div>

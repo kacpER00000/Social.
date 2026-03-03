@@ -46,9 +46,8 @@ public class UserController {
 
     @GetMapping("/search")
     public ResponseEntity<Page<UserDTO>> findUsersByFirstNameOrLastName(@RequestParam String query,
-            Authentication authentication) {
+            Authentication authentication, @PageableDefault(size = 5) Pageable pageable) {
         AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
-        Pageable pageable = PageRequest.of(0, 5);
         return ResponseEntity.ok(userService.findUsersByFirstNameOrLastName(query, userDetails.getUserId(), pageable));
     }
 

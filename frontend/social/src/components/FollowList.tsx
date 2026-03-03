@@ -2,7 +2,8 @@ import { useLoaderData, useLocation } from "react-router-dom";
 import { FollowResponse } from "../types/types.ts";
 import { useCallback, useEffect, useRef, useState } from "react";
 import UserSearchItem from "./UserSearchItem.tsx";
-
+import { useToken } from "../hooks/useToken.ts";
+import { useNavigate } from "react-router-dom";
 const FollowList = () => {
     const followResponse = useLoaderData<FollowResponse>();
     const [followList, setFollowList] = useState(followResponse.content);
@@ -15,6 +16,13 @@ const FollowList = () => {
     const location = useLocation()
     const type = location.pathname.split("/")[1]
     const userId = location.pathname.split("/")[2]
+    const { isInvalid } = useToken();
+    const navigate = useNavigate();
+    useEffect(() => {
+        if (isInvalid) {
+            navigate("/login");
+        }
+    }, [isInvalid, navigate])
 
     const fetchMoreFollowList = useCallback(async () => {
         if (loadingLock.current || !canFetch) { return; }
@@ -111,7 +119,7 @@ const FollowList = () => {
     return (
         <div className="flex justify-center items-center ml-auto mr-auto">
             <div className="w-2/5 max-w-2/5bg-white m-5 rounded-3xl shadow-2xl">
-                <h2 className="text-5xl font-bold p-5 first-letter:capitalize">{type}</h2>
+                <h2 className="text-4xl font-bold p-5 first-letter:capitalize">{type}</h2>
                 <form className="p-5" onSubmit={(e) => e.preventDefault()}>
                     <input className="w-full rounded-3xl border border-gray-200 p-5 transition-all duration-200 ease-in-out focus:border-gray-400 focus:outline-none" type="text" placeholder="Search" value={query} onChange={(e) => setQuery(e.target.value)} />
                 </form>
@@ -127,7 +135,7 @@ const FollowList = () => {
                     <div className="shadow-2xl rounded-3xl p-5 m-5">
                         <div className="flex animate-pulse space-x-4">
                             <div className="flex justify-center items-center gap-3">
-                                <div className="w-30 h-30 text-4xl rounded-full bg-gradient-to-tr from-gray-200 to-gray-300">
+                                <div className="w-30 h-30 text-4xl rounded-full bg-linear-to-tr from-gray-200 to-gray-300">
                                 </div>
                             </div>
                         </div>

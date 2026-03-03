@@ -27,7 +27,13 @@ const router = createBrowserRouter([
             },
             {
                 path: "/register",
-                element: <Register />
+                element: <Register />,
+                loader: async () => {
+                    if (!checkTokenValidity().isInvalid) {
+                        return redirect("/home")
+                    }
+                    return null
+                }
             }
         ]
     },

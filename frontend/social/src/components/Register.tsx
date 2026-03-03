@@ -1,4 +1,4 @@
-import {useRef, useState} from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Register = () => {
@@ -20,11 +20,11 @@ const Register = () => {
     const today = new Date();
     today.setFullYear(today.getFullYear() - 18);
     const maxDate = today.toISOString().split('T')[0];
-    const triggerAccountExistenceError= ()=> {
+    const triggerAccountExistenceError = () => {
         setAccountExistenceError(true)
         setTimeout(() => {
             setAccountExistenceError(false)
-        },3000)
+        }, 3000)
     }
 
     const validate = () => {
@@ -63,15 +63,14 @@ const Register = () => {
             if (response.ok) {
                 setAccountExistenceError(false)
                 navigate("/login")
-            }
-            if(response.status === 400){
+            } else {
                 triggerAccountExistenceError()
             }
         } catch (e) {
             console.log("Error: ", e)
         } finally {
             setLoadingState(false)
-            loadingLock.current=false
+            loadingLock.current = false
         }
     }
 
@@ -94,7 +93,7 @@ const Register = () => {
                 >
                     Account with this email already exists!
                 </div>
-                <form className="flex flex-col gap-2 w-64">
+                <form className="flex flex-col gap-2 w-64" onSubmit={(e) => { e.preventDefault(); handleRegister() }}>
                     <label htmlFor="email-input">E-mail</label>
                     <input
                         id="email-input"
@@ -169,7 +168,7 @@ const Register = () => {
                     />
 
                     <div className="flex justify-center items-center mt-4">
-                        <button type="button" className={`${loading ? 'w-20' : 'w-48'} flex justify-center items-center bg-blue-500 text-white rounded-3xl py-2 cursor-pointer hover:bg-blue-600 transition-all duration-500 ease-in-out`} onClick={handleRegister} disabled={loading}>
+                        <button type="submit" className={`${loading ? 'w-20' : 'w-48'} flex justify-center items-center bg-blue-500 text-white rounded-3xl py-2 cursor-pointer hover:bg-blue-600 transition-all duration-500 ease-in-out`} disabled={loading}>
                             {loading ?
                                 <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

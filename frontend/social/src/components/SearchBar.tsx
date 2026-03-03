@@ -47,9 +47,16 @@ const SearchBar = () => {
         return () => clearTimeout(timer);
     }, [searchUsers]);
 
+    const handleSearch = (e: React.SubmitEvent) => {
+        e.preventDefault();
+        if (query.trim() !== "") {
+            navigate(`/search?q=${encodeURIComponent(query)}`)
+        }
+    }
+
     return (
         <div className="relative">
-            <form onSubmit={(e) => { e.preventDefault(); navigate(`/search?q=${encodeURIComponent(query)}`) }}>
+            <form onSubmit={handleSearch}>
                 <input
                     type="text"
                     value={query}
