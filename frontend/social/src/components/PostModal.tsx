@@ -1,38 +1,37 @@
-import {CommentDTO, CommentResponse, PostDTO, PostLikeDTO, PostLikeResponse, PostResultObj} from "../types/types.ts";
+import { CommentDTO, CommentResponse, PostDTO, PostLikeDTO, PostLikeResponse, PostResultObj } from "../types/types.ts";
 import CommentItem from "./CommentItem.tsx";
-import {useState, useRef, useEffect, useCallback} from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Confirmation from "./Confirmation.tsx";
-import {EditPostData} from "../types/types.ts";
+import { EditPostData } from "../types/types.ts";
 import LikeList from "./LikeList.tsx";
 import MoreContext from "./MoreContext.tsx";
 import MoreButton from "./MoreButton.tsx";
 import FollowButton from "./FollowButton.tsx";
-import {useFollowSystem} from "../contexts/FollowerContext.tsx";
-import {useNavigate} from "react-router-dom";
-import {formatDate} from "../utils/formatDate.ts";
-import {useInspect} from "../hooks/useInspect.ts";
+import { useFollowSystem } from "../contexts/FollowerContext.tsx";
+import { useNavigate } from "react-router-dom";
+import { formatDate } from "../utils/formatDate.ts";
+import { useInspect } from "../hooks/useInspect.ts";
 import InspectCard from "./InspectCard.tsx";
 import EditPostModal from "./EditPostModal.tsx";
-import {useToken} from "../hooks/useToken.ts";
+import { useToken } from "../hooks/useToken.ts";
+import PostContent from "./PostContent.tsx";
+import LikeButton from "./LikeButton.tsx";
 
 type PostModalProps = {
     post: PostDTO
     onClose: (postResultObj: PostResultObj | null) => void
 }
 
-const PostModal=({post, onClose}:PostModalProps)=>{
+const PostModal = ({ post, onClose }: PostModalProps) => {
     const [currentPost, setCurrentPost] = useState<PostDTO>(post);
     let postData: EditPostData = {
         title: post.title,
         content: post.content
     }
     const { checkIfFollowed, toggleFollow } = useFollowSystem();
-    const {decoded, isInvalid} = useToken();
+    const { decoded, isInvalid } = useToken();
     const isTheOwnerOfPost = decoded?.userId === post.authorId
     const [comment, setComment] = useState("");
-    const contentRef = useRef<HTMLParagraphElement>(null);
-    const [isExpanded, setIsExpanded] = useState(false);
-    const [isOverflowing, setIsOverflowing] = useState(false);
     const [showMorePost, setShowMorePost] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false)
@@ -42,16 +41,18 @@ const PostModal=({post, onClose}:PostModalProps)=>{
     const usersWhoLikePostListInit = useRef<PostLikeDTO[]>([]);
     const [usersWhoLikePost, setUsersWhoLikePost] = useState<PostLikeDTO[]>([]);
     const [showUsersWhoLikePost, setShowUsersWhoLikePost] = useState(false);
-    const closeStatusRef = useRef<string|null>(null);
+    const loadingCommentsLock = useRef(false);
+    const loadingUsersWhoLikePostLock = useRef(false);
+    const closeStatusRef = useRef<string | null>(null);
     const pageRef = useRef(0);
     const usersWhoLikePostPageRef = useRef(0);
     const hasMorePagesRef = useRef(true);
     const usersWhoLikePostHasMorePagesRef = useRef(true);
     const navigate = useNavigate();
-    const {show, cords, handlers} = useInspect();
+    const { show, cords, handlers } = useInspect();
 
     const closePost = useCallback(() => {
-        if(closeStatusRef.current){
+        if (closeStatusRef.current) {
             const postResultObj: PostResultObj = {
                 status: closeStatusRef.current as "UPDATED" | "DELETED" | "FOLLOWED",
                 post: currentPost
@@ -63,7 +64,8 @@ const PostModal=({post, onClose}:PostModalProps)=>{
     }, [currentPost, onClose])
 
     const fetchComments = useCallback(async () => {
-        if(loading || !hasMorePagesRef.current){return;}
+        if (loadingCommentsLock.current || !hasMorePagesRef.current) { return; }
+        loadingCommentsLock.current = true;
         setLoading(true)
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}/comments?page=${pageRef.current}`, {
@@ -73,7 +75,7 @@ const PostModal=({post, onClose}:PostModalProps)=>{
             })
             if (response.ok) {
                 const data = await response.json() as CommentResponse
-                setComments(prev => [...prev, ...data.content.map(comment => ({...comment, createdAt: formatDate(comment.createdAt)}))])
+                setComments(prev => [...prev, ...data.content.map(comment => ({ ...comment, createdAt: formatDate(comment.createdAt) }))])
                 pageRef.current += 1
                 hasMorePagesRef.current = data.totalPages > pageRef.current
             } else {
@@ -83,19 +85,22 @@ const PostModal=({post, onClose}:PostModalProps)=>{
             console.log("Error: ", e)
         } finally {
             setLoading(false)
+            loadingCommentsLock.current = false;
         }
-    },[currentPost.postId, loading])
+    }, [currentPost.postId])
 
     const fetchWhoLikePost = useCallback(async () => {
-        try{
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}/likes?page=${usersWhoLikePostPageRef.current}`,{
+        if (loadingUsersWhoLikePostLock.current || !usersWhoLikePostHasMorePagesRef.current) { return; }
+        loadingUsersWhoLikePostLock.current = true;
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}/likes?page=${usersWhoLikePostPageRef.current}`, {
                 headers: {
                     "Authorization": "Bearer " + localStorage.getItem("token")
                 }
             })
-            if(response.ok){
+            if (response.ok) {
                 const data = await response.json() as PostLikeResponse;
-                if (usersWhoLikePostPageRef.current === 1) {
+                if (usersWhoLikePostPageRef.current === 0) {
                     usersWhoLikePostListInit.current = data.content;
                 }
                 setUsersWhoLikePost(prev => [...prev, ...data.content]);
@@ -106,46 +111,43 @@ const PostModal=({post, onClose}:PostModalProps)=>{
             }
         } catch (e) {
             console.log("Error: " + e);
+        } finally {
+            loadingUsersWhoLikePostLock.current = false;
         }
     }, [currentPost.postId]);
 
 
     useEffect(() => {
-        if(isInvalid){
+        if (isInvalid) {
             navigate('/login')
         }
-    }, [isInvalid,navigate]);
-
+    }, [isInvalid, navigate]);
 
     useEffect(() => {
         fetchWhoLikePost()
         fetchComments()
-        if(contentRef.current){
-            const hasOverflow = contentRef.current.scrollHeight > contentRef.current.clientHeight
-            setIsOverflowing(hasOverflow)
-        }
-    }, [fetchComments, fetchWhoLikePost])
+    }, [fetchWhoLikePost, fetchComments])
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
-            if(event.key === "Escape"){
+            if (event.key === "Escape") {
                 closePost()
             }
         };
         window.addEventListener("keydown", handleKeyDown);
-        return () => window.removeEventListener("keydown",handleKeyDown)
+        return () => window.removeEventListener("keydown", handleKeyDown)
     }, [closePost, currentPost]);
 
-    if(!decoded || isInvalid){
+    if (!decoded || isInvalid) {
         return null;
     }
 
-    const addComment = async ()=>{
+    const addComment = async () => {
         const commentRequest = {
             content: comment
         }
-        try{
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}/comments`,{
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}/comments`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -153,9 +155,9 @@ const PostModal=({post, onClose}:PostModalProps)=>{
                 },
                 body: JSON.stringify(commentRequest)
             })
-            if(response.ok){
+            if (response.ok) {
                 const newComment = await response.json() as CommentDTO
-                const modifiedNewComment = {...newComment, createdAt: formatDate(newComment.createdAt)};
+                const modifiedNewComment = { ...newComment, createdAt: formatDate(newComment.createdAt) };
                 setComments(prev => [...prev, modifiedNewComment])
                 setCurrentPost(prev => ({
                     ...prev,
@@ -163,13 +165,13 @@ const PostModal=({post, onClose}:PostModalProps)=>{
                 }));
             }
         } catch (e) {
-            console.log("Error ",e)
+            console.log("Error ", e)
         } finally {
             setComment("")
         }
     }
     const handleDeletePost = async (state: boolean) => {
-        if(state) {
+        if (state) {
             try {
                 const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}`, {
                     headers: {
@@ -177,7 +179,7 @@ const PostModal=({post, onClose}:PostModalProps)=>{
                     },
                     method: "DELETE"
                 })
-                if(response.ok){
+                if (response.ok) {
                     closeStatusRef.current = "DELETED"
                     closePost()
                 }
@@ -192,17 +194,17 @@ const PostModal=({post, onClose}:PostModalProps)=>{
         setShowEditModal(true)
     }
 
-    const editPost= async (data: EditPostData)=>{
-        try{
+    const editPost = async (data: EditPostData) => {
+        try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}`, {
-                headers:{
+                headers: {
                     "Content-Type": "application/json",
                     "Authorization": "Bearer " + localStorage.getItem("token")
                 },
                 method: "PUT",
                 body: JSON.stringify(data)
             })
-            if(response.ok){
+            if (response.ok) {
                 setCurrentPost(prev => ({
                     ...prev,
                     title: data.title,
@@ -212,7 +214,7 @@ const PostModal=({post, onClose}:PostModalProps)=>{
                 closeStatusRef.current = "UPDATED"
             }
         } catch (e) {
-            console.log("Error: ",e)
+            console.log("Error: ", e)
         } finally {
             setShowEditModal(false)
         }
@@ -230,7 +232,7 @@ const PostModal=({post, onClose}:PostModalProps)=>{
         }));
         setUsersWhoLikePost(prev =>
             !previousLiked
-                ? [...prev, { username: decoded.username } as PostLikeDTO]
+                ? [...prev, { username: decoded.username, userId: decoded.userId, postId: currentPost.postId, likedAt: new Date().toISOString() } as PostLikeDTO]
                 : prev.filter(u => u.username !== decoded.username)
         );
         try {
@@ -245,7 +247,7 @@ const PostModal=({post, onClose}:PostModalProps)=>{
                 console.log("Error")
             }
         } catch (e) {
-            console.log("Error: ",e)
+            console.log("Error: ", e)
             setLiked(previousLiked);
             setCurrentPost(prev => ({
                 ...prev,
@@ -263,14 +265,14 @@ const PostModal=({post, onClose}:PostModalProps)=>{
     }
 
     const deleteComment = async (commentId: number) => {
-        try{
-            const response = await fetch (`${import.meta.env.VITE_API_URL}/social/comments/${commentId}`,{
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/comments/${commentId}`, {
                 headers: {
                     "Authorization": "Bearer " + localStorage.getItem('token')
                 },
                 method: "DELETE"
             })
-            if(response.ok){
+            if (response.ok) {
                 setComments(prev => prev.filter(comment => comment.commentId !== commentId))
                 setCurrentPost(prev => ({
                     ...prev,
@@ -313,16 +315,16 @@ const PostModal=({post, onClose}:PostModalProps)=>{
                             editPermission={true}
                             deletePermission={true}
                             onEdit={showEditPostModal}
-                            onDelete={() => {setShowMorePost(false); setShowConfirmation(true)}}
+                            onDelete={() => { setShowMorePost(false); setShowConfirmation(true) }}
                         />
                     }
                     <div>
                         <div className="flex gap-3">
-                            <h2 className="w-fit font-bold text-xl text-gray-900 hover:underline cursor-pointer" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave} onClick={() => {navigate(`/profile/${currentPost.authorId}`)}}>{currentPost.author}</h2>
+                            <h2 className="w-fit font-bold text-xl text-gray-900 hover:underline cursor-pointer" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave} onClick={() => { navigate(`/profile/${currentPost.authorId}`) }}>{currentPost.author}</h2>
                             {!isTheOwnerOfPost &&
                                 <FollowButton
                                     isFollowing={checkIfFollowed(currentPost.authorId)}
-                                    handleFollow={() => {toggleFollow(currentPost.authorId)}}
+                                    handleFollow={() => { toggleFollow(currentPost.authorId) }}
                                 />
                             }
                         </div>
@@ -332,45 +334,24 @@ const PostModal=({post, onClose}:PostModalProps)=>{
                     <hr className="border-gray-100 my-4" />
                     <div className="mb-4">
                         <p className="text-xl">{currentPost.title}</p>
-                        <div
-                            className={`transition-all duration-300 ${!isExpanded ? "max-h-30 overflow-hidden relative" : ""}`}
-                            ref={contentRef}
-                        >
-                            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                                {currentPost.content}
-                            </p>
-                            {!isExpanded && isOverflowing && (
-                                <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-white to-transparent pointer-events-none"/>
-                            )}
-                        </div>
-
-                        {isOverflowing && (
-                            <button
-                                className="text-blue-500 font-semibold text-sm mt-2 hover:text-blue-700 hover:underline focus:outline-none"
-                                onClick={() => setIsExpanded(prev => !prev)}
-                            >
-                                {isExpanded ? "Show less" : "Show more"}
-                            </button>
-                        )}
+                        <PostContent
+                            content={currentPost.content}
+                        />
                     </div>
                     <hr className="border-gray-100 my-4" />
-                    <div className="flex justify-between text-gray-500 text-sm font-medium px-2 mb-2">
-                        <div className="flex items-center gap-2">
-                            <i className="icon-thumbs-up-alt"></i>
-                            {usersWhoLikePost.length !== 0 &&
-                                <p className="hover:underline" onClick={() => {setShowUsersWhoLikePost(true)}}>{usersWhoLikePost[0].username} {usersWhoLikePost.length > 1 && "and others..."}</p>
-                            }
-                        </div>
-
-                        <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 text-gray-500 text-sm font-medium px-2 mb-2">
+                        <i className="icon-thumbs-up-alt"></i>
+                        {usersWhoLikePost.length !== 0 &&
+                            <p className="hover:underline" onClick={() => { setShowUsersWhoLikePost(true) }}>{usersWhoLikePost[0].username} {usersWhoLikePost.length > 1 && "and others..."}</p>
+                        }
+                    </div>
+                    <div className="flex justify-between items-center gap-2">
+                        <LikeButton liked={currentPost.isLiked} handleLike={handleLike} likesNum={currentPost.likesNum} />
+                        <div className="px-8 py-2">
                             <span>{currentPost.commentCount}</span>
                             <i className="icon-comment"></i>
                         </div>
                     </div>
-                    <button className={`${liked ? "bg-blue-500 text-white" : "bg-grey-500"} rounded-full px-8 py-2 hover:bg-blue-500 hover:text-white transition-all duration-300 shadow-md active:scale-95`} onClick={handleLike}>
-                        <span>{currentPost.likesNum}</span>
-                        <i className="icon-thumbs-up-alt text-lg"></i>
-                    </button>
                     <div className="bg-gray-50 shadow-inner p-6 rounded-3xl h-96 flex flex-col mt-4 border border-gray-100">
                         <div className={`overflow-y-auto overflow-x-hidden flex-1 min-h-0 mb-4 pr-2 ${comments.length === 0 ? "flex justify-center items-center" : ""}`}>
                             {comments.length === 0 ? (
@@ -417,9 +398,9 @@ const PostModal=({post, onClose}:PostModalProps)=>{
                                         type="text"
                                         placeholder="Write a comment..."
                                         value={comment}
-                                        onChange={(e) => {setComment(e.target.value)}}
+                                        onChange={(e) => { setComment(e.target.value) }}
                                     />
-                                    <button type="button" disabled={comment.trim().length===0} className="absolute right-1 top-1/2 -translate-y-1/2 bg-blue-500 text-white rounded-full px-6 py-2 hover:bg-blue-600 transition-colors duration-300 ease-in-out flex items-center gap-2 font-bold text-sm disabled:bg-gray-400 disabled:cursor-not-allowed" onClick={addComment}>
+                                    <button type="button" disabled={comment.trim().length === 0} className="absolute right-1 top-1/2 -translate-y-1/2 bg-blue-500 text-white rounded-full px-6 py-2 hover:bg-blue-600 transition-colors duration-300 ease-in-out flex items-center gap-2 font-bold text-sm disabled:bg-gray-400 disabled:cursor-not-allowed" onClick={addComment}>
                                         <i className="icon-comment text-lg"></i>
                                     </button>
                                 </div>

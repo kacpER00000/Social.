@@ -1,8 +1,8 @@
-import {PostDTO, PostResponse, PostResultObj} from "../types/types.ts";
+import { PostDTO, PostResponse, PostResultObj } from "../types/types.ts";
 import PostItem from "./PostItem.tsx";
-import {useCallback, useEffect, useRef, useState} from "react";
-import {useFollowSystem} from "../contexts/FollowerContext.tsx";
-import {formatDate} from "../utils/formatDate.ts";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useFollowSystem } from "../contexts/FollowerContext.tsx";
+import { formatDate } from "../utils/formatDate.ts";
 import PostModal from "./PostModal.tsx";
 
 type PostProps = {
@@ -10,7 +10,7 @@ type PostProps = {
     path: string
 }
 
-const Post = ({postResponse, path}: PostProps) => {
+const Post = ({ postResponse, path }: PostProps) => {
     const { addFollowedUsers } = useFollowSystem();
     const [posts, setPosts] = useState(() =>
         postResponse?.content?.map(post => ({
@@ -25,35 +25,36 @@ const Post = ({postResponse, path}: PostProps) => {
     const hasMorePages = useRef(postResponse.totalPages > 1)
 
     const fetchMorePosts = useCallback(async () => {
-        if(loadingLock.current || !hasMorePages.current){return}
+        if (loadingLock.current || !hasMorePages.current) { return }
         loadingLock.current = true
         setIsFetchingMore(true);
-        try{
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${path}?page=${page.current}`,{
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${path}?page=${page.current}`, {
                 headers: {
                     "Authorization": "Bearer " + localStorage.getItem("token")
                 }
             })
-            if(response.ok){
+            if (response.ok) {
                 const data = await response.json() as PostResponse
-                setPosts(prev => [...prev, ...data.content.map(post => ({...post, createdAt: formatDate(post.createdAt)}))])
+                setPosts(prev => [...prev, ...data.content.map(post => ({ ...post, createdAt: formatDate(post.createdAt) }))])
                 const followedIds = getFollowedIds(data.content)
                 const uniqueFollowedIds = Array.from(new Set(followedIds))
-                if(uniqueFollowedIds.length > 0){
+                if (uniqueFollowedIds.length > 0) {
                     addFollowedUsers(uniqueFollowedIds)
                 }
                 page.current += 1
                 hasMorePages.current = data.totalPages > page.current
             }
-        } catch (e){
+        } catch (e) {
             console.log("Error: " + e)
         } finally {
             loadingLock.current = false
             setIsFetchingMore(false);
-        }},[addFollowedUsers, path])
+        }
+    }, [addFollowedUsers, path])
 
     useEffect(() => {
-        if(postResponse?.content){
+        if (postResponse?.content) {
             setPosts(postResponse.content.map(post => ({
                 ...post,
                 createdAt: formatDate(post.createdAt)
@@ -62,7 +63,7 @@ const Post = ({postResponse, path}: PostProps) => {
             hasMorePages.current = postResponse.totalPages > 1;
             const followedIds = getFollowedIds(postResponse.content);
             const uniqueFollowedIds = Array.from(new Set(followedIds));
-            if(uniqueFollowedIds.length > 0){
+            if (uniqueFollowedIds.length > 0) {
                 addFollowedUsers(uniqueFollowedIds);
             }
         }
@@ -100,24 +101,24 @@ const Post = ({postResponse, path}: PostProps) => {
     }
 
     const closePost = (postResultObj: PostResultObj | null) => {
-        if(postResultObj !== null){
-            if(postResultObj.status === "DELETED"){
+        if (postResultObj !== null) {
+            if (postResultObj.status === "DELETED") {
                 setPosts(prev => prev.filter(post => post.postId !== postResultObj.post.postId))
             }
-            if(postResultObj.status === "UPDATED"){
+            if (postResultObj.status === "UPDATED") {
                 setPosts(prev =>
                     prev.map(post =>
                         post.postId === postResultObj.post.postId ?
-                            {...postResultObj.post}
+                            { ...postResultObj.post }
                             : post
                     )
                 )
             }
-            if(postResultObj.status === "FOLLOWED"){
+            if (postResultObj.status === "FOLLOWED") {
                 setPosts(prev =>
                     prev.map(post =>
                         post.authorId === postResultObj.post.authorId ?
-                            {...post, isAuthorFollowed: postResultObj.post.isAuthorFollowed}
+                            { ...post, isAuthorFollowed: postResultObj.post.isAuthorFollowed }
                             : post
                     )
                 )
@@ -136,7 +137,7 @@ const Post = ({postResponse, path}: PostProps) => {
             }
             <div className="flex flex-col w-full">
                 {posts?.map((item) =>
-                    <PostItem post={item} key={item.postId} onSelect={showPostComponent}/>
+                    <PostItem post={item} key={item.postId} onSelect={showPostComponent} />
                 )}
             </div>
             {isFetchingMore &&
