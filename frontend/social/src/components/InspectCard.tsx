@@ -5,6 +5,7 @@ import { formatDate } from "../utils/formatDate.ts";
 import { useFollowSystem } from "../contexts/FollowerContext.tsx";
 import FollowButton from "./FollowButton.tsx";
 import { useToken } from "../hooks/useToken.ts";
+import AvatarCircle from "./AvatarCircle.tsx";
 
 type InspectCardProps = {
     top: number | undefined,
@@ -68,9 +69,7 @@ const InspectCard = ({ username, userId, top, left, show, onMouseEnter, onMouseL
             }}
         >
             <div className="flex items-center gap-3">
-                <div className="w-20 h-20 text-3xl rounded-full bg-gradient-to-tr from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold shadow-sm shrink-0">
-                    <span>{username.split(" ")[0].charAt(0)?.toUpperCase()}{username.split(" ")[1].charAt(0)?.toUpperCase()}</span>
-                </div>
+                <AvatarCircle size="medium" username={username} />
                 <div className="m-1">
                     <h1 className="text-2xl">{username}</h1>
                     {followInfo &&

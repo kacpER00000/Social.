@@ -1,16 +1,19 @@
-import {PostLikeDTO} from "../types/types.ts";
-import {createPortal} from "react-dom";
+import { PostLikeDTO } from "../types/types.ts";
+import { createPortal } from "react-dom";
+import AvatarCircle from "./AvatarCircle.tsx";
+import { useNavigate } from "react-router-dom";
 
 type LikeListProps = {
     users: PostLikeDTO[],
-    onClose: ()=>void,
-    loadMore: ()=>void,
+    onClose: () => void,
+    loadMore: () => void,
     canLoadMore: boolean,
     show: boolean
 }
 
-const LikeList = ({users, onClose, canLoadMore, loadMore, show}: LikeListProps) => {
-    if(!show){return null;}
+const LikeList = ({ users, onClose, canLoadMore, loadMore, show }: LikeListProps) => {
+    const navigate = useNavigate();
+    if (!show) { return null; }
     return createPortal(
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-999 transition-opacity">
             <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh] animate-in fade-in zoom-in duration-200">
@@ -28,10 +31,8 @@ const LikeList = ({users, onClose, canLoadMore, loadMore, show}: LikeListProps) 
                 <div className="overflow-y-auto p-2 flex-1">
                     <div className="space-y-1">
                         {users.map((item, index) => (
-                            <div key={index} className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold shadow-sm shrink-0">
-                                    {item.username.charAt(0).toUpperCase()}
-                                </div>
+                            <div key={index} className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group" onClick={() => navigate(`/profile/${item.userId}`)}>
+                                <AvatarCircle size="small" username={item.username} />
                                 <div className="flex-1 min-w-0">
                                     <p className="font-semibold text-gray-800 text-sm truncate group-hover:text-blue-600 transition-colors">
                                         {item.username}
