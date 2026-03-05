@@ -1,10 +1,9 @@
-import { CommentDTO, CommentResponse, PostDTO, PostLikeDTO, PostLikeResponse, PostResultObj } from "../types/types.ts";
+import { CommentDTO, CommentResponse, PostDTO } from "../types/types.ts";
 import CommentItem from "./CommentItem.tsx";
 import { useState, useRef, useEffect, useCallback } from "react";
 import Confirmation from "./Confirmation.tsx";
 import { EditPostData } from "../types/types.ts";
-import LikeList from "./LikeList.tsx";
-import MoreContext from "./MoreContext.tsx";
+import MoreContextMenu from "./MoreContextMenu.tsx";
 import MoreButton from "./MoreButton.tsx";
 import FollowButton from "./FollowButton.tsx";
 import { useFollowSystem } from "../contexts/FollowerContext.tsx";
@@ -14,21 +13,20 @@ import { useInspect } from "../hooks/useInspect.ts";
 import InspectCard from "./InspectCard.tsx";
 import EditPostModal from "./EditPostModal.tsx";
 import { useToken } from "../hooks/useToken.ts";
-import PostContent from "./PostContent.tsx";
-import LikeButton from "./LikeButton.tsx";
+import PostContent from "./Content.tsx";
+import PostInteractions from "./PostInteractions.tsx";
+import AvatarCircle from "./AvatarCircle.tsx";
+import { useFeedContext } from "../contexts/FeedContext.tsx";
 
 type PostModalProps = {
     post: PostDTO
-    onClose: (postResultObj: PostResultObj | null) => void
+    onClose: () => void
 }
 
 const PostModal = ({ post, onClose }: PostModalProps) => {
-    const [currentPost, setCurrentPost] = useState<PostDTO>(post);
-    let postData: EditPostData = {
-        title: post.title,
-        content: post.content
-    }
     const { checkIfFollowed, toggleFollow } = useFollowSystem();
+    const { posts, updatePostInFeed, deletePostFromFeed } = useFeedContext();
+    const currentPost = posts.find(p => p.postId === post.postId) || post;
     const { decoded, isInvalid } = useToken();
     const isTheOwnerOfPost = decoded?.userId === post.authorId
     const [comment, setComment] = useState("");
@@ -37,31 +35,11 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
     const [showEditModal, setShowEditModal] = useState(false)
     const [comments, setComments] = useState<CommentDTO[]>([]);
     const [loading, setLoading] = useState(false);
-    const [liked, setLiked] = useState(post.isLiked);
-    const usersWhoLikePostListInit = useRef<PostLikeDTO[]>([]);
-    const [usersWhoLikePost, setUsersWhoLikePost] = useState<PostLikeDTO[]>([]);
-    const [showUsersWhoLikePost, setShowUsersWhoLikePost] = useState(false);
     const loadingCommentsLock = useRef(false);
-    const loadingUsersWhoLikePostLock = useRef(false);
-    const closeStatusRef = useRef<string | null>(null);
     const pageRef = useRef(0);
-    const usersWhoLikePostPageRef = useRef(0);
     const hasMorePagesRef = useRef(true);
-    const usersWhoLikePostHasMorePagesRef = useRef(true);
     const navigate = useNavigate();
     const { show, cords, handlers } = useInspect();
-
-    const closePost = useCallback(() => {
-        if (closeStatusRef.current) {
-            const postResultObj: PostResultObj = {
-                status: closeStatusRef.current as "UPDATED" | "DELETED" | "FOLLOWED",
-                post: currentPost
-            }
-            onClose(postResultObj)
-        } else {
-            onClose(null)
-        }
-    }, [currentPost, onClose])
 
     const fetchComments = useCallback(async () => {
         if (loadingCommentsLock.current || !hasMorePagesRef.current) { return; }
@@ -89,34 +67,6 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
         }
     }, [currentPost.postId])
 
-    const fetchWhoLikePost = useCallback(async () => {
-        if (loadingUsersWhoLikePostLock.current || !usersWhoLikePostHasMorePagesRef.current) { return; }
-        loadingUsersWhoLikePostLock.current = true;
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}/likes?page=${usersWhoLikePostPageRef.current}`, {
-                headers: {
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                }
-            })
-            if (response.ok) {
-                const data = await response.json() as PostLikeResponse;
-                if (usersWhoLikePostPageRef.current === 0) {
-                    usersWhoLikePostListInit.current = data.content;
-                }
-                setUsersWhoLikePost(prev => [...prev, ...data.content]);
-                usersWhoLikePostPageRef.current += 1;
-                usersWhoLikePostHasMorePagesRef.current = data.totalPages > usersWhoLikePostPageRef.current;
-            } else {
-                usersWhoLikePostHasMorePagesRef.current = false;
-            }
-        } catch (e) {
-            console.log("Error: " + e);
-        } finally {
-            loadingUsersWhoLikePostLock.current = false;
-        }
-    }, [currentPost.postId]);
-
-
     useEffect(() => {
         if (isInvalid) {
             navigate('/login')
@@ -124,19 +74,18 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
     }, [isInvalid, navigate]);
 
     useEffect(() => {
-        fetchWhoLikePost()
         fetchComments()
-    }, [fetchWhoLikePost, fetchComments])
+    }, [fetchComments])
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === "Escape") {
-                closePost()
+                onClose()
             }
         };
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown)
-    }, [closePost, currentPost]);
+    }, [onClose, currentPost]);
 
     if (!decoded || isInvalid) {
         return null;
@@ -159,10 +108,11 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                 const newComment = await response.json() as CommentDTO
                 const modifiedNewComment = { ...newComment, createdAt: formatDate(newComment.createdAt) };
                 setComments(prev => [...prev, modifiedNewComment])
-                setCurrentPost(prev => ({
-                    ...prev,
-                    commentCount: prev.commentCount + 1
-                }));
+                const updatedPost: PostDTO = {
+                    ...currentPost,
+                    commentCount: currentPost.commentCount + 1
+                }
+                updatePostInFeed(updatedPost)
             }
         } catch (e) {
             console.log("Error ", e)
@@ -180,8 +130,8 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                     method: "DELETE"
                 })
                 if (response.ok) {
-                    closeStatusRef.current = "DELETED"
-                    closePost()
+                    onClose()
+                    deletePostFromFeed(currentPost.postId)
                 }
             } catch (e) {
                 console.log("Error " + e)
@@ -195,6 +145,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
     }
 
     const editPost = async (data: EditPostData) => {
+        setShowMorePost(false);
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}`, {
                 headers: {
@@ -205,13 +156,12 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                 body: JSON.stringify(data)
             })
             if (response.ok) {
-                setCurrentPost(prev => ({
-                    ...prev,
+                const updatedPost: PostDTO = {
+                    ...currentPost,
                     title: data.title,
                     content: data.content
-                }));
-                postData = data;
-                closeStatusRef.current = "UPDATED"
+                }
+                updatePostInFeed(updatedPost)
             }
         } catch (e) {
             console.log("Error: ", e)
@@ -219,51 +169,6 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
             setShowEditModal(false)
         }
     }
-
-    const handleLike = async () => {
-        closeStatusRef.current = "UPDATED";
-        const previousLiked = liked;
-        const previousCount = currentPost.likesNum;
-        setLiked(!previousLiked);
-        setCurrentPost(prev => ({
-            ...prev,
-            likesNum: prev.likesNum + (!previousLiked ? 1 : -1),
-            isLiked: !previousLiked
-        }));
-        setUsersWhoLikePost(prev =>
-            !previousLiked
-                ? [...prev, { username: decoded.username, userId: decoded.userId, postId: currentPost.postId, likedAt: new Date().toISOString() } as PostLikeDTO]
-                : prev.filter(u => u.username !== decoded.username)
-        );
-        try {
-            const method = !previousLiked ? "POST" : "DELETE";
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}/like`, {
-                method: method,
-                headers: {
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                }
-            });
-            if (!response.ok) {
-                console.log("Error")
-            }
-        } catch (e) {
-            console.log("Error: ", e)
-            setLiked(previousLiked);
-            setCurrentPost(prev => ({
-                ...prev,
-                likesNum: previousCount,
-                isLiked: previousLiked
-            }));
-        }
-    };
-
-    const handleCloseLikeList = () => {
-        setShowUsersWhoLikePost(false);
-        setUsersWhoLikePost(usersWhoLikePostListInit.current);
-        usersWhoLikePostPageRef.current = 1;
-        usersWhoLikePostHasMorePagesRef.current = true;
-    }
-
     const deleteComment = async (commentId: number) => {
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/social/comments/${commentId}`, {
@@ -274,10 +179,11 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
             })
             if (response.ok) {
                 setComments(prev => prev.filter(comment => comment.commentId !== commentId))
-                setCurrentPost(prev => ({
-                    ...prev,
-                    commentCount: prev.commentCount - 1
-                }));
+                const updatedPost: PostDTO = {
+                    ...currentPost,
+                    commentCount: currentPost.commentCount - 1
+                }
+                updatePostInFeed(updatedPost)
             }
         } catch (e) {
             console.log("Error: " + e)
@@ -291,14 +197,13 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                 : c
         ));
     }
-
     return (
         <>
             <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-                <div className="relative shadow-xl w-1/2 h-3/4 overflow-y-auto mx-auto my-8 p-8 rounded-3xl bg-white  text-gray-800">
+                <div className="relative shadow-xl w-2/3 h-full overflow-y-auto mx-auto my-8 p-8 rounded-3xl bg-white  text-gray-800">
                     <div className="flex justify-between">
                         <button
-                            onClick={closePost}
+                            onClick={onClose}
                             className="bg-blue-500 text-white rounded-full px-6 py-2 mb-6 hover:bg-blue-600 transition-colors duration-300 ease-in-out flex items-center gap-2 font-bold text-sm"
                         >
                             <span>&larr;</span>
@@ -311,7 +216,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                         }
                     </div>
                     {showMorePost &&
-                        <MoreContext
+                        <MoreContextMenu
                             editPermission={true}
                             deletePermission={true}
                             onEdit={showEditPostModal}
@@ -319,8 +224,11 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                         />
                     }
                     <div>
-                        <div className="flex gap-3">
-                            <h2 className="w-fit font-bold text-xl text-gray-900 hover:underline cursor-pointer" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave} onClick={() => { navigate(`/profile/${currentPost.authorId}`) }}>{currentPost.author}</h2>
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 cursor-pointer" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave} onClick={() => { navigate(`/profile/${currentPost.authorId}`) }}>
+                                <AvatarCircle username={currentPost.author} size="small" />
+                                <h2 className="w-fit font-bold text-xl text-gray-900 hover:underline" >{currentPost.author}</h2>
+                            </div>
                             {!isTheOwnerOfPost &&
                                 <FollowButton
                                     isFollowing={checkIfFollowed(currentPost.authorId)}
@@ -328,7 +236,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                                 />
                             }
                         </div>
-                        <p className="text-xs text-gray-500">{currentPost.createdAt}</p>
+                        <p className="text-xs mt-3 text-gray-500">{currentPost.createdAt}</p>
                     </div>
 
                     <hr className="border-gray-100 my-4" />
@@ -339,19 +247,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                         />
                     </div>
                     <hr className="border-gray-100 my-4" />
-                    <div className="flex items-center gap-2 text-gray-500 text-sm font-medium px-2 mb-2">
-                        <i className="icon-thumbs-up-alt"></i>
-                        {usersWhoLikePost.length !== 0 &&
-                            <p className="hover:underline" onClick={() => { setShowUsersWhoLikePost(true) }}>{usersWhoLikePost[0].username} {usersWhoLikePost.length > 1 && "and others..."}</p>
-                        }
-                    </div>
-                    <div className="flex justify-between items-center gap-2">
-                        <LikeButton liked={currentPost.isLiked} handleLike={handleLike} likesNum={currentPost.likesNum} />
-                        <div className="px-8 py-2">
-                            <span>{currentPost.commentCount}</span>
-                            <i className="icon-comment"></i>
-                        </div>
-                    </div>
+                    <PostInteractions post={currentPost} />
                     <div className="bg-gray-50 shadow-inner p-6 rounded-3xl h-96 flex flex-col mt-4 border border-gray-100">
                         <div className={`overflow-y-auto overflow-x-hidden flex-1 min-h-0 mb-4 pr-2 ${comments.length === 0 ? "flex justify-center items-center" : ""}`}>
                             {comments.length === 0 ? (
@@ -422,7 +318,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
             }
             {showEditModal && (
                 <EditPostModal
-                    postData={postData}
+                    postData={{ title: currentPost.title, content: currentPost.content } as EditPostData}
                     onConfirm={editPost}
                     onCancel={() => setShowEditModal(false)}
                     show={showEditModal}
@@ -431,13 +327,6 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
             <Confirmation
                 onChoose={handleDeletePost}
                 show={showConfirmation}
-            />
-            <LikeList
-                users={usersWhoLikePost}
-                onClose={handleCloseLikeList}
-                loadMore={fetchWhoLikePost}
-                canLoadMore={usersWhoLikePostHasMorePagesRef.current}
-                show={showUsersWhoLikePost}
             />
         </>
     )

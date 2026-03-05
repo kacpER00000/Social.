@@ -10,6 +10,7 @@ import { checkTokenValidity } from "./hooks/useToken.ts";
 import Profile from "./components/Profile.tsx";
 import FollowList from "./components/FollowList.tsx";
 import SearchList from "./components/SearchList.tsx";
+import { FeedProvider } from "./contexts/FeedContext.tsx";
 
 const router = createBrowserRouter([
     {
@@ -111,7 +112,9 @@ function App() {
 
     return (
         <FollowProvider>
-            <RouterProvider router={router} />
+            <FeedProvider>
+                <RouterProvider router={router} />
+            </FeedProvider>
         </FollowProvider>
     )
 }

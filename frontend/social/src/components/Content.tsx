@@ -1,11 +1,11 @@
 import { useRef, useState, useEffect } from "react";
 
-type PostContentProps = {
+type ContentProps = {
     content: string;
     onMoreClicked?: () => void
 }
 
-const PostContent = ({ content, onMoreClicked }: PostContentProps) => {
+const Content = ({ content, onMoreClicked }: ContentProps) => {
     const contentRef = useRef<HTMLParagraphElement>(null);
     const [isExpanded, setIsExpanded] = useState(false);
     const [isOverflowing, setIsOverflowing] = useState(false);
@@ -43,4 +43,4 @@ const PostContent = ({ content, onMoreClicked }: PostContentProps) => {
 
 }
 
-export default PostContent;
+export default Content;

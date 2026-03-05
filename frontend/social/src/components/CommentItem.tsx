@@ -1,14 +1,16 @@
-import {CommentDTO} from "../types/types.ts";
-import {useEffect, useState} from "react";
-import MoreContext from "./MoreContext.tsx";
+import { CommentDTO } from "../types/types.ts";
+import { useEffect, useState } from "react";
+import MoreContextMenu from "./MoreContextMenu.tsx";
 import MoreButton from "./MoreButton.tsx";
 import Confirmation from "./Confirmation.tsx";
 import FollowButton from "./FollowButton.tsx";
-import {useFollowSystem} from "../contexts/FollowerContext.tsx";
+import { useFollowSystem } from "../contexts/FollowerContext.tsx";
 import InspectCard from "./InspectCard.tsx";
-import {useInspect} from "../hooks/useInspect.ts";
-import {useToken} from "../hooks/useToken.ts";
-import {useNavigate} from "react-router-dom";
+import { useInspect } from "../hooks/useInspect.ts";
+import { useToken } from "../hooks/useToken.ts";
+import { useNavigate } from "react-router-dom";
+import AvatarCircle from "./AvatarCircle.tsx";
+import PostContent from "./Content.tsx";
 
 type CommentProps = {
     comment: CommentDTO,
@@ -16,8 +18,8 @@ type CommentProps = {
     onUpdate: (commentId: number, newContent: string) => void
 }
 
-const CommentItem = ({comment,onDelete,onUpdate}: CommentProps) =>{
-    const {decoded, isInvalid} = useToken();
+const CommentItem = ({ comment, onDelete, onUpdate }: CommentProps) => {
+    const { decoded, isInvalid } = useToken();
     const { checkIfFollowed, toggleFollow } = useFollowSystem();
     const isTheOwnerOfComment = decoded?.userId === comment.authorId;
     const [showMore, setShowMore] = useState(false);
@@ -25,22 +27,22 @@ const CommentItem = ({comment,onDelete,onUpdate}: CommentProps) =>{
     const [contentError, setContentError] = useState(false);
     const [showConfirmation, setConfirmation] = useState(false);
     const [newContent, setNewContent] = useState(comment.content);
-    const {show, cords, handlers} = useInspect();
+    const { show, cords, handlers } = useInspect();
     const navigate = useNavigate()
 
     useEffect(() => {
-        if(isInvalid){
+        if (isInvalid) {
             navigate('/login')
         }
-    }, [isInvalid,navigate]);
+    }, [isInvalid, navigate]);
 
-    if(!decoded || isInvalid){
+    if (!decoded || isInvalid) {
         return null;
     }
 
     const showMoreClicked = () => {
         setShowMore(prev => !prev)
-        if(!showMore){setContentError(false);}
+        if (!showMore) { setContentError(false); }
     }
 
     const validate = () => {
@@ -48,7 +50,7 @@ const CommentItem = ({comment,onDelete,onUpdate}: CommentProps) =>{
     }
 
     const handleEdit = async () => {
-        if(!validate()){
+        if (!validate()) {
             setContentError(true)
             return;
         }
@@ -65,7 +67,7 @@ const CommentItem = ({comment,onDelete,onUpdate}: CommentProps) =>{
                 method: "PUT",
                 body: JSON.stringify(updateCommentRequest)
             })
-            if(response.ok){
+            if (response.ok) {
                 onUpdate(comment.commentId, newContent)
                 setIsEditing(false);
             }
@@ -77,20 +79,21 @@ const CommentItem = ({comment,onDelete,onUpdate}: CommentProps) =>{
     const handleDelete = (state: boolean) => {
         setIsEditing(false);
         setConfirmation(false);
-        if(state){
+        if (state) {
             onDelete(comment.commentId);
         }
     }
-    return(
+    return (
         <>
             {
                 showConfirmation &&
-                <Confirmation onChoose={handleDelete} show={showConfirmation}/>
+                <Confirmation onChoose={handleDelete} show={showConfirmation} />
             }
             <div className="relative shadow rounded-xl m-5 p-5">
                 <div className="flex justify-between">
                     <div className="flex gap-3 items-center">
-                        <p className="w-fit font-bold cursor-pointer hover:underline" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave} onClick={() => {navigate(`/profile/${comment.authorId}`)}}>
+                        <AvatarCircle username={comment.author} size="small" />
+                        <p className="w-fit font-bold cursor-pointer hover:underline" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave} onClick={() => { navigate(`/profile/${comment.authorId}`) }}>
                             {comment.author}
                         </p>
                         {!isTheOwnerOfComment &&
@@ -107,30 +110,30 @@ const CommentItem = ({comment,onDelete,onUpdate}: CommentProps) =>{
                     }
                 </div>
                 {showMore &&
-                    <MoreContext
+                    <MoreContextMenu
                         editPermission={comment.canEdit}
                         deletePermission={comment.canDelete}
-                        onEdit={() => {setShowMore(false); setIsEditing(true)}}
-                        onDelete={() => {setShowMore(false); setConfirmation(true)}}
+                        onEdit={() => { setShowMore(false); setIsEditing(true) }}
+                        onDelete={() => { setShowMore(false); setConfirmation(true) }}
                     />
                 }
-                <p className="font-light">
+                <p className="text-xs text-gray-700 mt-1 mb-1">
                     {comment.createdAt}
                 </p>
                 {isEditing ?
-                    <div className="flex">
+                    <div>
                         <form className="w-full" onSubmit={(e) => e.preventDefault()}>
-                            <input type="text" className={`border ${contentError ? "border-red-500 animate-shake" : "border-gray-300"} w-full p-1 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all`} defaultValue={comment.content} onChange={(e) => {setNewContent(e.target.value)}}/>
+                            <textarea className={`border ${contentError ? "border-red-500 animate-shake" : "border-gray-300"} w-full p-1 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all`} defaultValue={comment.content} onChange={(e) => { setNewContent(e.target.value) }} rows={5}></textarea>
                         </form>
-                        <button className="bg-red-500 text-white ml-2 pl-3 pr-3 rounded-xl hover:bg-red-600 transition" onClick={() => {setIsEditing(false)}}>X</button>
+                        <button className="bg-red-500 text-white ml-2 pl-3 pr-3 rounded-xl hover:bg-red-600 transition" onClick={() => { setIsEditing(false) }}>X</button>
                         <button className="bg-blue-500 text-white ml-2 pl-3 pr-3 rounded-xl hover:bg-blue-600 transition" onClick={handleEdit}>
                             <i className="icon-comment"></i>
                         </button>
                     </div>
                     :
-                    <p>
-                        {comment.content}
-                    </p>
+                    <PostContent
+                        content={comment.content}
+                    />
                 }
             </div>
             {show &&

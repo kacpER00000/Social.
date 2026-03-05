@@ -58,11 +58,6 @@ export interface EditPostData {
     content: string
 }
 
-export interface PostResultObj {
-    status: "UPDATED" | "DELETED" | "FOLLOWED",
-    post: PostDTO,
-}
-
 export interface PostLikeDTO {
     username: string,
     userId: number,
@@ -110,4 +105,11 @@ export interface FollowContextType {
     checkIfFollowed: (userId: number | undefined) => boolean;
     addFollowedUsers: (userIds: number[]) => void;
     clearContext: () => void
+}
+
+export interface FeedContextType {
+    posts: PostDTO[],
+    setPosts: React.Dispatch<React.SetStateAction<PostDTO[]>>,
+    updatePostInFeed: (post: PostDTO) => void
+    deletePostFromFeed: (postId: number) => void
 }

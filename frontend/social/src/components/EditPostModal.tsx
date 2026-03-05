@@ -1,7 +1,7 @@
-import {useState} from "react";
-import {EditPostData} from "../types/types.ts";
-import {createPortal} from "react-dom";
-import {ChangeEvent} from "react";
+import { useState } from "react";
+import { EditPostData } from "../types/types.ts";
+import { createPortal } from "react-dom";
+import { ChangeEvent } from "react";
 
 type EditModalProps = {
     postData: EditPostData,
@@ -9,16 +9,16 @@ type EditModalProps = {
     onCancel: () => void,
     show: boolean
 }
-const EditPostModal = ({postData, onConfirm, onCancel, show}: EditModalProps) => {
+const EditPostModal = ({ postData, onConfirm, onCancel, show }: EditModalProps) => {
     const [formData, setFormData] = useState(postData);
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const {name, value} = e.target;
+        const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
             [name]: value
         }))
     }
-    if(!show){return null;}
+    if (!show) { return null; }
     return createPortal(
         <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/50 z-999">
             <div className="bg-white text-center w-11/12 max-w-md rounded-3xl p-6 shadow-2xl">

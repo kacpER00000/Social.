@@ -1,9 +1,10 @@
-import { PostDTO, PostResponse, PostResultObj } from "../types/types.ts";
+import { PostDTO, PostResponse } from "../types/types.ts";
 import PostItem from "./PostItem.tsx";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useFollowSystem } from "../contexts/FollowerContext.tsx";
 import { formatDate } from "../utils/formatDate.ts";
 import PostModal from "./PostModal.tsx";
+import { useFeedContext } from "../contexts/FeedContext.tsx";
 
 type PostProps = {
     postResponse: PostResponse,
@@ -12,11 +13,7 @@ type PostProps = {
 
 const Post = ({ postResponse, path }: PostProps) => {
     const { addFollowedUsers } = useFollowSystem();
-    const [posts, setPosts] = useState(() =>
-        postResponse?.content?.map(post => ({
-            ...post, createdAt: formatDate(post.createdAt)
-        })) || []
-    )
+    const { posts, setPosts } = useFeedContext();
     const [selectedPost, setSelectedPost] = useState<PostDTO | null>(null)
     const sentinelRef = useRef(null)
     const loadingLock = useRef(false)
@@ -100,30 +97,7 @@ const Post = ({ postResponse, path }: PostProps) => {
         setSelectedPost(post)
     }
 
-    const closePost = (postResultObj: PostResultObj | null) => {
-        if (postResultObj !== null) {
-            if (postResultObj.status === "DELETED") {
-                setPosts(prev => prev.filter(post => post.postId !== postResultObj.post.postId))
-            }
-            if (postResultObj.status === "UPDATED") {
-                setPosts(prev =>
-                    prev.map(post =>
-                        post.postId === postResultObj.post.postId ?
-                            { ...postResultObj.post }
-                            : post
-                    )
-                )
-            }
-            if (postResultObj.status === "FOLLOWED") {
-                setPosts(prev =>
-                    prev.map(post =>
-                        post.authorId === postResultObj.post.authorId ?
-                            { ...post, isAuthorFollowed: postResultObj.post.isAuthorFollowed }
-                            : post
-                    )
-                )
-            }
-        }
+    const closePost = () => {
         setSelectedPost(null)
     }
 
@@ -137,7 +111,11 @@ const Post = ({ postResponse, path }: PostProps) => {
             }
             <div className="flex flex-col w-full">
                 {posts?.map((item) =>
-                    <PostItem post={item} key={item.postId} onSelect={showPostComponent} />
+                    <PostItem
+                        post={item}
+                        key={item.postId}
+                        onSelect={showPostComponent}
+                    />
                 )}
             </div>
             {isFetchingMore &&
