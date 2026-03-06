@@ -1,14 +1,15 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
 
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
-    const [emailError, setEmailError] = useState(false)
-    const [passwordError, setPasswordError] = useState(false)
-    const [loginError, setLoginError] = useState(false)
-    const [loading, setLoadingState] = useState(false)
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [emailError, setEmailError] = useState(false);
+    const [passwordError, setPasswordError] = useState(false);
+    const [loginError, setLoginError] = useState(false);
+    const [loginErrorMessage, setLoginErrorMessage] = useState("");
+    const [loading, setLoadingState] = useState(false);
     const loadingLock = useRef(false);
     const navigate = useNavigate();
 
@@ -19,6 +20,14 @@ const Login = () => {
         setPasswordError(isPasswordInvalid);
         return isEmailEmpty || isPasswordInvalid;
     }
+
+    useEffect(() => {
+        if (!loginError) return;
+        const timeoutId = setTimeout(() => {
+            setLoginError(false);
+        }, 5000);
+        return () => clearTimeout(timeoutId);
+    }, [loginError]);
 
     const handleLogin = async () => {
         if (loadingLock.current || validate()) { return; }
@@ -37,15 +46,18 @@ const Login = () => {
                 body: JSON.stringify(loginRequest)
             })
             if (response.ok) {
-                const data = await response.json()
-                localStorage.setItem("token", data.token)
-                setLoginError(false)
-                navigate("/home")
+                const data = await response.json();
+                localStorage.setItem("token", data.token);
+                setLoginError(false);
+                setLoginErrorMessage("");
+                navigate("/home");
             } else {
-                setLoginError(true)
+                setLoginError(true);
+                setLoginErrorMessage("Incorrect login or password!");
             }
         } catch (e) {
-            console.log("Network error: ", e)
+            setLoginError(true);
+            setLoginErrorMessage("Something gone wrong.");
         } finally {
             loadingLock.current = false;
             setLoadingState(false)
@@ -67,7 +79,7 @@ const Login = () => {
                 ${loginError ? 'translate-y-0' : '-translate-y-[200%]'}
             `}
             >
-                Incorrect login or password!
+                {loginErrorMessage}
             </div>
             <div className="flex justify-center items-center">
                 <form className="flex flex-col gap-4 w-64" onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>

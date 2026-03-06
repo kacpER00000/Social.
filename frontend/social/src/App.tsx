@@ -11,6 +11,7 @@ import Profile from "./components/Profile.tsx";
 import FollowList from "./components/FollowList.tsx";
 import SearchList from "./components/SearchList.tsx";
 import { FeedProvider } from "./contexts/FeedContext.tsx";
+import ErrorPage from "./components/ErrorPage.tsx";
 
 const router = createBrowserRouter([
     {
@@ -39,6 +40,7 @@ const router = createBrowserRouter([
         ]
     },
     {
+        path: "/",
         element: <ProtectedLayout />,
         loader: async () => {
             if (checkTokenValidity().isInvalid) {
@@ -48,61 +50,91 @@ const router = createBrowserRouter([
         },
         children: [
             {
-                path: "/Home",
-                element: <Home />,
-                loader: async () => {
-                    return await fetch(`${import.meta.env.VITE_API_URL}/social/posts/latest`, {
-                        headers: {
-                            "Authorization": "Bearer " + localStorage.getItem("token")
+                errorElement: <ErrorPage />,
+                children: [
+                    {
+                        path: "home",
+                        element: <Home />,
+                        loader: async () => {
+                            return await fetch(`${import.meta.env.VITE_API_URL}/social/posts/latest`, {
+                                headers: {
+                                    "Authorization": "Bearer " + localStorage.getItem("token")
+                                }
+                            })
                         }
-                    })
-                }
-            },
-            {
-                path: "/profile/:userId",
-                element: <Profile />,
-                loader: async ({ params }: LoaderFunctionArgs<number>) => {
-                    return await fetch(`${import.meta.env.VITE_API_URL}/social/users/${params.userId}`, {
-                        headers: {
-                            "Authorization": "Bearer " + localStorage.getItem("token")
+                    },
+                    {
+                        path: "profile/:userId",
+                        element: <Profile />,
+                        loader: async ({ params }: LoaderFunctionArgs<number>) => {
+                            if (!params.userId || isNaN(parseInt(params.userId))) {
+                                throw new Response("Invalid user ID", { status: 400, statusText: "Invalid user ID" })
+                            }
+                            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users/${params.userId}`, {
+                                headers: {
+                                    "Authorization": "Bearer " + localStorage.getItem("token")
+                                }
+                            })
+                            if (!response.ok) {
+                                throw new Response("Profile not found", { status: 404, statusText: "Profile not found" })
+                            }
+                            return response
                         }
-                    })
-                }
-            },
-            {
-                path: "/following/:userId",
-                element: <FollowList />,
-                loader: async ({ params }: LoaderFunctionArgs<number>) => {
-                    return await fetch(`${import.meta.env.VITE_API_URL}/social/users/${params.userId}/following`, {
-                        headers: {
-                            "Authorization": "Bearer " + localStorage.getItem("token")
+                    },
+                    {
+                        path: "following/:userId",
+                        element: <FollowList />,
+                        loader: async ({ params }: LoaderFunctionArgs<number>) => {
+                            if (!params.userId || isNaN(parseInt(params.userId))) {
+                                throw new Response("Invalid user ID", { status: 400, statusText: "Invalid user ID" })
+                            }
+                            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users/${params.userId}/following`, {
+                                headers: {
+                                    "Authorization": "Bearer " + localStorage.getItem("token")
+                                }
+                            })
+                            if (!response.ok) {
+                                throw new Response("Profile not found", { status: 404, statusText: "Profile not found" })
+                            }
+                            return response
                         }
-                    })
-                }
-            },
-            {
-                path: "/followers/:userId",
-                element: <FollowList />,
-                loader: async ({ params }: LoaderFunctionArgs<number>) => {
-                    return await fetch(`${import.meta.env.VITE_API_URL}/social/users/${params.userId}/followers`, {
-                        headers: {
-                            "Authorization": "Bearer " + localStorage.getItem("token")
+                    },
+                    {
+                        path: "followers/:userId",
+                        element: <FollowList />,
+                        loader: async ({ params }: LoaderFunctionArgs<number>) => {
+                            if (!params.userId || isNaN(parseInt(params.userId))) {
+                                throw new Response("Invalid user ID", { status: 400, statusText: "Invalid user ID" })
+                            }
+                            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users/${params.userId}/followers`, {
+                                headers: {
+                                    "Authorization": "Bearer " + localStorage.getItem("token")
+                                }
+                            })
+                            if (!response.ok) {
+                                throw new Response("Profile not found", { status: 404, statusText: "Profile not found" })
+                            }
+                            return response
                         }
-                    })
-                }
-            },
-            {
-                path: "/search",
-                element: <SearchList />,
-                loader: async ({ request }: LoaderFunctionArgs) => {
-                    const url = new URL(request.url);
-                    const query = url.searchParams.get("q");
-                    return await fetch(`${import.meta.env.VITE_API_URL}/social/users/search?query=${query}`, {
-                        headers: {
-                            "Authorization": "Bearer " + localStorage.getItem("token")
+                    },
+                    {
+                        path: "search",
+                        element: <SearchList />,
+                        loader: async ({ request }: LoaderFunctionArgs) => {
+                            const url = new URL(request.url);
+                            const query = url.searchParams.get("q");
+                            return await fetch(`${import.meta.env.VITE_API_URL}/social/users/search?query=${query}`, {
+                                headers: {
+                                    "Authorization": "Bearer " + localStorage.getItem("token")
+                                }
+                            })
                         }
-                    })
-                }
+                    },
+                    {
+                        path: "*",
+                        element: <ErrorPage />
+                    }
+                ]
             }
         ]
     }
