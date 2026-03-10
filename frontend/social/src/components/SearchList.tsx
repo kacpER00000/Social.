@@ -3,8 +3,10 @@ import { UserDTO, UserResponse } from "../types/types.ts"
 import { useEffect, useRef, useState, useCallback } from "react"
 import UserSearchItem from "./UserSearchItem";
 import { useToken } from "../hooks/useToken.ts";
+import { useErrorContext } from "../contexts/ErrorContext.tsx";
 
 const SearchList = () => {
+    const { triggerError } = useErrorContext();
     const { isInvalid } = useToken();
     const searchResponse = useLoaderData() as UserResponse;
     const [users, setUsers] = useState<UserDTO[]>(searchResponse.content)
@@ -36,13 +38,16 @@ const SearchList = () => {
             });
             if (response.ok) {
                 const data = await response.json() as UserResponse;
-                console.log(data.totalPages)
                 setUsers(prev => [...prev, ...data.content]);
                 page.current += 1;
                 canFetch.current = page.current < data.totalPages;
+            } else {
+                triggerError("Failed to fetch users.");
+                canFetch.current = false;
             }
         } catch (e) {
-            console.error("Error: ", e);
+            triggerError("Server error while fetching users.");
+            canFetch.current = false;
         } finally {
             loadingLock.current = false;
             setIsFetching(false);
@@ -75,7 +80,7 @@ const SearchList = () => {
 
     return (
         <div className="flex justify-center items-center ml-auto mr-auto">
-            <div className="w-2/5 max-w-2/5bg-white m-5 rounded-3xl shadow-2xl">
+            <div className="bg-white m-5 rounded-3xl shadow-2xl">
                 <h2 className="text-4xl font-bold p-5 first-letter:capitalize">Users</h2>
                 <div className="border-b border-gray-200"></div>
                 {users.length === 0 ?

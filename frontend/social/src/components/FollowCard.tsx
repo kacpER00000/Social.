@@ -7,7 +7,7 @@ import { useState } from "react";
 type FollowCardProps = {
     users: FollowDTO[],
     type: "following" | "followers",
-    profileUserId: number,
+    profileUserId: number | undefined,
     loading: boolean
 }
 const FollowCard = ({ users, type, profileUserId, loading }: FollowCardProps) => {
@@ -20,7 +20,9 @@ const FollowCard = ({ users, type, profileUserId, loading }: FollowCardProps) =>
             <div className="bg-white p-4 rounded-3xl shadow-md w-full h-fit mb-5">
                 <div className="flex justify-between items-center mb-3">
                     <h3 className="font-bold text-3xl first-letter:capitalize">{type}</h3>
-                    <span className="text-blue-500 text-sm cursor-pointer hover:underline" onClick={() => navigate(`/${type}/${profileUserId}`)}>See all</span>
+                    {profileUserId && users.length !== 0 && (
+                        <span className="text-blue-500 text-sm cursor-pointer hover:underline" onClick={() => navigate(`/${type}/${profileUserId}`)}>See all</span>
+                    )}
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                     {loading ?
@@ -33,7 +35,7 @@ const FollowCard = ({ users, type, profileUserId, loading }: FollowCardProps) =>
                         :
                         users.slice(0, 9).map((item) => (
                             <div key={item.userId} className="flex flex-col mb-1">
-                                <div className="w-full aspect-square rounded-lg bg-gradient-to-tr from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold shadow-sm cursor-pointer hover:opacity-90 transition" onMouseEnter={(e) => {
+                                <div className="w-full aspect-square rounded-lg bg-linear-to-tr from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold shadow-sm cursor-pointer hover:opacity-90 transition" onMouseEnter={(e) => {
                                     setCurrentUsername(item.followerUsername)
                                     setCurrentUserId(item.userId)
                                     handlers.onMouseEnter(e)

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ErrorPopup from "./ErrorPopup";
 
 const Login = () => {
 
@@ -71,16 +72,7 @@ const Login = () => {
                     <p className="text-7xl text-white font-bold">Login</p>
                 </div>
             </div>
-            <div
-                className={`
-                fixed top-0 left-1/2 -translate-x-1/2 mt-4 
-                bg-red-500 text-white px-6 py-3 rounded-3xl shadow-xl z-50
-                transition-transform duration-500 ease-in-out
-                ${loginError ? 'translate-y-0' : '-translate-y-[200%]'}
-            `}
-            >
-                {loginErrorMessage}
-            </div>
+            <ErrorPopup error={loginError} errorMessage={loginErrorMessage} />
             <div className="flex justify-center items-center">
                 <form className="flex flex-col gap-4 w-64" onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
                     <label htmlFor="email-input">E-mail</label>

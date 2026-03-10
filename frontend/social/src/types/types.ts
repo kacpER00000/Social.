@@ -113,3 +113,7 @@ export interface FeedContextType {
     updatePostInFeed: (post: PostDTO) => void
     deletePostFromFeed: (postId: number) => void
 }
+
+export interface ErrorContextType {
+    triggerError: (message: string) => void
+};

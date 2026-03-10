@@ -12,6 +12,7 @@ import FollowList from "./components/FollowList.tsx";
 import SearchList from "./components/SearchList.tsx";
 import { FeedProvider } from "./contexts/FeedContext.tsx";
 import ErrorPage from "./components/ErrorPage.tsx";
+import { ErrorProvider } from "./contexts/ErrorContext.tsx";
 
 const router = createBrowserRouter([
     {
@@ -143,11 +144,13 @@ const router = createBrowserRouter([
 function App() {
 
     return (
-        <FollowProvider>
-            <FeedProvider>
-                <RouterProvider router={router} />
-            </FeedProvider>
-        </FollowProvider>
+        <ErrorProvider>
+            <FollowProvider>
+                <FeedProvider>
+                    <RouterProvider router={router} />
+                </FeedProvider>
+            </FollowProvider>
+        </ErrorProvider>
     )
 }
 

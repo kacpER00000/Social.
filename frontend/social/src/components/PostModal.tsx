@@ -17,6 +17,7 @@ import PostContent from "./Content.tsx";
 import PostInteractions from "./PostInteractions.tsx";
 import AvatarCircle from "./AvatarCircle.tsx";
 import { useFeedContext } from "../contexts/FeedContext.tsx";
+import { useErrorContext } from "../contexts/ErrorContext.tsx";
 
 type PostModalProps = {
     post: PostDTO
@@ -40,6 +41,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
     const hasMorePagesRef = useRef(true);
     const navigate = useNavigate();
     const { show, cords, handlers } = useInspect();
+    const { triggerError } = useErrorContext();
 
     const fetchComments = useCallback(async () => {
         if (loadingCommentsLock.current || !hasMorePagesRef.current) { return; }
@@ -58,9 +60,10 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                 hasMorePagesRef.current = data.totalPages > pageRef.current
             } else {
                 hasMorePagesRef.current = false
+                triggerError("Failed to fetch comments.");
             }
         } catch (e) {
-            console.log("Error: ", e)
+            triggerError("Server error while fetching comments.");
         } finally {
             setLoading(false)
             loadingCommentsLock.current = false;
@@ -113,9 +116,11 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                     commentCount: currentPost.commentCount + 1
                 }
                 updatePostInFeed(updatedPost)
+            } else {
+                triggerError("Failed to add comment.");
             }
         } catch (e) {
-            console.log("Error ", e)
+            triggerError("Server error. Please try again.");
         } finally {
             setComment("")
         }
@@ -132,9 +137,11 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                 if (response.ok) {
                     onClose()
                     deletePostFromFeed(currentPost.postId)
+                } else {
+                    triggerError("Failed to delete post.");
                 }
             } catch (e) {
-                console.log("Error " + e)
+                triggerError("Server error while deleting post.");
             }
         }
         setShowConfirmation(false)
@@ -162,9 +169,11 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                     content: data.content
                 }
                 updatePostInFeed(updatedPost)
+            } else {
+                triggerError("Failed to update post.");
             }
         } catch (e) {
-            console.log("Error: ", e)
+            triggerError("Server error while editing post.");
         } finally {
             setShowEditModal(false)
         }
@@ -184,9 +193,11 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                     commentCount: currentPost.commentCount - 1
                 }
                 updatePostInFeed(updatedPost)
+            } else {
+                triggerError("Failed to delete comment.");
             }
         } catch (e) {
-            console.log("Error: " + e)
+            triggerError("Server error while deleting comment.");
         }
     }
 
@@ -253,36 +264,36 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                             {comments.length === 0 ? (
                                 <p className="text-gray-400 italic">Be first to write a comment!</p>
                             ) : (
-                                <div className="space-y-3">
-                                    {comments.map((item) => (
-                                        <CommentItem
-                                            comment={item}
-                                            key={item.commentId}
-                                            onUpdate={handleCommentUpdate}
-                                            onDelete={deleteComment}
-                                        />
-                                    ))}
-                                </div>
-                            )}
-
-                            {loading && (
-                                <div className="bg-white shadow rounded-2xl p-4 m-2">
-                                    <div className="flex animate-pulse space-x-4">
-                                        <div className="flex-1 space-y-3 py-1">
-                                            <div className="h-2 rounded bg-gray-200 w-3/4"></div>
-                                            <div className="h-2 rounded bg-gray-200"></div>
-                                        </div>
+                                <>
+                                    <div className="space-y-3">
+                                        {comments.map((item) => (
+                                            <CommentItem
+                                                comment={item}
+                                                key={item.commentId}
+                                                onUpdate={handleCommentUpdate}
+                                                onDelete={deleteComment}
+                                            />
+                                        ))}
                                     </div>
-                                </div>
-                            )}
-
-                            {hasMorePagesRef.current && !loading && (
-                                <button
-                                    className="w-full text-center py-2 text-sm font-bold text-gray-500 hover:text-blue-500 transition-colors mt-2"
-                                    onClick={fetchComments}
-                                >
-                                    Load more comments
-                                </button>
+                                    {loading && (
+                                        <div className="bg-white shadow rounded-2xl p-4 m-2">
+                                            <div className="flex animate-pulse space-x-4">
+                                                <div className="flex-1 space-y-3 py-1">
+                                                    <div className="h-2 rounded bg-gray-200 w-3/4"></div>
+                                                    <div className="h-2 rounded bg-gray-200"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {hasMorePagesRef.current && !loading && (
+                                        <button
+                                            className="w-full text-center py-2 text-sm font-bold text-gray-500 hover:text-blue-500 transition-colors mt-2"
+                                            onClick={fetchComments}
+                                        >
+                                            Load more comments
+                                        </button>
+                                    )}
+                                </>
                             )}
                         </div>
 

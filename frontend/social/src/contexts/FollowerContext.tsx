@@ -1,9 +1,11 @@
 import {createContext, useContext, useState, ReactNode, useCallback} from "react";
 import {FollowContextType} from "../types/types.ts";
+import { useErrorContext } from "./ErrorContext.tsx";
 
 const FollowContext = createContext<FollowContextType | undefined>(undefined);
 export const FollowProvider = ({ children }: { children: ReactNode }) => {
     const [followedIds, setFollowedIds] = useState<Set<number>>(new Set());
+    const { triggerError } = useErrorContext();
 
     const checkIfFollowed = useCallback((userId: number | undefined) => {
         if(!userId){return false;}
@@ -30,10 +32,12 @@ export const FollowProvider = ({ children }: { children: ReactNode }) => {
                     }
                     return newSet;
                 });
+            } else {
+                triggerError("Action failed.");
             }
         } catch (e) {
-            console.log("Error: " + e)
-        }}, [checkIfFollowed])
+            triggerError("Server error. Please try again.");
+        }}, [checkIfFollowed, triggerError])
 
     const addFollowedUsers = useCallback((userIds: number[]) => {
         setFollowedIds(prev => {

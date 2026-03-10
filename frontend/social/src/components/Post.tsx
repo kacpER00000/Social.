@@ -5,6 +5,7 @@ import { useFollowSystem } from "../contexts/FollowerContext.tsx";
 import { formatDate } from "../utils/formatDate.ts";
 import PostModal from "./PostModal.tsx";
 import { useFeedContext } from "../contexts/FeedContext.tsx";
+import { useErrorContext } from "../contexts/ErrorContext.tsx";
 
 type PostProps = {
     postResponse: PostResponse,
@@ -12,6 +13,7 @@ type PostProps = {
 }
 
 const Post = ({ postResponse, path }: PostProps) => {
+    const { triggerError } = useErrorContext();
     const { addFollowedUsers } = useFollowSystem();
     const { posts, setPosts } = useFeedContext();
     const [selectedPost, setSelectedPost] = useState<PostDTO | null>(null)
@@ -41,9 +43,13 @@ const Post = ({ postResponse, path }: PostProps) => {
                 }
                 page.current += 1
                 hasMorePages.current = data.totalPages > page.current
+            } else {
+                triggerError("Failed to fetch more posts.");
+                hasMorePages.current = false;
             }
         } catch (e) {
-            console.log("Error: " + e)
+            triggerError("Server error while fetching posts.");
+            hasMorePages.current = false;
         } finally {
             loadingLock.current = false
             setIsFetchingMore(false);

@@ -1,5 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ErrorPopup from "./ErrorPopup";
 
 const Register = () => {
     const [sex, setSex] = useState("M");
@@ -13,19 +14,25 @@ const Register = () => {
     const [firstNameError, setFirstNameError] = useState(false);
     const [lastNameError, setLastNameError] = useState(false);
     const [birthDateError, setBirthDateError] = useState(false);
-    const [accountExistenceError, setAccountExistenceError] = useState(false);
-    const [loading, setLoadingState] = useState(false)
+    const [globalError, setGlobalError] = useState(false);
+    const [globalErrorMessage, setGlobalErrorMessage] = useState("");
+    const [loading, setLoadingState] = useState(false);
     const loadingLock = useRef(false);
     const navigate = useNavigate();
     const today = new Date();
     today.setFullYear(today.getFullYear() - 18);
     const maxDate = today.toISOString().split('T')[0];
-    const triggerAccountExistenceError = () => {
-        setAccountExistenceError(true)
-        setTimeout(() => {
-            setAccountExistenceError(false)
-        }, 3000)
-    }
+
+    useEffect(() => {
+        if (!globalError) { return; }
+        setGlobalError(true);
+        const timeoutId = setTimeout(() => {
+            setGlobalError(false);
+            setGlobalErrorMessage("");
+        }, 5000);
+        return () => clearTimeout(timeoutId);
+    }, [globalError])
+
 
     const validate = () => {
         const isEmailEmpty = email.trim() === "";
@@ -61,13 +68,15 @@ const Register = () => {
                 body: JSON.stringify(registerRequest)
             })
             if (response.ok) {
-                setAccountExistenceError(false)
+                setGlobalError(false);
                 navigate("/login")
             } else {
-                triggerAccountExistenceError()
+                setGlobalError(true);
+                setGlobalErrorMessage("Account with this e-mail already exists.");
             }
         } catch (e) {
-            console.log("Error: ", e)
+            setGlobalError(true);
+            setGlobalErrorMessage("Something gone wrong");
         } finally {
             setLoadingState(false)
             loadingLock.current = false
@@ -83,16 +92,7 @@ const Register = () => {
                 </div>
             </div>
             <div className="flex justify-center items-center">
-                <div
-                    className={`
-                fixed top-0 left-1/2 -translate-x-1/2 mt-4 
-                bg-red-500 text-white px-6 py-3 rounded-3xl shadow-xl z-50
-                transition-transform duration-500 ease-in-out
-                ${accountExistenceError ? 'translate-y-0' : '-translate-y-[200%]'}
-            `}
-                >
-                    Account with this email already exists!
-                </div>
+                <ErrorPopup error={globalError} errorMessage={globalErrorMessage} />
                 <form className="flex flex-col gap-2 w-64" onSubmit={(e) => { e.preventDefault(); handleRegister() }}>
                     <label htmlFor="email-input">E-mail</label>
                     <input

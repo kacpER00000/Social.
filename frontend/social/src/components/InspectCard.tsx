@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { FollowDTO } from "../types/types.ts";
 import { formatDate } from "../utils/formatDate.ts";
 import { useFollowSystem } from "../contexts/FollowerContext.tsx";
+import { useErrorContext } from "../contexts/ErrorContext.tsx";
 import FollowButton from "./FollowButton.tsx";
 import { useToken } from "../hooks/useToken.ts";
 import AvatarCircle from "./AvatarCircle.tsx";
@@ -18,6 +19,7 @@ type InspectCardProps = {
 }
 
 const InspectCard = ({ username, userId, top, left, show, onMouseEnter, onMouseLeave }: InspectCardProps) => {
+    const { triggerError } = useErrorContext();
     const { decoded } = useToken();
     const [followInfo, setFollowInfo] = useState<FollowDTO | null>(null);
     const [fetched, setFetched] = useState(false);
@@ -33,11 +35,13 @@ const InspectCard = ({ username, userId, top, left, show, onMouseEnter, onMouseL
                 const data = await response.json() as FollowDTO
                 const formatedData = { ...data, followedSince: data.followedSince === null ? null : formatDate(data.followedSince).split("T")[0] }
                 setFollowInfo(formatedData)
+            } else {
+                 triggerError("Failed to fetch follow status.");
             }
         } catch (e) {
-            console.log("Error: ", e)
+            triggerError("Server error. Follow status is unavailable.");
         }
-    }, [userId])
+    }, [userId, triggerError])
 
     useEffect(() => {
         if (show && !fetched && userId && decoded?.userId !== userId) {
@@ -62,7 +66,7 @@ const InspectCard = ({ username, userId, top, left, show, onMouseEnter, onMouseL
         <div
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
-            className={`animate-fade-in z-[999] fixed bg-white flex justify-between items-center gap-5 p-5 shadow-2xl rounded-3xl w-max h-fit border border-gray-100`}
+            className={`animate-fade-in z-999 fixed bg-white flex justify-between items-center gap-5 p-5 shadow-2xl rounded-3xl w-max h-fit border border-gray-100`}
             style={{
                 top: `${top}px`,
                 left: `${left}px`

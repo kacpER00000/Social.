@@ -2,11 +2,13 @@ import { useCallback, useState, useEffect } from "react";
 import { UserDTO, UserResponse } from "../types/types";
 import { useNavigate, useLocation } from "react-router-dom";
 import UserSearchItem from "./UserSearchItem.tsx";
+import { useErrorContext } from "../contexts/ErrorContext.tsx";
 const SearchBar = () => {
     const [users, setUsers] = useState<UserDTO[]>([]);
     const [query, setQuery] = useState<string>("");
     const navigate = useNavigate();
     const location = useLocation();
+    const { triggerError } = useErrorContext();
 
     useEffect(() => {
         setUsers([]);
@@ -30,11 +32,13 @@ const SearchBar = () => {
             if (response.ok) {
                 const data = await response.json() as UserResponse;
                 setUsers(data.content);
+            } else {
+                triggerError("Failed to fetch search results.");
             }
         } catch (e) {
-            console.error("Error: ", e);
+            triggerError("Connection error during search.");
         }
-    }, [query]);
+    }, [query, triggerError]);
 
     useEffect(() => {
         if (query.trim() === "") {

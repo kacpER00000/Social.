@@ -9,6 +9,7 @@ import Confirmation from "./Confirmation.tsx";
 import { useFollowSystem } from "../contexts/FollowerContext.tsx";
 import { useToken } from "../hooks/useToken.ts";
 import AvatarCircle from "./AvatarCircle.tsx";
+import { useErrorContext } from "../contexts/ErrorContext.tsx";
 
 const Profile = () => {
     const { userId } = useParams();
@@ -22,6 +23,7 @@ const Profile = () => {
     const [userPostResponse, setUserPostResponse] = useState<PostResponse | undefined>(undefined);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const { triggerError } = useErrorContext();
     const userData: EditProfileData = {
         firstName: user.firstName,
         lastName: user.lastName,
@@ -46,9 +48,11 @@ const Profile = () => {
                 })
                 if (response.ok) {
                     setUserPostResponse(await response.json() as PostResponse);
+                } else {
+                    triggerError("Failed to load user's posts.");
                 }
             } catch (e) {
-                console.log("Error: " + e)
+                triggerError("Server error while loading posts.");
             }
         }
 
@@ -64,9 +68,11 @@ const Profile = () => {
                     const followedUserIds = data.content.map(follow => follow.userId);
                     addFollowedUsers(followedUserIds);
                     setFollowing(data.content)
+                } else {
+                    triggerError("Failed to load following list.");
                 }
             } catch (e) {
-                console.log("Error: " + e)
+                triggerError("Error fetching following list.");
             }
         }
 
@@ -80,9 +86,11 @@ const Profile = () => {
                 if (response.ok) {
                     const data = await response.json() as FollowResponse
                     setFollowers(data.content)
+                } else {
+                    triggerError("Failed to load followers list.");
                 }
             } catch (e) {
-                console.log("Error: " + e)
+                triggerError("Error fetching followers list.");
             }
         }
         const loadAllProfileData = async () => {
@@ -109,9 +117,11 @@ const Profile = () => {
             })
             if (response.ok) {
                 location.reload()
+            } else {
+                triggerError("Failed to update profile.");
             }
         } catch (e) {
-            console.log("Error: " + e);
+            triggerError("Server error. Profile was not updated.");
         }
     }
 
@@ -129,9 +139,11 @@ const Profile = () => {
                     clearContext()
                     localStorage.removeItem("token")
                     navigate("/login")
+                } else {
+                    triggerError("Failed to delete profile.");
                 }
             } catch (e) {
-                console.log("Error: " + e)
+                triggerError("Server error. Your profile was not deleted.");
             }
         }
     }
@@ -171,13 +183,13 @@ const Profile = () => {
                         <FollowCard
                             users={following}
                             type={"following"}
-                            profileUserId={userId}
+                            profileUserId={userId ? Number(userId) : undefined}
                             loading={loading}
                         />
                         <FollowCard
                             users={followers}
                             type={"followers"}
-                            profileUserId={userId}
+                            profileUserId={userId ? Number(userId) : undefined}
                             loading={loading}
                         />
                     </div>

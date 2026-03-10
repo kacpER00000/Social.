@@ -11,6 +11,7 @@ import { useToken } from "../hooks/useToken.ts";
 import { useNavigate } from "react-router-dom";
 import AvatarCircle from "./AvatarCircle.tsx";
 import PostContent from "./Content.tsx";
+import { useErrorContext } from "../contexts/ErrorContext.tsx";
 
 type CommentProps = {
     comment: CommentDTO,
@@ -28,7 +29,8 @@ const CommentItem = ({ comment, onDelete, onUpdate }: CommentProps) => {
     const [showConfirmation, setConfirmation] = useState(false);
     const [newContent, setNewContent] = useState(comment.content);
     const { show, cords, handlers } = useInspect();
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+    const { triggerError } = useErrorContext();
 
     useEffect(() => {
         if (isInvalid) {
@@ -70,9 +72,11 @@ const CommentItem = ({ comment, onDelete, onUpdate }: CommentProps) => {
             if (response.ok) {
                 onUpdate(comment.commentId, newContent)
                 setIsEditing(false);
+            } else {
+                triggerError("Failed to update comment.");
             }
         } catch (e) {
-            console.log("Error: " + e);
+            triggerError("Server error while editing comment.");
         }
     }
 

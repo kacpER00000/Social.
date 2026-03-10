@@ -4,7 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import UserSearchItem from "./UserSearchItem.tsx";
 import { useToken } from "../hooks/useToken.ts";
 import { useNavigate } from "react-router-dom";
+import { useErrorContext } from "../contexts/ErrorContext.tsx";
 const FollowList = () => {
+    const { triggerError } = useErrorContext();
     const followResponse = useLoaderData<FollowResponse>();
     const [followList, setFollowList] = useState(followResponse.content);
     const [isFetching, setIsFetching] = useState(false);
@@ -40,10 +42,11 @@ const FollowList = () => {
                 page.current += 1
                 canFetch.current = page.current < newData.totalPages
             } else {
+                triggerError("Failed to fetch users.");
                 canFetch.current = false
             }
         } catch (e) {
-            console.log("Error: " + e)
+            triggerError("Server error while fetching users.");
             canFetch.current = false
         } finally {
             loadingLock.current = false;
@@ -68,10 +71,11 @@ const FollowList = () => {
                 page.current = 1
                 canFetch.current = page.current < newData.totalPages
             } else {
+                triggerError("Failed to fetch users.");
                 canFetch.current = false
             }
         } catch (e) {
-            console.log("Error: " + e)
+            triggerError("Server error while fetching users.");
             canFetch.current = false
         } finally {
             setIsFetching(false);
@@ -118,7 +122,7 @@ const FollowList = () => {
 
     return (
         <div className="flex justify-center items-center ml-auto mr-auto">
-            <div className="w-2/5 max-w-2/5bg-white m-5 rounded-3xl shadow-2xl">
+            <div className="bg-white m-5 rounded-3xl shadow-2xl">
                 <h2 className="text-4xl font-bold p-5 first-letter:capitalize">{type}</h2>
                 <form className="p-5" onSubmit={(e) => e.preventDefault()}>
                     <input className="w-full rounded-3xl border border-gray-200 p-5 transition-all duration-200 ease-in-out focus:border-gray-400 focus:outline-none" type="text" placeholder="Search" value={query} onChange={(e) => setQuery(e.target.value)} />

@@ -4,6 +4,7 @@ import { useCallback, useRef, useState, useEffect } from "react";
 import LikeList from "./LikeList.tsx";
 import { useToken } from "../hooks/useToken.ts";
 import { useFeedContext } from "../contexts/FeedContext.tsx";
+import { useErrorContext } from "../contexts/ErrorContext.tsx";
 
 type PostInteractionsProps = {
     post: PostDTO,
@@ -13,6 +14,7 @@ type PostInteractionsProps = {
 const PostInteractions = ({ post, size = "normal" }: PostInteractionsProps) => {
     const { decoded } = useToken();
     const { updatePostInFeed } = useFeedContext();
+    const { triggerError } = useErrorContext();
     const [isLiked, setIsLiked] = useState(post.isLiked);
     const [likesNum, setLikesNum] = useState(post.likesNum);
 
@@ -45,15 +47,17 @@ const PostInteractions = ({ post, size = "normal" }: PostInteractionsProps) => {
                 setUsersWhoLikePost(prev => [...prev, ...data.content]);
                 usersWhoLikePostPageRef.current += 1;
                 usersWhoLikePostHasMorePagesRef.current = data.totalPages > usersWhoLikePostPageRef.current;
+                usersWhoLikePostHasMorePagesRef.current = data.totalPages > usersWhoLikePostPageRef.current;
             } else {
                 usersWhoLikePostHasMorePagesRef.current = false;
+                triggerError("Failed to load likes list.");
             }
         } catch (e) {
-            console.log("Error: " + e);
+            triggerError("Server error while fetching likes.");
         } finally {
             loadingUsersWhoLikePostLock.current = false;
         }
-    }, [post.postId]);
+    }, [post.postId, triggerError]);
 
     const handleCloseLikeList = () => {
         setShowUsersWhoLikePost(false);
@@ -95,12 +99,22 @@ const PostInteractions = ({ post, size = "normal" }: PostInteractionsProps) => {
                     likesNum: newLikesNum
                 }
                 updatePostInFeed(updatedPost)
+                updatePostInFeed(updatedPost)
             } else {
-                console.log("Error like");
+                 triggerError("Failed to like the post.");
+                 setIsLiked(previousLiked);
+                 setLikesNum(previousCount);
+                 const prevPost: PostDTO = {
+                    ...post,
+                    isLiked: previousLiked,
+                    likesNum: previousCount
+                 }
+                 updatePostInFeed(prevPost);
+                 usersWhoLikePostPageRef.current = 0;
+                 usersWhoLikePostHasMorePagesRef.current = true;
             }
         } catch (e) {
-            console.log("Error: ", e);
-            setIsLiked(previousLiked);
+            triggerError("Connection error. Failed to save changes.");
             setLikesNum(previousCount);
             const prevPost: PostDTO = {
                 ...post,
