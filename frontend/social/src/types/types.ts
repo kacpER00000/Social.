@@ -53,7 +53,8 @@ export interface UserResponse {
 }
 
 
-export interface EditPostData {
+
+export interface PostData {
     title: string,
     content: string
 }
@@ -110,7 +111,8 @@ export interface FollowContextType {
 export interface FeedContextType {
     posts: PostDTO[],
     setPosts: React.Dispatch<React.SetStateAction<PostDTO[]>>,
-    updatePostInFeed: (post: PostDTO) => void
+    addPostToFeed: (post: PostDTO) => void,
+    updatePostInFeed: (post: PostDTO) => void,
     deletePostFromFeed: (postId: number) => void
 }
 

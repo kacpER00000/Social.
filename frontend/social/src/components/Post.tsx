@@ -6,6 +6,7 @@ import { formatDate } from "../utils/formatDate.ts";
 import PostModal from "./PostModal.tsx";
 import { useFeedContext } from "../contexts/FeedContext.tsx";
 import { useErrorContext } from "../contexts/ErrorContext.tsx";
+import CreatePost from "./CreatePost.tsx";
 
 type PostProps = {
     postResponse: PostResponse,
@@ -115,6 +116,7 @@ const Post = ({ postResponse, path }: PostProps) => {
                     onClose={closePost}
                 />
             }
+            <CreatePost />
             <div className="flex flex-col w-full">
                 {posts?.map((item) =>
                     <PostItem

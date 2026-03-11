@@ -2,7 +2,7 @@ import { CommentDTO, CommentResponse, PostDTO } from "../types/types.ts";
 import CommentItem from "./CommentItem.tsx";
 import { useState, useRef, useEffect, useCallback } from "react";
 import Confirmation from "./Confirmation.tsx";
-import { EditPostData } from "../types/types.ts";
+import { PostData } from "../types/types.ts";
 import MoreContextMenu from "./MoreContextMenu.tsx";
 import MoreButton from "./MoreButton.tsx";
 import FollowButton from "./FollowButton.tsx";
@@ -151,7 +151,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
         setShowEditModal(true)
     }
 
-    const editPost = async (data: EditPostData) => {
+    const editPost = async (data: PostData) => {
         setShowMorePost(false);
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}`, {
@@ -329,7 +329,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
             }
             {showEditModal && (
                 <EditPostModal
-                    postData={{ title: currentPost.title, content: currentPost.content } as EditPostData}
+                    postData={{ title: currentPost.title, content: currentPost.content } as PostData}
                     onConfirm={editPost}
                     onCancel={() => setShowEditModal(false)}
                     show={showEditModal}

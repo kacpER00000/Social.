@@ -4,17 +4,23 @@ const FeedContext = createContext<FeedContextType | undefined>(undefined);
 
 export const FeedProvider = ({ children }: { children: ReactNode }) => {
     const [posts, setPosts] = useState<PostDTO[]>([]);
+    const addPostToFeed = useCallback((post: PostDTO) => {
+        setPosts(prev => [post, ...prev])
+    }, []);
+
     const updatePostInFeed = useCallback((post: PostDTO) => {
         setPosts(prev => prev.map(p => p.postId == post.postId ? post : p))
-    }, [])
+    }, []);
+
     const deletePostFromFeed = useCallback((postId: number) => {
         setPosts(prev => prev.filter(p => p.postId != postId))
-    }, [])
+    }, []);
+
     return (
-        <FeedContext.Provider value={{ posts, setPosts, updatePostInFeed, deletePostFromFeed }}>
+        <FeedContext.Provider value={{ posts, setPosts, addPostToFeed, updatePostInFeed, deletePostFromFeed }}>
             {children}
         </FeedContext.Provider>
-    )
+    );
 }
 
 export const useFeedContext = () => {

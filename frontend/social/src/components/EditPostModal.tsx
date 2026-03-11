@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { EditPostData } from "../types/types.ts";
+import { PostData } from "../types/types.ts";
 import { createPortal } from "react-dom";
 import { ChangeEvent } from "react";
 
 type EditModalProps = {
-    postData: EditPostData,
-    onConfirm: (data: EditPostData) => void,
+    postData: PostData,
+    onConfirm: (data: PostData) => void,
     onCancel: () => void,
     show: boolean
 }
