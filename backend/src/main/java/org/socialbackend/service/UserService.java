@@ -46,12 +46,6 @@ public class UserService {
                 .orElseThrow(() -> new NoSuchElementException("User with this id don't exist"));
     }
 
-    public UserDTO findUserByEmail(String email) {
-        UserLoginData userLoginData = userLoginDataRepository.findByEmail(email)
-                .orElseThrow(() -> new NoSuchElementException("User with this email don't exist."));
-        return mapToDTO(userLoginData.getUser(), userLoginData.getUserId());
-    }
-
     public Page<UserDTO> findUsersByFirstNameOrLastName(String query, Long loggedUserId, Pageable pageable) {
         if (query == null || query.isBlank()) {
             throw new InvalidParameterException("Search query cannot be empty");

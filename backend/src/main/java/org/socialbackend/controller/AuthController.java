@@ -2,6 +2,7 @@ package org.socialbackend.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.socialbackend.details.AppUserDetails;
 import org.socialbackend.dto.AuthDTO;
 import org.socialbackend.dto.UserDTO;
 import org.socialbackend.model.User;
@@ -38,8 +39,8 @@ public class AuthController {
                         loginRequest.password()
                 )
         );
-        var userDetails = (UserDetails) authentication.getPrincipal();
-        UserDTO user = userService.findUserByEmail(userDetails.getUsername());
+        var userDetails = (AppUserDetails) authentication.getPrincipal();
+        UserDTO user = userService.findUserById(userDetails.getUserId(), userDetails.getUserId());
         Map<String,Object> claims = new HashMap<>();
         claims.put("username", user.getFirstName() + " " + user.getLastName());
         claims.put("userId", user.getUserId());
