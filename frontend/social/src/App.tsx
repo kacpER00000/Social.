@@ -13,10 +13,12 @@ import SearchList from "./components/SearchList.tsx";
 import { FeedProvider } from "./contexts/FeedContext.tsx";
 import ErrorPage from "./components/ErrorPage.tsx";
 import { ErrorProvider } from "./contexts/ErrorContext.tsx";
+import HydrateFallbackElement from "./components/HydrateFallbackElement.tsx";
 
 const router = createBrowserRouter([
     {
         element: <PublicLayout />,
+        hydrateFallbackElement: <HydrateFallbackElement />,
         children: [
             {
                 path: "/login",
@@ -49,6 +51,7 @@ const router = createBrowserRouter([
             }
             return null
         },
+        hydrateFallbackElement: <HydrateFallbackElement />,
         children: [
             {
                 errorElement: <ErrorPage />,

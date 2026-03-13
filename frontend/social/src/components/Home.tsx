@@ -3,6 +3,7 @@ import { useLoaderData, useNavigate } from "react-router-dom";
 import Post from "./Post.tsx";
 import { useEffect } from "react";
 import { useToken } from "../hooks/useToken.ts";
+import CreatePost from "./CreatePost.tsx";
 
 const Home = () => {
     const postResponse = useLoaderData() as PostResponse;
@@ -19,10 +20,13 @@ const Home = () => {
         return null;
     }
     return (
-        <Post
-            postResponse={postResponse}
-            path="latest"
-        />
+        <>
+            <CreatePost />
+            <Post
+                postResponse={postResponse}
+                path="latest"
+            />
+        </>
     );
 }
 

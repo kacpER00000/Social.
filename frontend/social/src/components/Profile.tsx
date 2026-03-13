@@ -10,6 +10,7 @@ import { useFollowSystem } from "../contexts/FollowerContext.tsx";
 import { useToken } from "../hooks/useToken.ts";
 import AvatarCircle from "./AvatarCircle.tsx";
 import { useErrorContext } from "../contexts/ErrorContext.tsx";
+import CreatePost from "./CreatePost.tsx";
 
 const Profile = () => {
     const { userId } = useParams();
@@ -197,6 +198,7 @@ const Profile = () => {
                         <div className="p-5 m-3 shadow-xl rounded-3xl">
                             <h2 className="text-3xl text-center font-bold">Posts</h2>
                         </div>
+                        {userId && decoded.userId === parseInt(userId) && <CreatePost />}
                         {loading &&
                             <div className="shadow-2xl rounded-3xl p-5 m-5">
                                 <div className="flex animate-pulse space-x-4">
