@@ -1,24 +1,24 @@
-import {PostResponse} from "../types/types.ts";
-import {useLoaderData, useNavigate} from "react-router-dom";
+import { PostResponse } from "../types/types.ts";
+import { useLoaderData, useNavigate } from "react-router-dom";
 import Post from "./Post.tsx";
-import {useEffect} from "react";
-import {useToken} from "../hooks/useToken.ts";
+import { useEffect } from "react";
+import { useToken } from "../hooks/useToken.ts";
 
-const Home = () =>{
+const Home = () => {
     const postResponse = useLoaderData() as PostResponse;
-    const {isInvalid} = useToken();
+    const { isInvalid } = useToken();
     const navigate = useNavigate();
 
     useEffect(() => {
-        if(isInvalid){
+        if (isInvalid) {
             navigate("/login")
         }
-    }, [isInvalid,navigate]);
+    }, [isInvalid, navigate]);
 
-    if(isInvalid){
+    if (isInvalid) {
         return null;
     }
-    return(
+    return (
         <Post
             postResponse={postResponse}
             path="latest"

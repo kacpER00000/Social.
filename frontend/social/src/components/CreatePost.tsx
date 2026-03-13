@@ -46,6 +46,7 @@ const CreatePost = () => {
             </div>
             <CreatePostModal
                 show={showCreatePostModal}
+                username={decoded?.username}
                 onSubmit={createPost}
                 onClose={() => { setShowCreatePostModal(false); }}
             />
