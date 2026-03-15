@@ -50,6 +50,10 @@ public class Post {
 
     public Post(){}
 
+    public void setPostId(Long postId) {
+        this.postId = postId;
+    }
+
     public Post(User user, String title, String content) {
         this.user = user;
         this.title = title;
