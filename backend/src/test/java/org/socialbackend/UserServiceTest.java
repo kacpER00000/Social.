@@ -171,7 +171,6 @@ public class UserServiceTest {
         assertEquals("John", returnedDto1.getFirstName());
         assertEquals("Doe", returnedDto1.getLastName());
 
-        // Tutaj był ten czeski błąd z returnedDto1 -> returnedDto2 :)
         assertEquals("John", returnedDto2.getFirstName());
         assertEquals("Smith", returnedDto2.getLastName());
     }
@@ -198,5 +197,14 @@ public class UserServiceTest {
 
         assertEquals("John", returnedDto.getFirstName());
         assertEquals("Doe", returnedDto.getLastName());
+    }
+    @Test
+    void shouldThrowExceptionWhenFindingNonExistingUserById() {
+        Long userId = 999L;
+        Long loggedUserId = 1L;
+
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThrows(NoSuchElementException.class, () -> userService.findUserById(userId, loggedUserId));
     }
 }
