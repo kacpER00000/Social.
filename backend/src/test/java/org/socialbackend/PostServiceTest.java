@@ -57,7 +57,7 @@ public class PostServiceTest {
         User userFromDb = new User();
         userFromDb.setUserId(userId);
         PostRequest postRequest = new PostRequest("Title", "Content");
-        when(userRepository.findById(userId)).thenThrow(NoSuchElementException.class);
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
         assertThrows(NoSuchElementException.class, () -> postService.addPost(postRequest, userId));
         verify(postRepository,never()).save(any(Post.class));
     }
