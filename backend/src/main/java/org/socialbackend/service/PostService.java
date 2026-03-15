@@ -78,7 +78,8 @@ public class PostService {
         String nickname = post.getUser().getFirstName() + " " + post.getUser().getLastName();
         boolean isLiked = postLikeRepository.existsByPost_postIdAndUser_userId(post.getPostId(), loggedUserId);
         boolean isAuthorFollowed = followerRepository.existsByFollower_UserIdAndFollowed_UserId(loggedUserId,post.getUser().getUserId());
-        return new PostDTO(post.getPostId(),post.getUser().getUserId(),nickname,post.getTitle(),post.getContent(),post.getCreatedAt(),likesNumber,commentCount, isLiked, isAuthorFollowed);
+        boolean canEdit = post.getUser().getUserId().equals(loggedUserId);
+        return new PostDTO(post.getPostId(),post.getUser().getUserId(),nickname,post.getTitle(),post.getContent(),post.getCreatedAt(),likesNumber,commentCount, isLiked, isAuthorFollowed, canEdit);
     }
 
     private User findUserById(Long userId){

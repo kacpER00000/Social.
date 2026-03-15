@@ -8,7 +8,8 @@ export interface PostDTO {
     likesNum: number,
     commentCount: number,
     isLiked: boolean,
-    isAuthorFollowed: boolean
+    isAuthorFollowed: boolean,
+    canEdit: boolean
 }
 
 export interface PostResponse {

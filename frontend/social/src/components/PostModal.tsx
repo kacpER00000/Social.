@@ -29,7 +29,6 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
     const { posts, updatePostInFeed, deletePostFromFeed } = useFeedContext();
     const currentPost = posts.find(p => p.postId === post.postId) || post;
     const { decoded, isInvalid } = useToken();
-    const isTheOwnerOfPost = decoded?.userId === post.authorId
     const [comment, setComment] = useState("");
     const [showMorePost, setShowMorePost] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
@@ -219,7 +218,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                         >
                             <span>&larr;</span>
                         </button>
-                        {isTheOwnerOfPost &&
+                        {currentPost.canEdit &&
                             <MoreButton
                                 show={showMorePost}
                                 onShowClicked={() => setShowMorePost(prev => !prev)}
@@ -240,7 +239,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                                 <AvatarCircle username={currentPost.author} size="small" />
                                 <h2 className="w-fit font-bold text-xl text-gray-900 hover:underline" >{currentPost.author}</h2>
                             </div>
-                            {!isTheOwnerOfPost &&
+                            {!currentPost.canEdit &&
                                 <FollowButton
                                     isFollowing={checkIfFollowed(currentPost.authorId)}
                                     handleFollow={() => { toggleFollow(currentPost.authorId) }}
