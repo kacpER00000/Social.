@@ -55,4 +55,8 @@ public class Follower {
     public void setFollowed(User followed) {
         this.followed = followed;
     }
+
+    public void setStartFollowDate(LocalDateTime startFollowDate) {
+        this.startFollowDate = startFollowDate;
+    }
 }
