@@ -29,10 +29,18 @@ public class Comment {
 
     public Comment(){}
 
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public Comment(Post post, User user, String content) {
         this.post = post;
         this.user = user;
         this.content = content;
+    }
+
+    public void setCommentId(Long commentId) {
+        this.commentId = commentId;
     }
 
     public Long getCommentId() {
