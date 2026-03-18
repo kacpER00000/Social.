@@ -2,6 +2,7 @@ package org.socialbackend.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.tomcat.util.http.InvalidParameterException;
 import org.socialbackend.dto.FollowerDTO;
 import org.socialbackend.model.Follower;
 import org.socialbackend.model.User;
@@ -73,6 +74,9 @@ public class FollowerService {
     }
 
     public Page<FollowerDTO> findFollowingByUsername(String query, Long userId, Long loggedUserId, Pageable pageable) {
+        if (query == null || query.isBlank()) {
+            throw new InvalidParameterException("Search query cannot be empty");
+        }
         if (!userRepository.existsById(userId)) {
             throw new NoSuchElementException("User with this id don't exist.");
         }
@@ -86,6 +90,9 @@ public class FollowerService {
     }
 
     public Page<FollowerDTO> findFollowersByUsername(String query, Long userId, Long loggedUserId, Pageable pageable) {
+        if (query == null || query.isBlank()) {
+            throw new InvalidParameterException("Search query cannot be empty");
+        }
         if (!userRepository.existsById(userId)) {
             throw new NoSuchElementException("User with this id don't exist.");
         }
