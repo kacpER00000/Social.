@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PostData } from "../types/types.ts";
+import { PostData } from "../../types/types.ts";
 import { createPortal } from "react-dom";
 import { ChangeEvent } from "react";
 

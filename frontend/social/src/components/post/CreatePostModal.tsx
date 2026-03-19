@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { PostData } from "../types/types";
-import AvatarCircle from "./AvatarCircle";
+import { PostData } from "../../types/types";
+import AvatarCircle from "../profile/AvatarCircle";
 
 type CreatePostModalProps = {
     show: boolean,

@@ -1,11 +1,11 @@
 import { createPortal } from "react-dom";
 import { useCallback, useEffect, useState } from "react";
-import { FollowDTO } from "../types/types.ts";
-import { formatDate } from "../utils/formatDate.ts";
-import { useFollowSystem } from "../contexts/FollowerContext.tsx";
-import { useErrorContext } from "../contexts/ErrorContext.tsx";
+import { FollowDTO } from "../../types/types.ts";
+import { formatDate } from "../../utils/formatDate.ts";
+import { useFollowSystem } from "../../contexts/FollowerContext.tsx";
+import { useErrorContext } from "../../contexts/ErrorContext.tsx";
 import FollowButton from "./FollowButton.tsx";
-import { useToken } from "../hooks/useToken.ts";
+import { useToken } from "../../hooks/useToken.ts";
 import AvatarCircle from "./AvatarCircle.tsx";
 
 type InspectCardProps = {

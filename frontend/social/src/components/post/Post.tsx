@@ -1,11 +1,11 @@
-import { PostDTO, PostResponse } from "../types/types.ts";
+import { PostDTO, PostResponse } from "../../types/types.ts";
 import PostItem from "./PostItem.tsx";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useFollowSystem } from "../contexts/FollowerContext.tsx";
-import { formatDate } from "../utils/formatDate.ts";
+import { useFollowSystem } from "../../contexts/FollowerContext.tsx";
+import { formatDate } from "../../utils/formatDate.ts";
 import PostModal from "./PostModal.tsx";
-import { useFeedContext } from "../contexts/FeedContext.tsx";
-import { useErrorContext } from "../contexts/ErrorContext.tsx";
+import { useFeedContext } from "../../contexts/FeedContext.tsx";
+import { useErrorContext } from "../../contexts/ErrorContext.tsx";
 
 type PostProps = {
     postResponse: PostResponse,

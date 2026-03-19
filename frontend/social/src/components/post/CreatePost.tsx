@@ -1,11 +1,11 @@
-import { useToken } from "../hooks/useToken";
-import AvatarCircle from "./AvatarCircle";
+import { useToken } from "../../hooks/useToken";
+import AvatarCircle from "../profile/AvatarCircle";
 import { useState } from "react";
 import CreatePostModal from "./CreatePostModal";
-import { useFeedContext } from "../contexts/FeedContext";
-import { useErrorContext } from "../contexts/ErrorContext";
-import { PostData, PostDTO } from "../types/types";
-import { formatDate } from "../utils/formatDate";
+import { useFeedContext } from "../../contexts/FeedContext";
+import { useErrorContext } from "../../contexts/ErrorContext";
+import { PostData, PostDTO } from "../../types/types";
+import { formatDate } from "../../utils/formatDate";
 
 const CreatePost = () => {
     const { decoded } = useToken();

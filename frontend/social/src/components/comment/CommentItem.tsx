@@ -1,17 +1,17 @@
-import { CommentDTO } from "../types/types.ts";
+import { CommentDTO } from "../../types/types.ts";
 import { useEffect, useState } from "react";
-import MoreContextMenu from "./MoreContextMenu.tsx";
-import MoreButton from "./MoreButton.tsx";
-import Confirmation from "./Confirmation.tsx";
-import FollowButton from "./FollowButton.tsx";
-import { useFollowSystem } from "../contexts/FollowerContext.tsx";
-import InspectCard from "./InspectCard.tsx";
-import { useInspect } from "../hooks/useInspect.ts";
-import { useToken } from "../hooks/useToken.ts";
+import MoreContextMenu from "../interaction/MoreContextMenu.tsx";
+import MoreButton from "../interaction/MoreButton.tsx";
+import Confirmation from "../common/Confirmation.tsx";
+import FollowButton from "../profile/FollowButton.tsx";
+import { useFollowSystem } from "../../contexts/FollowerContext.tsx";
+import InspectCard from "../profile/InspectCard.tsx";
+import { useInspect } from "../../hooks/useInspect.ts";
+import { useToken } from "../../hooks/useToken.ts";
 import { useNavigate } from "react-router-dom";
-import AvatarCircle from "./AvatarCircle.tsx";
-import PostContent from "./Content.tsx";
-import { useErrorContext } from "../contexts/ErrorContext.tsx";
+import AvatarCircle from "../profile/AvatarCircle.tsx";
+import PostContent from "../layout/Content.tsx";
+import { useErrorContext } from "../../contexts/ErrorContext.tsx";
 
 type CommentProps = {
     comment: CommentDTO,

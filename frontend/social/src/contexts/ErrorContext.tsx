@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from "react";
 import { ErrorContextType } from "../types/types";
-import ErrorPopup from "../components/ErrorPopup";
+import ErrorPopup from "../components/common/ErrorPopup";
 const TIMEOUT_DURATION = 5000;
 const ErrorContext = createContext<ErrorContextType | undefined>(undefined);
 

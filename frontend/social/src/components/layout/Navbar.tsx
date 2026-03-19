@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { useFollowSystem } from "../contexts/FollowerContext.tsx";
-import { useToken } from "../hooks/useToken.ts";
-import SearchBar from "./SearchBar.tsx";
+import { useFollowSystem } from "../../contexts/FollowerContext.tsx";
+import { useToken } from "../../hooks/useToken.ts";
+import SearchBar from "../search/SearchBar.tsx";
 
 const Navbar = () => {
     const { decoded, isInvalid } = useToken();

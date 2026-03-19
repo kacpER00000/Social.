@@ -1,10 +1,10 @@
 import { useLoaderData, useLocation } from "react-router-dom";
-import { FollowResponse } from "../types/types.ts";
+import { FollowResponse } from "../../types/types.ts";
 import { useCallback, useEffect, useRef, useState } from "react";
-import UserSearchItem from "./UserSearchItem.tsx";
-import { useToken } from "../hooks/useToken.ts";
+import UserSearchItem from "../search/UserSearchItem.tsx";
+import { useToken } from "../../hooks/useToken.ts";
 import { useNavigate } from "react-router-dom";
-import { useErrorContext } from "../contexts/ErrorContext.tsx";
+import { useErrorContext } from "../../contexts/ErrorContext.tsx";
 const FollowList = () => {
     const { triggerError } = useErrorContext();
     const followResponse = useLoaderData<FollowResponse>();

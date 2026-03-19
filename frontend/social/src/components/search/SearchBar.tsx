@@ -1,8 +1,8 @@
 import { useCallback, useState, useEffect } from "react";
-import { UserDTO, UserResponse } from "../types/types";
+import { UserDTO, UserResponse } from "../../types/types";
 import { useNavigate, useLocation } from "react-router-dom";
 import UserSearchItem from "./UserSearchItem.tsx";
-import { useErrorContext } from "../contexts/ErrorContext.tsx";
+import { useErrorContext } from "../../contexts/ErrorContext.tsx";
 const SearchBar = () => {
     const [users, setUsers] = useState<UserDTO[]>([]);
     const [query, setQuery] = useState<string>("");

@@ -1,7 +1,7 @@
-import InspectCard from "./InspectCard.tsx"
-import { useInspect } from "../hooks/useInspect.ts"
+import InspectCard from "../profile/InspectCard.tsx"
+import { useInspect } from "../../hooks/useInspect.ts"
 import { useNavigate } from "react-router-dom"
-import AvatarCircle from "./AvatarCircle.tsx"
+import AvatarCircle from "../profile/AvatarCircle.tsx"
 
 type UserSearchItemProps = {
     username: string,

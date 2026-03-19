@@ -1,23 +1,23 @@
-import { CommentDTO, CommentResponse, PostDTO } from "../types/types.ts";
-import CommentItem from "./CommentItem.tsx";
+import { CommentDTO, CommentResponse, PostDTO } from "../../types/types.ts";
+import CommentItem from "../comment/CommentItem.tsx";
 import { useState, useRef, useEffect, useCallback } from "react";
-import Confirmation from "./Confirmation.tsx";
-import { PostData } from "../types/types.ts";
-import MoreContextMenu from "./MoreContextMenu.tsx";
-import MoreButton from "./MoreButton.tsx";
-import FollowButton from "./FollowButton.tsx";
-import { useFollowSystem } from "../contexts/FollowerContext.tsx";
+import Confirmation from "../common/Confirmation.tsx";
+import { PostData } from "../../types/types.ts";
+import MoreContextMenu from "../interaction/MoreContextMenu.tsx";
+import MoreButton from "../interaction/MoreButton.tsx";
+import FollowButton from "../profile/FollowButton.tsx";
+import { useFollowSystem } from "../../contexts/FollowerContext.tsx";
 import { useNavigate } from "react-router-dom";
-import { formatDate } from "../utils/formatDate.ts";
-import { useInspect } from "../hooks/useInspect.ts";
-import InspectCard from "./InspectCard.tsx";
+import { formatDate } from "../../utils/formatDate.ts";
+import { useInspect } from "../../hooks/useInspect.ts";
+import InspectCard from "../profile/InspectCard.tsx";
 import EditPostModal from "./EditPostModal.tsx";
-import { useToken } from "../hooks/useToken.ts";
-import PostContent from "./Content.tsx";
+import { useToken } from "../../hooks/useToken.ts";
+import PostContent from "../layout/Content.tsx";
 import PostInteractions from "./PostInteractions.tsx";
-import AvatarCircle from "./AvatarCircle.tsx";
-import { useFeedContext } from "../contexts/FeedContext.tsx";
-import { useErrorContext } from "../contexts/ErrorContext.tsx";
+import AvatarCircle from "../profile/AvatarCircle.tsx";
+import { useFeedContext } from "../../contexts/FeedContext.tsx";
+import { useErrorContext } from "../../contexts/ErrorContext.tsx";
 
 type PostModalProps = {
     post: PostDTO

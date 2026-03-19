@@ -1,9 +1,9 @@
 import { useLoaderData, useSearchParams, useNavigate } from "react-router-dom"
-import { UserDTO, UserResponse } from "../types/types.ts"
+import { UserDTO, UserResponse } from "../../types/types.ts"
 import { useEffect, useRef, useState, useCallback } from "react"
 import UserSearchItem from "./UserSearchItem";
-import { useToken } from "../hooks/useToken.ts";
-import { useErrorContext } from "../contexts/ErrorContext.tsx";
+import { useToken } from "../../hooks/useToken.ts";
+import { useErrorContext } from "../../contexts/ErrorContext.tsx";
 
 const SearchList = () => {
     const { triggerError } = useErrorContext();

@@ -1,19 +1,19 @@
 import { createBrowserRouter, LoaderFunctionArgs, RouterProvider } from "react-router-dom";
-import PublicLayout from "./components/PublicLayout.tsx";
-import Login from "./components/Login.tsx";
-import Register from "./components/Register.tsx";
-import Home from "./components/Home.tsx";
-import ProtectedLayout from "./components/ProtectedLayout.tsx";
+import PublicLayout from "./components/layout/PublicLayout.tsx";
+import Login from "./components/auth/Login.tsx";
+import Register from "./components/auth/Register.tsx";
+import Home from "./components/layout/Home.tsx";
+import ProtectedLayout from "./components/layout/ProtectedLayout.tsx";
 import { redirect } from "react-router-dom";
 import { FollowProvider } from "./contexts/FollowerContext.tsx";
 import { checkTokenValidity } from "./hooks/useToken.ts";
-import Profile from "./components/Profile.tsx";
-import FollowList from "./components/FollowList.tsx";
-import SearchList from "./components/SearchList.tsx";
+import Profile from "./components/profile/Profile.tsx";
+import FollowList from "./components/profile/FollowList.tsx";
+import SearchList from "./components/search/SearchList.tsx";
 import { FeedProvider } from "./contexts/FeedContext.tsx";
-import ErrorPage from "./components/ErrorPage.tsx";
+import ErrorPage from "./components/common/ErrorPage.tsx";
 import { ErrorProvider } from "./contexts/ErrorContext.tsx";
-import HydrateFallbackElement from "./components/HydrateFallbackElement.tsx";
+import HydrateFallbackElement from "./components/common/HydrateFallbackElement.tsx";
 
 const router = createBrowserRouter([
     {

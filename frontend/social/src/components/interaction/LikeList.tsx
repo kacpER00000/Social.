@@ -1,6 +1,6 @@
-import { PostLikeDTO } from "../types/types.ts";
+import { PostLikeDTO } from "../../types/types.ts";
 import { createPortal } from "react-dom";
-import AvatarCircle from "./AvatarCircle.tsx";
+import AvatarCircle from "../profile/AvatarCircle.tsx";
 import { useNavigate } from "react-router-dom";
 
 type LikeListProps = {

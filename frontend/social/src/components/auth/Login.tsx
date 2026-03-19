@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import ErrorPopup from "./ErrorPopup";
+import ErrorPopup from "../common/ErrorPopup";
 
 const Login = () => {
 

@@ -1,10 +1,10 @@
-import { PostDTO, PostLikeDTO, PostLikeResponse } from "../types/types.ts";
-import LikeButton from "./LikeButton.tsx";
+import { PostDTO, PostLikeDTO, PostLikeResponse } from "../../types/types.ts";
+import LikeButton from "../interaction/LikeButton.tsx";
 import { useCallback, useRef, useState, useEffect } from "react";
-import LikeList from "./LikeList.tsx";
-import { useToken } from "../hooks/useToken.ts";
-import { useFeedContext } from "../contexts/FeedContext.tsx";
-import { useErrorContext } from "../contexts/ErrorContext.tsx";
+import LikeList from "../interaction/LikeList.tsx";
+import { useToken } from "../../hooks/useToken.ts";
+import { useFeedContext } from "../../contexts/FeedContext.tsx";
+import { useErrorContext } from "../../contexts/ErrorContext.tsx";
 
 type PostInteractionsProps = {
     post: PostDTO,

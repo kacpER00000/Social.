@@ -1,9 +1,9 @@
-import { PostDTO } from "../types/types.ts";
-import InspectCard from "./InspectCard.tsx";
-import { useInspect } from "../hooks/useInspect.ts";
+import { PostDTO } from "../../types/types.ts";
+import InspectCard from "../profile/InspectCard.tsx";
+import { useInspect } from "../../hooks/useInspect.ts";
 import { useNavigate } from "react-router-dom";
-import AvatarCircle from "./AvatarCircle.tsx";
-import PostContent from "./Content.tsx";
+import AvatarCircle from "../profile/AvatarCircle.tsx";
+import PostContent from "../layout/Content.tsx";
 import PostInteractions from "./PostInteractions.tsx";
 
 type PostProps = {

@@ -1,5 +1,5 @@
-import { FollowDTO } from "../types/types.ts";
-import { useInspect } from "../hooks/useInspect.ts";
+import { FollowDTO } from "../../types/types.ts";
+import { useInspect } from "../../hooks/useInspect.ts";
 import InspectCard from "./InspectCard.tsx";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";

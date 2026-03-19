@@ -1,16 +1,16 @@
 import { useLoaderData, useParams } from "react-router-dom";
-import { EditProfileData, FollowDTO, FollowResponse, PostResponse, UserDTO } from "../types/types.ts";
+import { EditProfileData, FollowDTO, FollowResponse, PostResponse, UserDTO } from "../../types/types.ts";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Post from "./Post.tsx";
+import Post from "../post/Post.tsx";
 import FollowCard from "./FollowCard.tsx";
 import EditProfileModal from "./EditProfileModal.tsx";
-import Confirmation from "./Confirmation.tsx";
-import { useFollowSystem } from "../contexts/FollowerContext.tsx";
-import { useToken } from "../hooks/useToken.ts";
+import Confirmation from "../common/Confirmation.tsx";
+import { useFollowSystem } from "../../contexts/FollowerContext.tsx";
+import { useToken } from "../../hooks/useToken.ts";
 import AvatarCircle from "./AvatarCircle.tsx";
-import { useErrorContext } from "../contexts/ErrorContext.tsx";
-import CreatePost from "./CreatePost.tsx";
+import { useErrorContext } from "../../contexts/ErrorContext.tsx";
+import CreatePost from "../post/CreatePost.tsx";
 
 const Profile = () => {
     const { userId } = useParams();

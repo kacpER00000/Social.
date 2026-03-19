@@ -1,7 +1,7 @@
 import {useState} from "react";
 import {createPortal} from "react-dom";
 import {ChangeEvent} from "react";
-import {EditProfileData} from "../types/types.ts";
+import {EditProfileData} from "../../types/types.ts";
 type EditProfileModalProps = {
     userData: EditProfileData
     onConfirm: (data: EditProfileData) => void,
