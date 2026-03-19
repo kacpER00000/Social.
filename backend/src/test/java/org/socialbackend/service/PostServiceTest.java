@@ -1,4 +1,4 @@
-package org.socialbackend;
+package org.socialbackend.service;
 
 import org.apache.tomcat.util.http.InvalidParameterException;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,6 @@ import org.socialbackend.repository.PostLikeRepository;
 import org.socialbackend.repository.PostRepository;
 import org.socialbackend.repository.UserRepository;
 import org.socialbackend.request.PostRequest;
-import org.socialbackend.service.PostService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;

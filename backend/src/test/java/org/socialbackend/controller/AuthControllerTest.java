@@ -1,7 +1,6 @@
-package org.socialbackend;
+package org.socialbackend.controller;
 
 import org.junit.jupiter.api.Test;
-import org.socialbackend.controller.AuthController;
 import org.socialbackend.details.AppUserDetails;
 import org.socialbackend.dto.UserDTO;
 import org.socialbackend.request.LoginRequest;

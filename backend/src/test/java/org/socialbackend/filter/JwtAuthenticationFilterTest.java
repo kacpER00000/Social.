@@ -1,4 +1,4 @@
-package org.socialbackend;
+package org.socialbackend.filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

@@ -1,7 +1,6 @@
-package org.socialbackend;
+package org.socialbackend.controller;
 
 import org.junit.jupiter.api.Test;
-import org.socialbackend.controller.CommentController;
 import org.socialbackend.details.AppUserDetails;
 import org.socialbackend.dto.CommentDTO;
 import org.socialbackend.request.CommentRequest;

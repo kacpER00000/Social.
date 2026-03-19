@@ -1,4 +1,4 @@
-package org.socialbackend;
+package org.socialbackend.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,7 +11,6 @@ import org.socialbackend.repository.UserLoginDataRepository;
 import org.socialbackend.repository.UserRepository;
 import org.socialbackend.request.RegisterUserRequest;
 import org.socialbackend.request.UpdateUserRequest;
-import org.socialbackend.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;

@@ -1,10 +1,9 @@
-package org.socialbackend;
+package org.socialbackend.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.socialbackend.details.AppUserDetails;
 import org.socialbackend.model.UserLoginData;
-import org.socialbackend.service.JwtService;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.HashMap;

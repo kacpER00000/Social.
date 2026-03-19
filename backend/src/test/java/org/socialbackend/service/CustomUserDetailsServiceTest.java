@@ -1,4 +1,4 @@
-package org.socialbackend;
+package org.socialbackend.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -7,7 +7,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.socialbackend.model.UserLoginData;
 import org.socialbackend.repository.UserLoginDataRepository;
-import org.socialbackend.service.CustomUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
