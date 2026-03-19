@@ -5,8 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.socialbackend.details.AppUserDetails;
 import org.socialbackend.dto.AuthDTO;
 import org.socialbackend.dto.UserDTO;
-import org.socialbackend.model.User;
-import org.socialbackend.repository.UserLoginDataRepository;
+
+
 import org.socialbackend.request.LoginRequest;
 import org.socialbackend.request.RegisterUserRequest;
 import org.socialbackend.service.JwtService;
@@ -16,8 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Controller;
+
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;

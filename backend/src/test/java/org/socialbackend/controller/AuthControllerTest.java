@@ -20,7 +20,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.util.Collections;
-import java.util.Map;
+
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -62,7 +62,7 @@ public class AuthControllerTest {
         userDTO.setLastName("User");
         when(userService.findUserById(1L, 1L)).thenReturn(userDTO);
         String fakeToken = "fake.jwt.token";
-        when(jwtService.generateToken(any(Map.class), eq(mockUserDetails))).thenReturn(fakeToken);
+        when(jwtService.generateToken(any(), eq(mockUserDetails))).thenReturn(fakeToken);
         mockMvc.perform(post("/social/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
