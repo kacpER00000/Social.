@@ -1,4 +1,16 @@
 package org.socialbackend.request;
 
-public record LoginRequest(String email, String password) {
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class LoginRequest{
+    @NotBlank
+    String email;
+    @NotBlank
+    String password;
 }

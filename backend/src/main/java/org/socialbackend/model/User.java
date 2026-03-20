@@ -2,6 +2,9 @@ package org.socialbackend.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -10,52 +13,52 @@ import java.util.List;
 
 @Entity
 @Table(name="user", schema = "social")
+@NoArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="user_id")
+    @Getter
+    @Setter
     private Long userId;
     @Column(name="first_name")
+    @Getter
+    @Setter
     private String firstName;
     @Column(name="last_name")
+    @Getter
+    @Setter
     private String lastName;
     @Column(name="birth_date")
+    @Getter
+    @Setter
     private LocalDate birthDate;
     @Column(name="sex")
+    @Getter
+    @Setter
     private Character sex;
     @OneToMany(mappedBy = "followed")
     @JsonIgnore
     private List<Follower> followers = new ArrayList<>();
     @OneToMany(mappedBy = "follower")
     @JsonIgnore
+    @Getter
+    @Setter
     private List<Follower> following = new ArrayList<>();
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonIgnore
     private UserLoginData userLoginData;
     @OneToMany(mappedBy = "user")
     @JsonIgnore
+    @Getter
+    @Setter
     private List<Post> posts = new ArrayList<>();
     @Column(name = "followers_count")
+    @Getter
     private Long followersCount = 0L;
     @Column(name = "following_count")
+    @Getter
     private Long followingCount = 0L;
-    public User(){}
-
-    public Long getFollowersCount() {
-        return followersCount;
-    }
-
-    public void setFollowersCount(Long followersCount) {
-        this.followersCount = followersCount;
-    }
-
-    public Long getFollowingCount() {
-        return followingCount;
-    }
-
-    public void setFollowingCount(Long followingCount) {
-        this.followingCount = followingCount;
-    }
 
     public User(String firstName, String lastName, LocalDate birthDate, Character sex, UserLoginData userLoginData) {
         this.firstName = firstName;
@@ -63,74 +66,6 @@ public class User {
         this.birthDate = birthDate;
         this.sex = sex;
         this.userLoginData = userLoginData;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public LocalDate getBirthDate() {
-        return birthDate;
-    }
-
-    public Character getSex() {
-        return sex;
-    }
-
-    public List<Follower> getFollowers() {
-        return followers;
-    }
-
-    public List<Follower> getFollowing() {
-        return following;
-    }
-
-    public UserLoginData getUserLoginData() {
-        return userLoginData;
-    }
-
-    public List<Post> getPosts() {
-        return posts;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public void setFollowers(List<Follower> followers) {
-        this.followers = followers;
-    }
-
-    public void setFollowing(List<Follower> following) {
-        this.following = following;
-    }
-
-    public void setPosts(List<Post> posts) {
-        this.posts = posts;
-    }
-
-    public void setBirthDate(LocalDate birthDate) {
-        this.birthDate = birthDate;
-    }
-
-    public void setSex(Character sex) {
-        this.sex = sex;
     }
 
     public void setUserLoginData(UserLoginData userLoginData) {

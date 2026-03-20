@@ -2,36 +2,44 @@ package org.socialbackend.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name="comment", schema="social")
+@NoArgsConstructor
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="comment_id")
+    @Getter
+    @Setter
     private Long commentId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="post_id")
     @JsonIgnore
+    @Getter
+    @Setter
     private Post post;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id")
     @JsonIgnore
+    @Getter
+    @Setter
     private User user;
     @Column(name="content")
+    @Getter
+    @Setter
     private String content;
     @Column(name="created_at")
     @CreationTimestamp
+    @Getter
+    @Setter
     private LocalDateTime createdAt;
-
-    public Comment(){}
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
 
     public Comment(Post post, User user, String content) {
         this.post = post;
@@ -39,39 +47,4 @@ public class Comment {
         this.content = content;
     }
 
-    public void setCommentId(Long commentId) {
-        this.commentId = commentId;
-    }
-
-    public Long getCommentId() {
-        return commentId;
-    }
-
-    public Post getPost() {
-        return post;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setPost(Post post) {
-        this.post = post;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
 }
