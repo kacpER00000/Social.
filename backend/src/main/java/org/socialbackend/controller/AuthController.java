@@ -35,8 +35,8 @@ public class AuthController {
     public ResponseEntity<AuthDTO> login(@RequestBody LoginRequest loginRequest){
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        loginRequest.email(),
-                        loginRequest.password()
+                        loginRequest.getEmail(),
+                        loginRequest.getPassword()
                 )
         );
         var userDetails = (AppUserDetails) authentication.getPrincipal();

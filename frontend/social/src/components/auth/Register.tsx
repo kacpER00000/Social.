@@ -45,7 +45,7 @@ const Register = () => {
         setFirstNameError(isFirstNameEmpty);
         setLastNameError(isLastNameEmpty);
         setBirthDateError(isBirthDateEmpty);
-        return isEmailEmpty || isPasswordInvalid || isFirstNameEmpty || isLastNameEmpty;
+        return isEmailEmpty || isPasswordInvalid || isFirstNameEmpty || isLastNameEmpty || isBirthDateEmpty;
     }
     const handleRegister = async () => {
         if (loadingLock.current || validate()) { return; }

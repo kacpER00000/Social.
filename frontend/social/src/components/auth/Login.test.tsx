@@ -23,6 +23,7 @@ describe("Login component test", () => {
         vi.spyOn(globalThis, 'fetch');
     });
     afterEach(() => {
+        vi.clearAllTimers();
         vi.clearAllMocks();
         vi.restoreAllMocks();
     });
@@ -78,15 +79,13 @@ describe("Login component test", () => {
         await user.type(emailInput, 'test@example.com');
         await user.type(passwordInput, 'password');
         await user.click(loginButton);
-        act(() => {
-            vi.advanceTimersByTime(10);
-        });
         const popup = await screen.findByText('Incorrect login or password!');
         expect(popup).toBeInTheDocument();
         act(() => {
             vi.advanceTimersByTime(5000);
         });
-        expect(screen.queryByTestId('error-popup')).not.toBeInTheDocument();
+        expect(screen.queryByText('Incorrect login or password!')).not.toBeInTheDocument();
+        expect(popup).toHaveClass('-translate-y-[200%]');
     });
 
     it("should navigate user to register", async () => {

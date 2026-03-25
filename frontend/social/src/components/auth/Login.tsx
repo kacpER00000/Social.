@@ -26,6 +26,7 @@ const Login = () => {
         if (!loginError) return;
         const timeoutId = setTimeout(() => {
             setLoginError(false);
+            setLoginErrorMessage("");
         }, 5000);
         return () => clearTimeout(timeoutId);
     }, [loginError]);
