@@ -114,7 +114,7 @@ const PostInteractions = ({ post, size = "normal" }: PostInteractionsProps) => {
                  usersWhoLikePostHasMorePagesRef.current = true;
             }
         } catch (e) {
-            triggerError("Connection error. Failed to save changes.");
+            triggerError("Server error. Failed to save changes.");
             setLikesNum(previousCount);
             const prevPost: PostDTO = {
                 ...post,
