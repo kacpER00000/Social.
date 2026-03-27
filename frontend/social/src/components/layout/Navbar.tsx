@@ -30,7 +30,7 @@ const Navbar = () => {
             self-stretch flex items-center px-6 text-3xl font-bold transition-all duration-300 border-b-4
             ${isActive
                         ? "text-white border-white"
-                        : "text-gray-400 border-transparent hover:text-gray-200"
+                        : "text-gray-300 border-transparent hover:text-white"
                     }
         `}
             >
@@ -42,15 +42,13 @@ const Navbar = () => {
             self-stretch flex items-center px-6 text-3xl font-bold transition-all duration-300 border-b-4
             ${isActive
                         ? "text-white border-white"
-                        : "text-gray-400 border-transparent hover:text-gray-200"
+                        : "text-gray-300 border-transparent hover:text-white"
                     }
         `}
             >
                 Profile
             </NavLink>
-            <button className="bg-red-500 hover:bg-red-600 rounded-2xl text-white text-3xl font-bold px-6 py-2 transition" onClick={logout}>
-                Logout
-            </button>
+            <button className="text-white self-stretch flex items-center px-6 text-3xl font-bold transition-all duration-300 hover:bg-red-500 active:bg-red-600" onClick={logout}>Logout</button>
         </div>
     );
 }
