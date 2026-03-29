@@ -34,12 +34,31 @@ const EditProfileModal = ({userData, onConfirm, onCancel, show}: EditProfileModa
         }));
     }
 
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                onCancel()
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown)
+    }, [onCancel]);
+
     return createPortal(
         <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/50 z-999">
             <div className="bg-white text-center w-11/12 max-w-md rounded-3xl p-6 shadow-2xl">
-                <form className="flex flex-col gap-4">
+                <div className="flex items-center justify-between pb-2 pt-2">
+                    <h1 className="text-2xl font-bold text-gray-700">Edit profile</h1>
+                    <button onClick={onCancel} className="hover:text-gray-700 cursor-pointer">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div className="border-t border-gray-200"></div>
+                <form className="flex flex-col gap-4" onSubmit={(e) => {e.preventDefault();}}>
                     <div className="flex flex-col text-left">
-                        <label htmlFor="firstName" className="font-bold ml-2 mb-1">First name:</label>
+                        <label htmlFor="firstName" className="font-bold m-2">First name:</label>
                         <input
                             id="firstName"
                             name="firstName"
