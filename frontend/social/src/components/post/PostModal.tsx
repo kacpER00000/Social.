@@ -306,7 +306,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                                         value={comment}
                                         onChange={(e) => { setComment(e.target.value) }}
                                     />
-                                    <button type="button" disabled={comment.trim().length === 0} className="absolute right-1 top-1/2 -translate-y-1/2 bg-blue-500 text-white rounded-full px-6 py-2 hover:bg-blue-600 transition-colors duration-300 ease-in-out flex items-center gap-2 font-bold text-sm disabled:bg-gray-400 disabled:cursor-not-allowed" onClick={addComment}>
+                                    <button data-testId="create-comment" type="button" disabled={comment.trim().length === 0} className="absolute right-1 top-1/2 -translate-y-1/2 bg-blue-500 text-white rounded-full px-6 py-2 hover:bg-blue-600 transition-colors duration-300 ease-in-out flex items-center gap-2 font-bold text-sm disabled:bg-gray-400 disabled:cursor-not-allowed" onClick={addComment}>
                                         <i className="icon-comment text-lg"></i>
                                     </button>
                                 </div>
