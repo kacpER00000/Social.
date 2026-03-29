@@ -42,6 +42,13 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
     const { show, cords, handlers } = useInspect();
     const { triggerError } = useErrorContext();
 
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, []);
+
     const fetchComments = useCallback(async () => {
         if (loadingCommentsLock.current || !hasMorePagesRef.current) { return; }
         loadingCommentsLock.current = true;

@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {createPortal} from "react-dom";
 import {ChangeEvent} from "react";
 import {EditProfileData} from "../../types/types.ts";
@@ -14,6 +14,17 @@ const EditProfileModal = ({userData, onConfirm, onCancel, show}: EditProfileModa
     today.setFullYear(today.getFullYear() - 18);
     const maxDate = today.toISOString().split('T')[0];
     if(!show){return null;}
+
+    useEffect(() => {
+        if (show) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [show]);
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         const {name, value} = e.target;

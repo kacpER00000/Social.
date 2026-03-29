@@ -1,10 +1,21 @@
 import {createPortal} from "react-dom";
+import {useEffect} from "react";
 type ConfirmationProps = {
     onChoose: (state: boolean)=>void,
     show: boolean
 }
 
 const Confirmation = ({onChoose, show}: ConfirmationProps) => {
+    useEffect(() => {
+        if (show) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [show]);
     if(!show){return null;}
     return createPortal(
         <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/50 z-999">

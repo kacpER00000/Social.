@@ -21,7 +21,7 @@ const Navbar = () => {
     return (
         <div className="sticky top-0 z-50 flex justify-between items-center bg-blue-500 w-full shadow-md">
             <div className="flex justify-between items-center">
-                <p className="text-white text-5xl font-bold px-5 py-4">Social.</p>
+                <p className="text-white text-5xl font-bold px-5 py-4 cursor-default">Social.</p>
                 <SearchBar />
             </div>
             <NavLink
