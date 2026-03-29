@@ -1,4 +1,4 @@
-import { createBrowserRouter, LoaderFunctionArgs, RouterProvider } from "react-router-dom";
+import {createBrowserRouter, LoaderFunctionArgs, Navigate, RouterProvider} from "react-router-dom";
 import PublicLayout from "./components/layout/PublicLayout.tsx";
 import Login from "./components/auth/Login.tsx";
 import Register from "./components/auth/Register.tsx";
@@ -56,6 +56,10 @@ const router = createBrowserRouter([
             {
                 errorElement: <ErrorPage />,
                 children: [
+                    {
+                        index: true,
+                        element: <Navigate to="/home" replace />
+                    },
                     {
                         path: "home",
                         element: <Home />,
