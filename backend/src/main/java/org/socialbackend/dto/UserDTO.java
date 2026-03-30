@@ -6,6 +6,13 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
+/**
+ * Data Transfer Object for users.
+ * This class is used to transfer user data between the server and the client.
+ *
+ * @author Kacper Kurek
+ * @version 1.0
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

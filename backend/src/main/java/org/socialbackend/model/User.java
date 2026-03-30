@@ -11,6 +11,12 @@ import java.util.ArrayList;
 
 import java.util.List;
 
+/**
+ * Represents a user in the social database.
+ *
+ * @author Kacper Kurek
+ * @version 1.0
+ */
 @Entity
 @Table(name="user", schema = "social")
 @NoArgsConstructor

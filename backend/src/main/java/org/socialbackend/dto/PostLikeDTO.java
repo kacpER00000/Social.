@@ -6,6 +6,13 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * Data Transfer Object for post likes.
+ * This class is used to transfer post like data between the server and the client.
+ *
+ * @author Kacper Kurek
+ * @version 1.0
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

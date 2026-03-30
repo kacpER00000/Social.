@@ -10,6 +10,12 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * Represents a follower relationship between two users in the social database.
+ *
+ * @author Kacper Kurek
+ * @version 1.0
+ */
 @Entity
 @Table(name="follower",schema="social")
 @NoArgsConstructor

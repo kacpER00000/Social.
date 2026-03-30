@@ -9,6 +9,12 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
+/**
+ * Request object for updating user information.
+ *
+ * @author Kacper Kurek
+ * @version 1.0
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

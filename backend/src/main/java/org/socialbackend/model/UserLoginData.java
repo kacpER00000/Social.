@@ -6,6 +6,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Represents the login data for a user in the social database.
+ *
+ * @author Kacper Kurek
+ * @version 1.0
+ */
 @Entity
 @Table(name="user_login_data",schema="social")
 @NoArgsConstructor

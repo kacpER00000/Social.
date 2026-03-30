@@ -9,6 +9,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Custom UserDetails implementation for the application.
+ * This class wraps the UserLoginData object to provide user details to Spring Security.
+ *
+ * @author Kacper Kurek
+ * @version 1.0
+ */
 public class AppUserDetails implements UserDetails {
     private UserLoginData userLoginData;
 

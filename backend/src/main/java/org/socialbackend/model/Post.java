@@ -11,6 +11,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a post in the social database.
+ *
+ * @author Kacper Kurek
+ * @version 1.0
+ */
 @Entity
 @Table(name="post", schema="social")
 @NoArgsConstructor

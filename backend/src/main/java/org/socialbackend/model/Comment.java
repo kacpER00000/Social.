@@ -9,6 +9,12 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * Represents a comment on a post in the social database.
+ *
+ * @author Kacper Kurek
+ * @version 1.0
+ */
 @Entity
 @Table(name="comment", schema="social")
 @NoArgsConstructor

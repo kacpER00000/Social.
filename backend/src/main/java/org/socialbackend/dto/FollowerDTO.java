@@ -6,6 +6,13 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * Data Transfer Object for followers.
+ * This class is used to transfer follower data between the server and the client.
+ *
+ * @author Kacper Kurek
+ * @version 1.0
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

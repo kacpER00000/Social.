@@ -15,6 +15,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
 
+/**
+ * Service class for managing post likes.
+ * This class handles the business logic for liking and unliking posts.
+ *
+ * @author Kacper Kurek
+ * @version 1.0
+ */
 @Service
 @RequiredArgsConstructor
 public class PostLikeService {
@@ -22,6 +29,14 @@ public class PostLikeService {
     private final PostLikeRepository postLikeRepository;
     private final UserRepository userRepository;
 
+    /**
+     * Likes a post.
+     *
+     * @param postId The ID of the post to like.
+     * @param userId The ID of the user who is liking the post.
+     * @throws IllegalStateException if the user has already liked the post.
+     * @throws NoSuchElementException if the post or user does not exist.
+     */
     @Transactional
     public void likePost(Long postId, Long userId) {
         User user = findUserById(userId);
@@ -34,6 +49,14 @@ public class PostLikeService {
         postLikeRepository.save(new PostLike(post, user));
     }
 
+    /**
+     * Unlikes a post.
+     *
+     * @param postId The ID of the post to unlike.
+     * @param userId The ID of the user who is unliking the post.
+     * @throws IllegalStateException if the post was not liked by the user prior to this action.
+     * @throws NoSuchElementException if the user does not exist.
+     */
     @Transactional
     public void unlikePost(Long postId, Long userId) {
         User user = findUserById(userId);
@@ -45,17 +68,37 @@ public class PostLikeService {
         throw new IllegalStateException("Already unliked");
     }
 
+    /**
+     * Finds the users who liked a specific post.
+     *
+     * @param postId The ID of the post.
+     * @param pageable The pagination information.
+     * @return A page of PostLikeDTOs.
+     */
     public Page<PostLikeDTO> findUserWhoLikePost(Long postId, Pageable pageable) {
         Page<PostLike> usersWhoLike = postLikeRepository.findAllByPost_PostIdOrderByLikedAtDesc(postId, pageable);
         return usersWhoLike.map(this::mapToDTO);
     }
 
+    /**
+     * Maps a PostLike entity to a PostLikeDTO.
+     *
+     * @param postLike The PostLike entity.
+     * @return The PostLikeDTO.
+     */
     private PostLikeDTO mapToDTO(PostLike postLike) {
         String username = postLike.getUser().getFirstName() + " " + postLike.getUser().getLastName();
         return new PostLikeDTO(username, postLike.getUser().getUserId(), postLike.getPost().getPostId(),
                 postLike.getLikedAt());
     }
 
+    /**
+     * Finds a user by their ID.
+     *
+     * @param userId The ID of the user.
+     * @return The User entity.
+     * @throws NoSuchElementException if the user does not exist.
+     */
     private User findUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with that id don't exist"));

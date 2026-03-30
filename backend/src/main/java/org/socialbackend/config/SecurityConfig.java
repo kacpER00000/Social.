@@ -26,6 +26,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+/**
+ * Security configuration for the application.
+ * This class configures Spring Security, including JWT authentication, CORS, and password encoding.
+ *
+ * @author Kacper Kurek
+ * @version 1.0
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -34,6 +41,14 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     @Value("${application.security.cors.allowed-origins}")
     private String allowedOrigins;
+
+    /**
+     * Configures the security filter chain.
+     *
+     * @param http The HttpSecurity object to configure.
+     * @return The configured SecurityFilterChain.
+     * @throws Exception if an error occurs during configuration.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http
@@ -49,6 +64,12 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
+
+    /**
+     * Creates an AuthenticationProvider bean.
+     *
+     * @return The AuthenticationProvider.
+     */
     @Bean
     public AuthenticationProvider authenticationProvider(){
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(customUserDetailsService);
@@ -56,16 +77,34 @@ public class SecurityConfig {
         return authenticationProvider;
     }
 
+    /**
+     * Creates an AuthenticationManager bean.
+     *
+     * @param config The AuthenticationConfiguration.
+     * @return The AuthenticationManager.
+     * @throws Exception if an error occurs.
+     */
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config){
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
 
     }
+
+    /**
+     * Creates a PasswordEncoder bean.
+     *
+     * @return The PasswordEncoder.
+     */
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Creates a CorsConfigurationSource bean.
+     *
+     * @return The CorsConfigurationSource.
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration configuration = new CorsConfiguration();

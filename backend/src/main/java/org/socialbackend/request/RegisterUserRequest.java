@@ -7,6 +7,12 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
+/**
+ * Request object for user registration.
+ *
+ * @author Kacper Kurek
+ * @version 1.0
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
