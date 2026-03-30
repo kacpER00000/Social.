@@ -39,6 +39,7 @@ import java.util.List;
 public class SecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     @Value("${application.security.cors.allowed-origins}")
     private String allowedOrigins;
 
@@ -55,9 +56,16 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(customAuthenticationEntryPoint))
                 .authorizeHttpRequests((authorize) ->
                         authorize.requestMatchers("/social/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST,"/social/users").permitAll()
+                                .requestMatchers(
+                                    "/v3/api-docs",
+                                    "/v3/api-docs/**",
+                                    "/swagger-ui/**",
+                                    "/swagger-ui.html"
+                                ).permitAll()
                         .anyRequest().authenticated()
 
                 ).authenticationProvider(authenticationProvider())
