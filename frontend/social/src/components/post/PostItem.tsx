@@ -6,12 +6,12 @@ import AvatarCircle from "../profile/AvatarCircle.tsx";
 import PostContent from "../layout/Content.tsx";
 import PostInteractions from "./PostInteractions.tsx";
 
-type PostProps = {
+type PostItemProps = {
     post: PostDTO,
     onSelect: (post: PostDTO) => void,
 }
 
-const PostItem = ({ post, onSelect }: PostProps) => {
+const PostItem = ({ post, onSelect }: PostItemProps) => {
     const { show, cords, handlers } = useInspect();
     const navigate = useNavigate();
     return (

@@ -13,13 +13,13 @@ import AvatarCircle from "../profile/AvatarCircle.tsx";
 import PostContent from "../layout/Content.tsx";
 import { useErrorContext } from "../../contexts/ErrorContext.tsx";
 
-type CommentProps = {
+type CommentItemProps = {
     comment: CommentDTO,
     onDelete: (commentId: number) => void,
     onUpdate: (commentId: number, newContent: string) => void
 }
 
-const CommentItem = ({ comment, onDelete, onUpdate }: CommentProps) => {
+const CommentItem = ({ comment, onDelete, onUpdate }: CommentItemProps) => {
     const { decoded, isInvalid } = useToken();
     const { checkIfFollowed, toggleFollow } = useFollowSystem();
     const isTheOwnerOfComment = decoded?.userId === comment.authorId;

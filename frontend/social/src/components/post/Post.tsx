@@ -7,12 +7,12 @@ import PostModal from "./PostModal.tsx";
 import { useFeedContext } from "../../contexts/FeedContext.tsx";
 import { useErrorContext } from "../../contexts/ErrorContext.tsx";
 
-type PostProps = {
+type PostComponentProps = {
     postResponse: PostResponse,
     path: string
 }
 
-const Post = ({ postResponse, path }: PostProps) => {
+const Post = ({ postResponse, path }: PostComponentProps) => {
     const { triggerError } = useErrorContext();
     const { addFollowedUsers } = useFollowSystem();
     const { posts, setPosts } = useFeedContext();

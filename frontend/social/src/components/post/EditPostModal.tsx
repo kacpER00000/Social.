@@ -3,13 +3,13 @@ import { PostData } from "../../types/types.ts";
 import { createPortal } from "react-dom";
 import { ChangeEvent } from "react";
 
-type EditModalProps = {
+type EditPostModalProps = {
     postData: PostData,
     onConfirm: (data: PostData) => void,
     onCancel: () => void,
     show: boolean
 }
-const EditPostModal = ({ postData, onConfirm, onCancel, show }: EditModalProps) => {
+const EditPostModal = ({ postData, onConfirm, onCancel, show }: EditPostModalProps) => {
     const [formData, setFormData] = useState(postData);
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
