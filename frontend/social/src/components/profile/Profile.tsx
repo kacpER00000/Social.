@@ -1,0 +1,243 @@
+import { useLoaderData, useParams } from "react-router-dom";
+import { EditProfileData, FollowDTO, FollowResponse, PostResponse, UserDTO } from "../../types/types.ts";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Post from "../post/Post.tsx";
+import FollowCard from "./FollowCard.tsx";
+import EditProfileModal from "./EditProfileModal.tsx";
+import Confirmation from "../common/Confirmation.tsx";
+import { useFollowSystem } from "../../contexts/FollowerContext.tsx";
+import { useToken } from "../../hooks/useToken.ts";
+import AvatarCircle from "./AvatarCircle.tsx";
+import { useErrorContext } from "../../contexts/ErrorContext.tsx";
+import CreatePost from "../post/CreatePost.tsx";
+
+const Profile = () => {
+    const { userId } = useParams();
+    const { decoded, isInvalid } = useToken();
+    const { addFollowedUsers, clearContext } = useFollowSystem();
+    const user = useLoaderData() as UserDTO;
+    const [following, setFollowing] = useState<FollowDTO[]>([]);
+    const [followers, setFollowers] = useState<FollowDTO[]>([]);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+    const [userPostResponse, setUserPostResponse] = useState<PostResponse | undefined>(undefined);
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+    const { triggerError } = useErrorContext();
+    const userData: EditProfileData = {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        sex: user.sex,
+        birthDate: user.birthDate
+    };
+
+    useEffect(() => {
+        if (isInvalid) {
+            navigate("/login")
+        }
+    }, [isInvalid, navigate]);
+
+    useEffect(() => {
+        setLoading(true);
+        const fetchUserPostsInit = async () => {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${userId}/latest`, {
+                    headers: {
+                        "Authorization": "Bearer " + localStorage.getItem("token")
+                    }
+                })
+                if (response.ok) {
+                    setUserPostResponse(await response.json() as PostResponse);
+                } else {
+                    triggerError("Failed to load user's posts.");
+                }
+            } catch (e) {
+                triggerError("Server error while loading posts.");
+            }
+        }
+
+        const fetchFollowing = async () => {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users/${userId}/following`, {
+                    headers: {
+                        "Authorization": "Bearer " + localStorage.getItem("token")
+                    }
+                })
+                if (response.ok) {
+                    const data = await response.json() as FollowResponse
+                    const followedUserIds = data.content.map(follow => follow.userId);
+                    addFollowedUsers(followedUserIds);
+                    setFollowing(data.content)
+                } else {
+                    triggerError("Failed to load following list.");
+                }
+            } catch (e) {
+                triggerError("Error fetching following list.");
+            }
+        }
+
+        const fetchFollowers = async () => {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users/${userId}/followers`, {
+                    headers: {
+                        "Authorization": "Bearer " + localStorage.getItem("token")
+                    }
+                })
+                if (response.ok) {
+                    const data = await response.json() as FollowResponse
+                    setFollowers(data.content)
+                } else {
+                    triggerError("Failed to load followers list.");
+                }
+            } catch (e) {
+                triggerError("Error fetching followers list.");
+            }
+        }
+        const loadAllProfileData = async () => {
+            await Promise.all([
+                fetchUserPostsInit(),
+                fetchFollowing(),
+                fetchFollowers()
+            ]);
+            setLoading(false);
+        };
+        loadAllProfileData()
+    }, [addFollowedUsers, userId]);
+
+    const editProfile = async (data: EditProfileData) => {
+        setShowEditModal(false);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+                method: "PUT",
+                body: JSON.stringify(data)
+            })
+            if (response.ok) {
+                location.reload()
+            } else {
+                triggerError("Failed to update profile.");
+            }
+        } catch (e) {
+            triggerError("Server error. Profile was not updated.");
+        }
+    }
+
+    const deleteProfile = async (state: boolean) => {
+        setShowDeleteConfirmation(false);
+        if (state) {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users`, {
+                    headers: {
+                        "Authorization": "Bearer " + localStorage.getItem("token")
+                    },
+                    method: "DELETE"
+                })
+                if (response.ok) {
+                    clearContext()
+                    localStorage.removeItem("token")
+                    navigate("/login")
+                } else {
+                    triggerError("Failed to delete profile.");
+                }
+            } catch (e) {
+                triggerError("Server error. Your profile was not deleted.");
+            }
+        }
+    }
+
+    if (!decoded || isInvalid) {
+        return null;
+    }
+
+    return (
+        <>
+            <div className="flex flex-col">
+                <div className="flex justify-between items-center gap-5 p-5 m-3 shadow-xl rounded-3xl">
+                    <div className="flex items-center gap-3">
+                        <AvatarCircle
+                            size="large"
+                            username={user.firstName + " " + user.lastName}
+                        />
+                        <div className="m-1">
+                            <h1 className="text-3xl">{user.firstName} {user.lastName}</h1>
+                            <h4>Following: {user.followingCount} &nbsp;Followers: {user.followersCount}</h4>
+                        </div>
+                    </div>
+                    {user.canEdit &&
+                        <div className="flex flex-col w-1/10">
+                            <button className="bg-blue-500 font-bold p-1 m-1 rounded-3xl text-white transition-colors duration-500 hover:bg-blue-600" onClick={() => { setShowEditModal(true) }}>Edit profile</button>
+                            <button className="bg-red-500 font-bold p-1 m-1 rounded-3xl text-white transition-colors duration-500 hover:bg-red-600" onClick={() => setShowDeleteConfirmation(true)}>Delete profile</button>
+                        </div>
+                    }
+                </div>
+                <div className="grid grid-cols-[1fr_2fr] p-5 m-3">
+                    <div>
+                        <div className="bg-white p-4 rounded-3xl shadow-md w-full h-fit mb-5">
+                            <h3 className="font-bold text-3xl">Personal data</h3>
+                            <p className="text-xl"><i className="icon-venus-mars"></i> {user.sex === "M" ? "Male" : "Female"}</p>
+                            <p className="text-xl"><i className="icon-birthday"></i> {user.birthDate}</p>
+                        </div>
+                        <FollowCard
+                            users={following}
+                            type={"following"}
+                            profileUserId={userId ? Number(userId) : undefined}
+                            loading={loading}
+                        />
+                        <FollowCard
+                            users={followers}
+                            type={"followers"}
+                            profileUserId={userId ? Number(userId) : undefined}
+                            loading={loading}
+                        />
+                    </div>
+                    <div>
+                        <div className="p-5 m-3 shadow-xl rounded-3xl">
+                            <h2 className="text-3xl text-center font-bold">Posts</h2>
+                        </div>
+                        {userId && decoded.userId === parseInt(userId) && <CreatePost />}
+                        {loading &&
+                            <div className="shadow-2xl rounded-3xl p-5 m-5">
+                                <div className="flex animate-pulse space-x-4">
+                                    <div className="flex-1 space-y-6 py-1">
+                                        <div className="h-2 rounded bg-gray-200"></div>
+                                        <div className="h-2 rounded bg-gray-200"></div>
+                                        <div className="h-2 rounded bg-gray-200"></div>
+                                        <div className="space-y-3">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="col-span-1 h-2 rounded bg-gray-200"></div>
+                                                <div className="col-span-1 h-2 rounded bg-gray-200"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        {userPostResponse && !loading &&
+                            <Post
+                                postResponse={userPostResponse}
+                                path={`${userId}/latest`}
+                            />
+                        }
+                    </div>
+                </div>
+            </div>
+            {showEditModal &&
+                <EditProfileModal
+                    userData={userData}
+                    onConfirm={editProfile}
+                    onCancel={() => { setShowEditModal(false) }}
+                    show={showEditModal}
+                />}
+            <Confirmation
+                onChoose={deleteProfile}
+                show={showDeleteConfirmation}
+            />
+        </>
+    );
+}
+
+export default Profile;
