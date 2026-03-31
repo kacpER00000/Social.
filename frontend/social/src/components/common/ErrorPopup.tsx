@@ -5,6 +5,19 @@ type ErrorPopupProps = {
     errorMessage: string
 }
 
+/**
+ * Global error notification banner rendered as a React Portal.
+ * * ARCHITECTURE & RENDERING:
+ * - This is a **purely presentational** (controlled) component — it has zero internal
+ * state. Visibility and message content are entirely driven by props from `ErrorContext`.
+ * - Uses a CSS `translate-y` transition to slide in/out from the top of the viewport,
+ * providing smooth appear/disappear animation without JavaScript animation libraries.
+ * - Rendered via `createPortal` into `document.body` to guarantee it sits above all
+ * content and avoids z-index stacking issues from nested component trees.
+ *
+ * @param error - When `true` the banner slides into view; when `false` it slides out.
+ * @param errorMessage - The text displayed inside the notification.
+ */
 const ErrorPopup = ({ error, errorMessage }: ErrorPopupProps) => {
     return createPortal(
         <div

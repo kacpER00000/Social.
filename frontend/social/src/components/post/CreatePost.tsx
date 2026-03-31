@@ -7,6 +7,19 @@ import { useErrorContext } from "../../contexts/ErrorContext";
 import { PostData, PostDTO } from "../../types/types";
 import { formatDate } from "../../utils/formatDate";
 
+/**
+ * Smart container for the "create post" flow at the top of the feed.
+ * * ARCHITECTURE & DATA FLOW:
+ * - Renders a compact prompt ("What's up?") with the current user's avatar as the
+ *   trigger element. Clicking it opens `<CreatePostModal />` for full-form input.
+ * - Owns the **API call** for post creation (`POST /social/posts`) and handles
+ *   the entire success/error path:
+ *   • On success — formats the date and prepends the new post to `FeedContext`
+ *     via `addPostToFeed`, providing an instant UI update without a feed refetch.
+ *   • On failure — delegates to `ErrorContext.triggerError` for global notification.
+ * - The `username` prop for the modal is sourced from `useToken().decoded`, keeping
+ *   the child modal stateless with respect to auth concerns.
+ */
 const CreatePost = () => {
     const { decoded } = useToken();
     const { addPostToFeed } = useFeedContext();

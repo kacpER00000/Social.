@@ -9,6 +9,24 @@ type EditPostModalProps = {
     onCancel: () => void,
     show: boolean
 }
+/**
+ * Portal-based modal form for editing an existing post's title and content.
+ * * ARCHITECTURE & BEHAVIOR:
+ * - Initializes local `formData` state from the `postData` prop, creating an
+ *   **editable copy** so the original DTO remains immutable until the user
+ *   explicitly confirms changes via the "Save" button.
+ * - Uses a single generic `handleChange` with **computed property names**
+ *   (`[name]: value`) to handle both inputs, keeping the handler logic DRY.
+ * - Renders into `document.body` via `createPortal`, following the same z-index
+ *   isolation pattern as `<CreatePostModal>` and `<Confirmation>`.
+ * - The parent (`PostModal`) owns the actual PUT API call and `FeedContext` sync;
+ *   this component only emits the edited `PostData` payload via `onConfirm`.
+ *
+ * @param postData - The current post data used to pre-fill the form fields.
+ * @param onConfirm - Callback receiving the edited `{ title, content }` on save.
+ * @param onCancel - Callback to dismiss the modal without saving.
+ * @param show - Controls portal visibility; returns `null` when `false`.
+ */
 const EditPostModal = ({ postData, onConfirm, onCancel, show }: EditPostModalProps) => {
     const [formData, setFormData] = useState(postData);
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {

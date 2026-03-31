@@ -18,6 +18,23 @@ type InspectCardProps = {
     onMouseLeave: () => void
 }
 
+/**
+ * Hover popover ("inspect card") showing follow metadata for a user.
+ * Rendered as a React Portal at dynamic viewport coordinates.
+ * * ARCHITECTURE & DATA FLOW:
+ * - **Lazy fetching**: the follow-status API call (`/follow-status`) fires only once
+ *   per card instance (guarded by the `fetched` flag) and only when the card is visible,
+ *   the user ID differs from the current session user (no self-follow), thereby avoiding
+ *   redundant network traffic on repeated hovers.
+ * - **Optimistic UI**: `handleFollow` toggles `FollowContext` and simultaneously
+ *   mutates the local `followInfo` state (follower count, followedSince, following flag),
+ *   providing instant visual feedback without waiting for a round-trip.
+ * - **Coordinate-based positioning**: receives `top` / `left` from the `useInspect` hook,
+ *   which pre-calculates viewport-safe coordinates so the card never clips off-screen.
+ * - Propagates `onMouseEnter` / `onMouseLeave` to the portal container so the
+ *   `useInspect` "Hover Intent" timer can cancel hide-delays while the cursor is
+ *   inside the popover itself.
+ */
 const InspectCard = ({ username, userId, top, left, show, onMouseEnter, onMouseLeave }: InspectCardProps) => {
     const { triggerError } = useErrorContext();
     const { decoded } = useToken();

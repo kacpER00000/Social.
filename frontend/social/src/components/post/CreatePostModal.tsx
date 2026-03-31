@@ -10,6 +10,26 @@ type CreatePostModalProps = {
     onClose: () => void
 }
 
+/**
+ * Portal-based modal form for creating a new post.
+ * * ARCHITECTURE & BEHAVIOR:
+ * - Renders into `document.body` via `createPortal`, inheriting the same z-index
+ *   isolation strategy used by `<Confirmation>` and `<LikeList>`.
+ * - **Auto-reset**: an effect clears `title` and `content` state whenever `show`
+ *   transitions to `false`, ensuring a clean form on every subsequent open without
+ *   requiring the parent to manage form state.
+ * - **Keyboard dismiss**: listens for `Escape` to call `onClose`, matching the UX
+ *   pattern established by `<Confirmation>` and `<PostModal>`.
+ * - **Validation guard**: the "Create" button is disabled when either field is empty
+ *   (whitespace-trimmed), preventing accidental blank submissions.
+ * - Receives `username` as a prop (from `CreatePost` via `useToken`) to display the
+ *   author's avatar and name above the form, keeping this component session-agnostic.
+ *
+ * @param show - Controls portal visibility; returns `null` when `false`.
+ * @param username - Display name shown next to the avatar in the form header.
+ * @param onSubmit - Callback receiving `{ title, content }` when the user submits.
+ * @param onClose - Callback to dismiss the modal.
+ */
 const CreatePostModal = ({ show, username, onSubmit, onClose }: CreatePostModalProps) => {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");

@@ -10,6 +10,24 @@ type FollowCardProps = {
     profileUserId: number | undefined,
     loading: boolean
 }
+/**
+ * Sidebar card displaying a compact 3×3 grid of followers or following users.
+ * * ARCHITECTURE & DATA FLOW:
+ * - Renders up to 9 users from the `users` array as avatar squares with initials.
+ *   When more exist, a "See all" link navigates to the full paginated list page.
+ * - **Skeleton loading**: while `loading` is `true`, renders 9 animated placeholder
+ *   tiles to maintain layout stability and give the user a sense of progress.
+ * - **Lazy hover state**: tracks `currentUsername` and `currentUserId` locally so
+ *   the `<InspectCard />` popover can be rendered with the correct user data without
+ *   requiring a separate API call per tile — the InspectCard itself handles fetching.
+ * - Uses the `useInspect` hook for "Hover Intent" delay logic, preventing the popover
+ *   from flickering when the cursor passes quickly over the grid.
+ *
+ * @param users - Array of follower/following DTOs to display.
+ * @param type - `"followers"` or `"following"` — controls the heading and "See all" route.
+ * @param profileUserId - ID of the profile being viewed; used to build the "See all" URL.
+ * @param loading - When `true`, the skeleton placeholder grid is shown instead of real data.
+ */
 const FollowCard = ({ users, type, profileUserId, loading }: FollowCardProps) => {
     const { show, cords, handlers } = useInspect();
     const [currentUsername, setCurrentUsername] = useState<string | undefined>(undefined)

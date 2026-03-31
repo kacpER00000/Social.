@@ -1,3 +1,12 @@
+/**
+ * Full-screen branded splash/loading screen displayed during `react-router`'s
+ * initial hydration phase (while route loaders fetch data before first paint).
+ * * RENDERING:
+ * - Shows the "Social." brand mark, an animated spinner, and a "Loading..." label
+ * on a solid blue background — matching the application's primary color scheme.
+ * - Used as the `HydrateFallback` element in the router configuration, making it
+ * the very first visual the user sees before any route component mounts.
+ */
 const HydrateFallbackElement = () => {
     return (
         <div className="flex flex-col justify-center items-center bg-blue-500 h-screen">

@@ -3,6 +3,18 @@ import { useFollowSystem } from "../../contexts/FollowerContext.tsx";
 import { useToken } from "../../hooks/useToken.ts";
 import SearchBar from "../search/SearchBar.tsx";
 
+/**
+ * Persistent application navigation bar rendered at the top of every authenticated page.
+ * * ARCHITECTURE & BEHAVIOR:
+ * - Auth-aware rendering: reads the decoded JWT via `useToken` and returns `null`
+ * (renders nothing) when the session is invalid, preventing a flash of UI for
+ * unauthenticated users. This works in tandem with route-level guards.
+ * - Logout flow: clears the JWT from `localStorage`, resets the `FollowContext`
+ * in-memory `Set`, and imperatively navigates to `/login`. The context cleanup
+ * prevents stale social-graph data from leaking into a subsequent session.
+ * - Uses `<NavLink>` with active-state styling (white bottom border) to give the
+ * user a clear visual indicator of the current section.
+ */
 const Navbar = () => {
     const { decoded, isInvalid } = useToken();
     const navigate = useNavigate();

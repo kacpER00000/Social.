@@ -11,6 +11,26 @@ type PostInteractionsProps = {
     size?: "small" | "normal"
 }
 
+/**
+ * Smart interaction bar for a single post — owns liking logic and the like-list overlay.
+ * * ARCHITECTURE & STATE MANAGEMENT:
+ * - Maintains **local mirror state** (`isLiked`, `likesNum`) synced to the post prop
+ *   via `useEffect`, allowing the component to respond to external feed updates (e.g.,
+ *   when `PostModal` mutates `FeedContext`) while still supporting optimistic toggling.
+ * - **Optimistic like**: `handleLike` immediately flips `isLiked` and adjusts the count
+ *   before the API call. On failure, it **rolls back** both the local state and the
+ *   `FeedContext` entry, ensuring data consistency across the entire feed.
+ * - **Like-list pagination**: fetches the initial page of "who liked this" on mount
+ *   (`fetchWhoLikePost`). Subsequent pages are fetched on demand via the `<LikeList>`
+ *   "Load more" button. Closing the list resets page state but preserves the first page
+ *   (`usersWhoLikePostListInit`) to avoid a redundant refetch.
+ * - Uses `loadingUsersWhoLikePostLock` (ref) to prevent concurrent fetches triggered
+ *   by rapid user interaction or React Strict Mode double-invocations.
+ * - Supports a `size` variant prop (`"small"` / `"normal"`) forwarded to `<LikeButton>`.
+ *
+ * @param post - The post DTO whose interactions are displayed.
+ * @param size - Visual size variant forwarded to the underlying `<LikeButton>`.
+ */
 const PostInteractions = ({ post, size = "normal" }: PostInteractionsProps) => {
     const { decoded } = useToken();
     const { updatePostInFeed } = useFeedContext();

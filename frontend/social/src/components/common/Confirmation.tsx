@@ -5,6 +5,22 @@ type ConfirmationProps = {
     show: boolean
 }
 
+/**
+ * Generic confirmation dialog rendered as a React Portal on `document.body`.
+ * * ARCHITECTURE & UX:
+ * - Portal rendering avoids z-index and CSS overflow issues from parent containers,
+ * guaranteeing the dialog always overlays the entire viewport.
+ * - Manages two side-effects for immersive UX:
+ *   1. **Scroll lock**: sets `body.overflow = 'hidden'` while visible, preventing
+ *      background content from scrolling underneath the semi-transparent backdrop.
+ *   2. **Keyboard dismiss**: listens for the `Escape` key to allow quick cancellation,
+ *      following standard modal accessibility patterns.
+ * - Both effects include proper cleanup (`return () => ...`) to avoid leaking global
+ * styles or event listeners when the component unmounts or hides.
+ *
+ * @param onChoose - Callback receiving `true` (confirmed) or `false` (cancelled).
+ * @param show - Controls portal visibility; when `false` the component returns `null`.
+ */
 const Confirmation = ({onChoose, show}: ConfirmationProps) => {
     useEffect(() => {
         if (show) {

@@ -24,6 +24,28 @@ type PostModalProps = {
     onClose: () => void
 }
 
+/**
+ * Full-screen post detail modal — the richest component in the post subsystem.
+ * * ARCHITECTURE & RESPONSIBILITIES:
+ * - **Comment lifecycle (CRUD + pagination)**: fetches comments on mount with cursor-based
+ *   pagination (`pageRef` / `hasMorePagesRef`), guarded by a `loadingCommentsLock` ref to
+ *   prevent concurrent fetches. Supports adding, editing (via `handleCommentUpdate`),
+ *   and deleting comments, with every mutation also updating the parent `FeedContext`
+ *   comment count to keep the feed card in sync.
+ * - **Post editing & deletion**: conditionally renders `<MoreButton>` / `<MoreContextMenu>`
+ *   only when `canEdit` is `true` (author-only). Deletion flows through the `<Confirmation>`
+ *   dialog; edits open `<EditPostModal>` and push the result to `FeedContext`.
+ * - **Optimistic feed sync**: reads `currentPost` from `FeedContext.posts` (falling back
+ *   to the original prop) so that like-count and content changes made inside the modal
+ *   are instantly reflected in the feed list when the modal closes.
+ * - **Side-effects**: scroll-lock on mount, Escape-key dismiss listener, auth redirect
+ *   if the token expires while the modal is open.
+ * - Composes `<PostInteractions>`, `<InspectCard>`, `<Content>`, `<AvatarCircle>`,
+ *   `<FollowButton>`, and multiple sub-modals.
+ *
+ * @param post - The initial post DTO used as a seed; the live version is read from FeedContext.
+ * @param onClose - Callback to dismiss the modal and return to the feed/profile view.
+ */
 const PostModal = ({ post, onClose }: PostModalProps) => {
     const { checkIfFollowed, toggleFollow } = useFollowSystem();
     const { posts, updatePostInFeed, deletePostFromFeed } = useFeedContext();

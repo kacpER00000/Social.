@@ -5,6 +5,17 @@ type ContentProps = {
     onMoreClicked?: () => void
 }
 
+/**
+ * Reusable "expand/collapse" text block with overflow detection.
+ * * ARCHITECTURE & RENDERING:
+ * - Uses a `ref` on the content container to compare `scrollHeight` vs `clientHeight`
+ * after mount, determining if the text overflows the `max-h-30` constraint.
+ * - When collapsed and overflowing, renders a CSS gradient overlay (`from-white to-transparent`)
+ * at the bottom to visually hint at truncated content.
+ * - Supports an optional `onMoreClicked` callback: when provided, the "Show more" button
+ * delegates action to the parent (e.g., opening a modal) instead of expanding inline.
+ * This makes the component reusable in both feed cards and detail views.
+ */
 const Content = ({ content, onMoreClicked }: ContentProps) => {
     const contentRef = useRef<HTMLParagraphElement>(null);
     const [isExpanded, setIsExpanded] = useState(false);

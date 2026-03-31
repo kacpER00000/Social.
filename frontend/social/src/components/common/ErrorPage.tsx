@@ -1,5 +1,13 @@
 import { isRouteErrorResponse, useNavigate, useRouteError } from "react-router-dom";
 
+/**
+ * Catch-all error boundary page for `react-router` route errors.
+ * * BEHAVIOR:
+ * - Differentiates between route-level errors (`isRouteErrorResponse` — e.g., 404)
+ * and generic `Error` instances (mapped to 503 — server not responding).
+ * - Provides a single "Back to Home" action to recover from the error state,
+ * using imperative navigation to avoid broken-link scenarios.
+ */
 const ErrorPage = () => {
     const error = useRouteError();
     const navigate = useNavigate();

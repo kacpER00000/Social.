@@ -11,6 +11,24 @@ type LikeListProps = {
     show: boolean
 }
 
+/**
+ * Modal overlay listing users who liked a post, rendered as a React Portal.
+ * * ARCHITECTURE & UX:
+ * - Portal-based rendering on `document.body` ensures the modal always covers
+ * the full viewport regardless of parent CSS constraints.
+ * - Supports **incremental pagination** via the `loadMore` / `canLoadMore` props,
+ * allowing the parent to fetch additional pages of like data on demand without
+ * re-fetching the entire list.
+ * - Each user row is clickable and navigates to that user's profile via
+ * `useNavigate`, integrating seamlessly with the app's routing.
+ * - Composes `<AvatarCircle />` for consistent avatar rendering across the app.
+ *
+ * @param users - Array of like DTOs containing userId and username.
+ * @param onClose - Callback to dismiss the modal.
+ * @param loadMore - Callback to fetch the next page of likes.
+ * @param canLoadMore - Whether additional pages are available.
+ * @param show - Controls portal visibility; when `false` the component returns `null`.
+ */
 const LikeList = ({ users, onClose, canLoadMore, loadMore, show }: LikeListProps) => {
     const navigate = useNavigate();
     if (!show) { return null; }
