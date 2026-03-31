@@ -11,8 +11,8 @@ const SearchList = () => {
     const searchResponse = useLoaderData() as UserResponse;
     const [users, setUsers] = useState<UserDTO[]>(searchResponse.content)
     const [isFetching, setIsFetching] = useState(false);
-    const page = useRef(1);
-    const canFetch = useRef(page.current < searchResponse.totalPages);
+    const page = useRef(searchResponse.number + 1);
+    const canFetch = useRef(!searchResponse.last);
     const sentinel = useRef<HTMLDivElement | null>(null);
     const loadingLock = useRef(false);
     const [searchParams] = useSearchParams();
@@ -39,8 +39,8 @@ const SearchList = () => {
             if (response.ok) {
                 const data = await response.json() as UserResponse;
                 setUsers(prev => [...prev, ...data.content]);
-                page.current += 1;
-                canFetch.current = page.current < data.totalPages;
+                page.current = data.number + 1;
+                canFetch.current = !data.last;
             } else {
                 triggerError("Failed to fetch users.");
                 canFetch.current = false;
@@ -56,10 +56,10 @@ const SearchList = () => {
 
     useEffect(() => {
         setUsers(searchResponse.content)
-        page.current = 1;
-        canFetch.current = page.current < searchResponse.totalPages;
+        page.current = searchResponse.number + 1;
+        canFetch.current = !searchResponse.last;
         loadingLock.current = false;
-    }, [query])
+    }, [query, searchResponse])
 
     useEffect(() => {
         const observer = new IntersectionObserver((entries) => {

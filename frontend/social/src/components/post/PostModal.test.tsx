@@ -76,6 +76,7 @@ describe("PostModal test", () => {
             json: async () => ({
                 content: [{ commentId: 1, content: "Comment 1" } as CommentDTO, { commentId: 2, content: "Comment 2" } as CommentDTO],
                 number: 0,
+                last: false,
                 totalPages: 3
             })
         } as Response);
@@ -93,6 +94,7 @@ describe("PostModal test", () => {
             json: async () => ({
                 content: [{ commentId: 1, content: "Comment 1" } as CommentDTO],
                 number: 0,
+                last: false,
                 totalPages: 3
             })
         } as Response);
@@ -107,6 +109,7 @@ describe("PostModal test", () => {
             json: async () => ({
                 content: [{ commentId: 2, content: "Comment 2" } as CommentDTO],
                 number: 1,
+                last: false,
                 totalPages: 3
             })
         } as Response);
@@ -155,7 +158,7 @@ describe("PostModal test", () => {
                     "Content-Type": "application/json",
                     "Authorization": "Bearer AAABBBCCCDDD"
                 },
-                body: JSON.stringify({content: "My brand new comment"})
+                body: JSON.stringify({ content: "My brand new comment" })
             })
         );
         expect(await screen.findByText("My brand new comment")).toBeInTheDocument();

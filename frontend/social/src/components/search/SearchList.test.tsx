@@ -1,10 +1,10 @@
-import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
-import {useToken} from "../../hooks/useToken.ts";
-import {ErrorProvider} from "../../contexts/ErrorContext.tsx";
-import {act, render, screen} from "@testing-library/react";
-import {BrowserRouter} from "react-router-dom";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { useToken } from "../../hooks/useToken.ts";
+import { ErrorProvider } from "../../contexts/ErrorContext.tsx";
+import { act, render, screen } from "@testing-library/react";
+import { BrowserRouter } from "react-router-dom";
 import SearchList from "./SearchList.tsx";
-import {UserDTO, UserResponse} from "../../types/types.ts";
+import { UserDTO, UserResponse } from "../../types/types.ts";
 
 const mockNavigate = vi.fn();
 let mockLoaderData: UserResponse;
@@ -34,16 +34,18 @@ describe('SearchList test', () => {
             disconnect = vi.fn();
         }
         globalThis.IntersectionObserver = MockObserver as any;
-        mockLoaderData  = {
+        mockLoaderData = {
             content: [
                 { userId: 1, firstName: "John", lastName: "Smith" } as UserDTO,
             ],
+            number: 0,
+            last: false,
             totalPages: 3
         };
         vi.clearAllMocks();
         localStorage.clear();
-        localStorage.setItem("token","AAABBBCCCDDD");
-        vi.stubEnv("VITE_API_URL","http://test-api.com");
+        localStorage.setItem("token", "AAABBBCCCDDD");
+        vi.stubEnv("VITE_API_URL", "http://test-api.com");
         vi.spyOn(globalThis, 'fetch');
         vi.mocked(useToken).mockReturnValue({
             isInvalid: false,
@@ -67,7 +69,7 @@ describe('SearchList test', () => {
     };
 
     it("should load data from loader", () => {
-        renderWithContext(<SearchList/>);
+        renderWithContext(<SearchList />);
         expect(screen.getByText("John Smith")).toBeInTheDocument();
         expect(globalThis.fetch).toHaveBeenCalledTimes(0);
     });
@@ -81,7 +83,7 @@ describe('SearchList test', () => {
                 totalPages: 2
             })
         } as Response);
-        renderWithContext(<SearchList/>);
+        renderWithContext(<SearchList />);
         expect(screen.getByText("John Smith")).toBeInTheDocument();
         await act(async () => {
             observerCallback([{ isIntersecting: true }]);
@@ -90,7 +92,7 @@ describe('SearchList test', () => {
             'http://test-api.com/social/users/search?query=John&page=1',
             expect.objectContaining({
                 method: 'GET',
-                headers: {'Authorization': 'Bearer AAABBBCCCDDD'}
+                headers: { 'Authorization': 'Bearer AAABBBCCCDDD' }
             })
         );
         expect(await screen.findByText("John Doe")).toBeInTheDocument();
@@ -101,9 +103,11 @@ describe('SearchList test', () => {
             content: [
                 { userId: 1, firstName: "John", lastName: "Smith" } as UserDTO,
             ],
+            number: 1,
+            last: true,
             totalPages: 1
         };
-        renderWithContext(<SearchList/>);
+        renderWithContext(<SearchList />);
         await act(async () => {
             observerCallback([{ isIntersecting: true }]);
         });
@@ -115,7 +119,7 @@ describe('SearchList test', () => {
             ok: false,
             status: 400,
         } as Response);
-        renderWithContext(<SearchList/>);
+        renderWithContext(<SearchList />);
         await act(async () => {
             observerCallback([{ isIntersecting: true }]);
         });
@@ -124,7 +128,7 @@ describe('SearchList test', () => {
 
     it("should throw error 'Server error while fetching users.'", async () => {
         vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error("Network failure"));
-        renderWithContext(<SearchList/>);
+        renderWithContext(<SearchList />);
         await act(async () => {
             observerCallback([{ isIntersecting: true }]);
         });

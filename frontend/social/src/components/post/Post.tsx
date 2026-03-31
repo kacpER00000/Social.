@@ -20,8 +20,8 @@ const Post = ({ postResponse, path }: PostComponentProps) => {
     const sentinelRef = useRef(null)
     const loadingLock = useRef(false)
     const [isFetchingMore, setIsFetchingMore] = useState(false);
-    const page = useRef(1)
-    const hasMorePages = useRef(postResponse.totalPages > 1)
+    const page = useRef(postResponse.number + 1)
+    const hasMorePages = useRef(!postResponse.last)
 
     const fetchMorePosts = useCallback(async () => {
         if (loadingLock.current || !hasMorePages.current) { return }
@@ -41,8 +41,8 @@ const Post = ({ postResponse, path }: PostComponentProps) => {
                 if (uniqueFollowedIds.length > 0) {
                     addFollowedUsers(uniqueFollowedIds)
                 }
-                page.current += 1
-                hasMorePages.current = data.totalPages > page.current
+                page.current = data.number + 1
+                hasMorePages.current = !data.last
             } else {
                 triggerError("Failed to fetch more posts.");
                 hasMorePages.current = false;
@@ -62,8 +62,8 @@ const Post = ({ postResponse, path }: PostComponentProps) => {
                 ...post,
                 createdAt: formatDate(post.createdAt)
             })));
-            page.current = 1;
-            hasMorePages.current = postResponse.totalPages > 1;
+            page.current = postResponse.number + 1;
+            hasMorePages.current = !postResponse.last;
             const followedIds = getFollowedIds(postResponse.content);
             const uniqueFollowedIds = Array.from(new Set(followedIds));
             if (uniqueFollowedIds.length > 0) {

@@ -11,8 +11,8 @@ const FollowList = () => {
     const [followList, setFollowList] = useState(followResponse.content);
     const [isFetching, setIsFetching] = useState(false);
     const [query, setQuery] = useState("");
-    const page = useRef(1);
-    const canFetch = useRef(page.current < followResponse.totalPages);
+    const page = useRef(followResponse.number + 1);
+    const canFetch = useRef(!followResponse.last);
     const sentinel = useRef<HTMLDivElement | null>(null);
     const loadingLock = useRef(false);
     const location = useLocation()
@@ -39,8 +39,8 @@ const FollowList = () => {
             if (response.ok) {
                 const newData = await response.json() as FollowResponse;
                 setFollowList(prev => [...prev, ...newData.content])
-                page.current += 1
-                canFetch.current = page.current < newData.totalPages
+                page.current = newData.number + 1
+                canFetch.current = !newData.last
             } else {
                 triggerError("Failed to fetch users.");
                 canFetch.current = false
@@ -68,8 +68,8 @@ const FollowList = () => {
             if (response.ok) {
                 const newData = await response.json() as FollowResponse;
                 setFollowList(newData.content)
-                page.current = 1
-                canFetch.current = page.current < newData.totalPages
+                page.current = newData.number + 1
+                canFetch.current = !newData.last
             } else {
                 triggerError("Failed to fetch users.");
                 canFetch.current = false
@@ -113,10 +113,10 @@ const FollowList = () => {
     useEffect(() => {
         if (query.trim() === "") {
             setFollowList(followResponse.content)
-            page.current = 1
-            canFetch.current = page.current < followResponse.totalPages
+            page.current = followResponse.number + 1
+            canFetch.current = !followResponse.last
         }
-    }, [query])
+    }, [query, followResponse])
 
 
 

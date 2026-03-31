@@ -1,75 +1,78 @@
 export interface PostDTO {
-    postId: number,
-    authorId: number,
-    author: string,
-    title: string,
-    content: string,
-    createdAt: string,
-    likesNum: number,
-    commentCount: number,
-    isLiked: boolean,
-    isAuthorFollowed: boolean,
-    canEdit: boolean
+    postId: number;
+    authorId: number;
+    author: string;
+    title: string;
+    content: string;
+    createdAt: string;
+    likesNum: number;
+    commentCount: number;
+    isLiked: boolean;
+    isAuthorFollowed: boolean;
+    canEdit: boolean;
 }
 
 export interface PostResponse {
-    content: PostDTO[],
-    last: boolean,
-    number: number,
-    totalPages: number
+    content: PostDTO[];
+    last: boolean;
+    number: number;
+    totalPages: number;
 }
 
 export interface CommentDTO {
-    commentId: number,
-    postId: number,
-    authorId: number,
-    author: string,
-    content: string,
-    createdAt: string,
-    canEdit: boolean,
-    canDelete: boolean,
-    isAuthorFollowed: boolean
+    commentId: number;
+    postId: number;
+    authorId: number;
+    author: string;
+    content: string;
+    createdAt: string;
+    canEdit: boolean;
+    canDelete: boolean;
+    isAuthorFollowed: boolean;
 }
 
 export interface CommentResponse {
-    content: CommentDTO[],
-    number: number,
-    totalPages: number
+    content: CommentDTO[];
+    number: number;
+    last: boolean;
+    totalPages: number;
 }
 
 export interface UserDTO {
-    userId: number,
-    firstName: string,
-    lastName: string,
-    birthDate: string,
-    sex: string,
-    followersCount: number,
-    followingCount: number,
-    canEdit: boolean
+    userId: number;
+    firstName: string;
+    lastName: string;
+    birthDate: string;
+    sex: string;
+    followersCount: number;
+    followingCount: number;
+    canEdit: boolean;
 }
 
 export interface UserResponse {
     content: UserDTO[];
+    last: boolean;
+    number: number;
     totalPages: number;
 }
 
-
-
 export interface PostData {
-    title: string,
-    content: string
+    title: string;
+    content: string;
 }
 
 export interface PostLikeDTO {
-    username: string,
-    userId: number,
-    postId: number,
-    likedAt: string
+    username: string;
+    userId: number;
+    postId: number;
+    likedAt: string;
 }
 
 export interface PostLikeResponse {
-    content: PostLikeDTO[],
-    totalPages: number
+    content: PostLikeDTO[];
+    last: boolean;
+    number: number;
+    totalPages: number;
 }
 
 export interface JWTPayload {
@@ -81,24 +84,26 @@ export interface JWTPayload {
 }
 
 export interface FollowDTO {
-    userId: number,
-    followerUsername: string,
-    following: boolean,
-    followingBy: boolean,
-    followedSince: string | null,
-    followersCount: number
+    userId: number;
+    followerUsername: string;
+    following: boolean;
+    followingBy: boolean;
+    followedSince: string | null;
+    followersCount: number;
 }
 
 export interface FollowResponse {
     content: FollowDTO[];
+    last: boolean;
+    number: number;
     totalPages: number;
 }
 
 export type EditProfileData = {
-    firstName: string,
-    lastName: string,
-    sex: string,
-    birthDate: string
+    firstName: string;
+    lastName: string;
+    sex: string;
+    birthDate: string;
 }
 
 export interface FollowContextType {
@@ -106,17 +111,17 @@ export interface FollowContextType {
     toggleFollow: (userId: number | undefined) => void;
     checkIfFollowed: (userId: number | undefined) => boolean;
     addFollowedUsers: (userIds: number[]) => void;
-    clearContext: () => void
+    clearContext: () => void;
 }
 
 export interface FeedContextType {
-    posts: PostDTO[],
-    setPosts: React.Dispatch<React.SetStateAction<PostDTO[]>>,
-    addPostToFeed: (post: PostDTO) => void,
-    updatePostInFeed: (post: PostDTO) => void,
-    deletePostFromFeed: (postId: number) => void
+    posts: PostDTO[];
+    setPosts: React.Dispatch<React.SetStateAction<PostDTO[]>>;
+    addPostToFeed: (post: PostDTO) => void;
+    updatePostInFeed: (post: PostDTO) => void;
+    deletePostFromFeed: (postId: number) => void;
 }
 
 export interface ErrorContextType {
-    triggerError: (message: string) => void
-};
+    triggerError: (message: string) => void;
+}
