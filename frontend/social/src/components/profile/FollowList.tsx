@@ -122,7 +122,7 @@ const FollowList = () => {
 
     return (
         <div className="flex justify-center items-center ml-auto mr-auto">
-            <div className="bg-white m-5 rounded-3xl shadow-2xl">
+            <div className="bg-white m-5 min-w-1/2 rounded-3xl shadow-2xl">
                 <h2 className="text-4xl font-bold p-5 first-letter:capitalize">{type}</h2>
                 <form className="p-5" onSubmit={(e) => e.preventDefault()}>
                     <input className="w-full rounded-3xl border border-gray-200 p-5 transition-all duration-200 ease-in-out focus:border-gray-400 focus:outline-none" type="text" placeholder="Search" value={query} onChange={(e) => setQuery(e.target.value)} />

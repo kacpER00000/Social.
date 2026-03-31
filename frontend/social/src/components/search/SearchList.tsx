@@ -80,7 +80,7 @@ const SearchList = () => {
 
     return (
         <div className="flex justify-center items-center ml-auto mr-auto">
-            <div className="bg-white m-5 rounded-3xl shadow-2xl">
+            <div className="bg-white m-5 min-w-1/2 rounded-3xl shadow-2xl">
                 <h2 className="text-4xl font-bold p-5 first-letter:capitalize">Users</h2>
                 <div className="border-b border-gray-200"></div>
                 {users.length === 0 ?
