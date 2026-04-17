@@ -77,11 +77,12 @@ The project solves common challenges found in modern web applications:
 * **Vitest & Testing Library** (for reliable testing)
 
 ### Backend
-* **Java 21 & Spring Boot 3**
+* **Java 21 & Spring Boot 4**
 * **Spring Security** (for endpoint protection and JWT management)
 * **Spring Data JPA & Hibernate** (Data Access Layer)
 * **PostgreSQL** (Relational Database Management System)
 * **Springdoc OpenAPI (Swagger)** (for automated API documentation)
+* **JUnit 5 & Mockito** (for reliable testing)
 
 ### DevOps & Architecture
 * **Vercel** - Frontend hosting and CI/CD pipeline
@@ -95,7 +96,7 @@ The project solves common challenges found in modern web applications:
 
 ### Step 1: Clone the repository
 ```bash
-git clone [https://github.com/YourUsername/Social.git](https://github.com/YourUsername/Social.git)
+git clone [https://github.com/kacpER00000/Social.git](https://github.com/kacpER00000/Social.git)
 cd social
 ```
 
