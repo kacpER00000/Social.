@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>org.socialbackend</groupId>
-    <artifactId>SocialBackEnd</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>SocialBackEnd</name>
-    <description>SocialBackEnd</description>
+    <artifactId>SocialBackend</artifactId>
+    <version>1.0.0</version>
+    <name>SocialBackend</name>
+    <description>SocialBackend</description>
     <url/>
     <licenses>
         <license/>
