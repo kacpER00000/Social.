@@ -256,6 +256,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                     </div>
                     {showMorePost &&
                         <MoreContextMenu
+                            isComment={false}
                             editPermission={true}
                             deletePermission={true}
                             onEdit={showEditPostModal}
@@ -297,6 +298,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                                         {comments.map((item) => (
                                             <CommentItem
                                                 comment={item}
+                                                isPostAuthor={currentPost.canEdit}
                                                 key={item.commentId}
                                                 onUpdate={handleCommentUpdate}
                                                 onDelete={deleteComment}

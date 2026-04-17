@@ -15,11 +15,12 @@ import { useErrorContext } from "../../contexts/ErrorContext.tsx";
 
 type CommentItemProps = {
     comment: CommentDTO,
+    isPostAuthor: boolean,
     onDelete: (commentId: number) => void,
     onUpdate: (commentId: number, newContent: string) => void
 }
 
-const CommentItem = ({ comment, onDelete, onUpdate }: CommentItemProps) => {
+const CommentItem = ({ comment, onDelete, onUpdate, isPostAuthor }: CommentItemProps) => {
     const { decoded, isInvalid } = useToken();
     const { checkIfFollowed, toggleFollow } = useFollowSystem();
     const isTheOwnerOfComment = decoded?.userId === comment.authorId;
@@ -106,7 +107,7 @@ const CommentItem = ({ comment, onDelete, onUpdate }: CommentItemProps) => {
                                 handleFollow={() => toggleFollow(comment.authorId)} />
                         }
                     </div>
-                    {isTheOwnerOfComment && !isEditing &&
+                    {(isTheOwnerOfComment || isPostAuthor) && !isEditing &&
                         <MoreButton
                             show={showMore}
                             onShowClicked={showMoreClicked}
@@ -115,6 +116,7 @@ const CommentItem = ({ comment, onDelete, onUpdate }: CommentItemProps) => {
                 </div>
                 {showMore &&
                     <MoreContextMenu
+                        isComment={true}
                         editPermission={comment.canEdit}
                         deletePermission={comment.canDelete}
                         onEdit={() => { setShowMore(false); setIsEditing(true) }}
