@@ -96,7 +96,7 @@ The project solves common challenges found in modern web applications:
 
 ### Step 1: Clone the repository
 ```bash
-git clone [https://github.com/kacpER00000/Social.git](https://github.com/kacpER00000/Social.git)
+git clone https://github.com/kacpER00000/Social.git
 cd social
 ```
 
