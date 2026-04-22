@@ -360,6 +360,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
             {showEditModal && (
                 <EditPostModal
                     postData={{ title: currentPost.title, content: currentPost.content } as PostData}
+                    username={currentPost.author}
                     onConfirm={editPost}
                     onCancel={() => setShowEditModal(false)}
                     show={showEditModal}

@@ -2,9 +2,11 @@ import { useState } from "react";
 import { PostData } from "../../types/types.ts";
 import { createPortal } from "react-dom";
 import { ChangeEvent } from "react";
+import AvatarCircle from "../profile/AvatarCircle.tsx";
 
 type EditPostModalProps = {
     postData: PostData,
+    username: string,
     onConfirm: (data: PostData) => void,
     onCancel: () => void,
     show: boolean
@@ -23,13 +25,14 @@ type EditPostModalProps = {
  *   this component only emits the edited `PostData` payload via `onConfirm`.
  *
  * @param postData - The current post data used to pre-fill the form fields.
+ * @param username - The username of the post author used to display avatar.
  * @param onConfirm - Callback receiving the edited `{ title, content }` on save.
  * @param onCancel - Callback to dismiss the modal without saving.
  * @param show - Controls portal visibility; returns `null` when `false`.
  */
-const EditPostModal = ({ postData, onConfirm, onCancel, show }: EditPostModalProps) => {
+const EditPostModal = ({ postData, username, onConfirm, onCancel, show }: EditPostModalProps) => {
     const [formData, setFormData] = useState(postData);
-    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
@@ -39,7 +42,7 @@ const EditPostModal = ({ postData, onConfirm, onCancel, show }: EditPostModalPro
     if (!show) { return null; }
     return createPortal(
         <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/50 z-999">
-            <div className="bg-white text-center w-11/12 max-w-md rounded-3xl p-6 shadow-2xl">
+            <div className="flex flex-col gap-2 bg-white text-center w-11/12 max-w-3xl rounded-3xl p-6 shadow-2xl">
                 <div className="flex items-center justify-between pb-2 pt-2">
                     <h1 className="text-2xl font-bold text-gray-700">Edit post</h1>
                     <button onClick={onCancel} className="hover:text-gray-700 cursor-pointer">
@@ -49,9 +52,16 @@ const EditPostModal = ({ postData, onConfirm, onCancel, show }: EditPostModalPro
                     </button>
                 </div>
                 <div className="border-t border-gray-200"></div>
+                <div className="flex gap-2 mt-2">
+                    <AvatarCircle
+                        size="small"
+                        username={username}
+                    />
+                    <h1 className="font-bold mt-2">{username}</h1>
+                </div>
                 <form className="flex flex-col gap-4">
                     <div className="flex flex-col text-left">
-                        <label htmlFor="title" className="font-bold ml-2 m-1">Title:</label>
+                        <label htmlFor="title" className="font-bold mb-1">Title:</label>
                         <input
                             id="title"
                             name="title"
@@ -62,15 +72,8 @@ const EditPostModal = ({ postData, onConfirm, onCancel, show }: EditPostModalPro
                         />
                     </div>
                     <div className="flex flex-col text-left">
-                        <label htmlFor="content" className="font-bold ml-2 mb-1">Content:</label>
-                        <input
-                            id="content"
-                            name="content"
-                            className="border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                            type="text"
-                            value={formData.content}
-                            onChange={handleChange}
-                        />
+                        <label htmlFor="content" className="font-bold mb-1">Content:</label>
+                        <textarea id="content" name="content" className="border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none" rows={10} value={formData.content} onChange={handleChange} />
                     </div>
                 </form>
 
@@ -79,7 +82,7 @@ const EditPostModal = ({ postData, onConfirm, onCancel, show }: EditPostModalPro
                         className="bg-blue-500 text-white px-6 py-2 rounded-xl hover:bg-blue-600 transition"
                         onClick={() => onConfirm(formData)}
                     >
-                        Save
+                        Edit
                     </button>
                     <button
                         className="bg-gray-200 text-gray-800 px-6 py-2 rounded-xl hover:bg-gray-300 transition"

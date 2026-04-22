@@ -36,6 +36,8 @@ The application is deployed and publicly accessible:
 **Post and Comments View**:
 ![Post and Comments View 1](screenshots/post1.png)
 ![Post and Comments View 2](screenshots/post2.png)
+![Post and Comments View 3](screenshots/editpost.png)
+![Post and Comments View 4](screenshots/editcomment.png)
 
 **Like list**:
 ![Like list](screenshots/like.png)
