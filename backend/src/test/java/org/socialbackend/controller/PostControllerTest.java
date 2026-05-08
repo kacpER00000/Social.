@@ -98,7 +98,7 @@ public class PostControllerTest {
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
         String title="Test";
         String content="Test content";
-        PostRequest postRequest = new PostRequest(title,content);
+        PostRequest postRequest = new PostRequest(title,content,null);
         PostDTO expectedDTO = new PostDTO();
         expectedDTO.setAuthorId(loggedUserId);
         expectedDTO.setTitle(title);
@@ -121,7 +121,7 @@ public class PostControllerTest {
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
         String title="Test";
         String content="Test content";
-        PostRequest postRequest = new PostRequest(title,content);
+        PostRequest postRequest = new PostRequest(title,content,null);
         when(postService.addPost(postRequest,loggedUserId)).thenThrow(NoSuchElementException.class);
         mockMvc.perform(post("/social/posts")
                         .principal(mockAuthentication)
@@ -137,7 +137,7 @@ public class PostControllerTest {
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
         String title="Test";
         String content="Test content";
-        PostRequest postRequest = new PostRequest(title,content);
+        PostRequest postRequest = new PostRequest(title,content,null);
         mockMvc.perform(put("/social/posts/"+targetPostId)
                 .principal(mockAuthentication)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -153,7 +153,7 @@ public class PostControllerTest {
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
         String title="Test";
         String content="Test content";
-        PostRequest postRequest = new PostRequest(title,content);
+        PostRequest postRequest = new PostRequest(title,content,null);
         doThrow(NoSuchElementException.class).when(postService).updatePost(eq(targetPostId),eq(loggedUserId),any(PostRequest.class));
         mockMvc.perform(put("/social/posts/"+targetPostId)
                         .principal(mockAuthentication)
@@ -169,7 +169,7 @@ public class PostControllerTest {
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
         String title="Test";
         String content="Test content";
-        PostRequest postRequest = new PostRequest(title,content);
+        PostRequest postRequest = new PostRequest(title,content,null);
         doThrow(InvalidParameterException.class).when(postService).updatePost(eq(targetPostId),eq(loggedUserId),any(PostRequest.class));
         mockMvc.perform(put("/social/posts/"+targetPostId)
                         .principal(mockAuthentication)

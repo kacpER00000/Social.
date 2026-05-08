@@ -43,7 +43,7 @@ public class PostServiceTest {
         Long userId = 1L;
         User userFromDb = new User();
         userFromDb.setUserId(userId);
-        PostRequest postRequest = new PostRequest("Title", "Content");
+        PostRequest postRequest = new PostRequest("Title", "Content",null);
         when(userRepository.findById(userId)).thenReturn(Optional.of(userFromDb));
         PostDTO result = postService.addPost(postRequest,userId);
         verify(postRepository, times(1)).save(any(Post.class));
@@ -55,7 +55,7 @@ public class PostServiceTest {
         Long userId = 1L;
         User userFromDb = new User();
         userFromDb.setUserId(userId);
-        PostRequest postRequest = new PostRequest("Title", "Content");
+        PostRequest postRequest = new PostRequest("Title", "Content",null);
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
         assertThrows(NoSuchElementException.class, () -> postService.addPost(postRequest, userId));
         verify(postRepository,never()).save(any(Post.class));
@@ -67,7 +67,7 @@ public class PostServiceTest {
         User userFromDb = new User();
         userFromDb.setUserId(userId);
         Long postId=1L;
-        Post postFromDb = new Post(userFromDb, "Test","This is test");
+        Post postFromDb = new Post(userFromDb, "Test","This is test",null);
         postFromDb.setPostId(postId);
         when(postRepository.findById(postId)).thenReturn(Optional.of(postFromDb));
         PostDTO result = postService.findPostById(postId, userId);
@@ -82,7 +82,7 @@ public class PostServiceTest {
         User userFromDb = new User();
         userFromDb.setUserId(userId);
         Long postId=1L;
-        Post postFromDb = new Post(userFromDb, "Test","This is test");
+        Post postFromDb = new Post(userFromDb, "Test","This is test",null);
         postFromDb.setPostId(postId);
         when(postRepository.findById(postId)).thenReturn(Optional.of(postFromDb));
         PostDTO result = postService.findPostById(postId, postOwnerId);
@@ -100,7 +100,7 @@ public class PostServiceTest {
         User userFromDb = new User();
         userFromDb.setUserId(userId);
         Long postId=1L;
-        Post postFromDb = new Post(authorUserFromDb, "Test","This is test");
+        Post postFromDb = new Post(authorUserFromDb, "Test","This is test",null);
         postFromDb.setPostId(postId);
         when(postRepository.findById(postId)).thenReturn(Optional.of(postFromDb));
         when(postLikeRepository.existsByPost_postIdAndUser_userId(postId,userId)).thenReturn(true);
@@ -119,7 +119,7 @@ public class PostServiceTest {
         User userFromDb = new User();
         userFromDb.setUserId(userId);
         Long postId=1L;
-        Post postFromDb = new Post(authorUserFromDb, "Test","This is test");
+        Post postFromDb = new Post(authorUserFromDb, "Test","This is test",null);
         postFromDb.setPostId(postId);
         when(postRepository.findById(postId)).thenReturn(Optional.of(postFromDb));
         when(postLikeRepository.existsByPost_postIdAndUser_userId(postId,userId)).thenReturn(false);
@@ -138,7 +138,7 @@ public class PostServiceTest {
         User userFromDb = new User();
         userFromDb.setUserId(authorUserId);
         Long postId=1L;
-        Post postFromDb = new Post(authorUserFromDb, "Test","This is test");
+        Post postFromDb = new Post(authorUserFromDb, "Test","This is test",null);
         postFromDb.setPostId(postId);
         when(postRepository.findById(postId)).thenReturn(Optional.of(postFromDb));
         when(followerRepository.existsByFollower_UserIdAndFollowed_UserId(loggedUserId,authorUserId)).thenReturn(true);
@@ -157,7 +157,7 @@ public class PostServiceTest {
         User userFromDb = new User();
         userFromDb.setUserId(authorUserId);
         Long postId=1L;
-        Post postFromDb = new Post(authorUserFromDb, "Test","This is test");
+        Post postFromDb = new Post(authorUserFromDb, "Test","This is test",null);
         postFromDb.setPostId(postId);
         when(postRepository.findById(postId)).thenReturn(Optional.of(postFromDb));
         when(followerRepository.existsByFollower_UserIdAndFollowed_UserId(loggedUserId,authorUserId)).thenReturn(false);
@@ -174,8 +174,8 @@ public class PostServiceTest {
         User userFromDb = new User();
         userFromDb.setUserId(userId);
         Long postId = 1L;
-        Post postFromDb = new Post(userFromDb, "Test","This is test");
-        PostRequest updateRequest = new PostRequest("Updated", "This is updated");
+        Post postFromDb = new Post(userFromDb, "Test","This is test",null);
+        PostRequest updateRequest = new PostRequest("Updated", "This is updated",null);
         postFromDb.setPostId(postId);
         when(postRepository.findById(postId)).thenReturn(Optional.of(postFromDb));
         when(userRepository.findById(userId)).thenReturn(Optional.of(userFromDb));
@@ -192,8 +192,8 @@ public class PostServiceTest {
         User postOwner = new User();
         userFromDb.setUserId(2L);
         Long postId = 1L;
-        Post postFromDb = new Post(postOwner, "Test","This is test");
-        PostRequest updateRequest = new PostRequest("Updated", "This is updated");
+        Post postFromDb = new Post(postOwner, "Test","This is test",null);
+        PostRequest updateRequest = new PostRequest("Updated", "This is updated",null);
         postFromDb.setPostId(postId);
         when(postRepository.findById(postId)).thenReturn(Optional.of(postFromDb));
         when(userRepository.findById(userId)).thenReturn(Optional.of(userFromDb));
@@ -205,7 +205,7 @@ public class PostServiceTest {
         User userFromDb = new User();
         userFromDb.setUserId(userId);
         Long postId = 1L;
-        Post postFromDb = new Post(userFromDb, "Test","This is test");
+        Post postFromDb = new Post(userFromDb, "Test","This is test",null);
         postFromDb.setPostId(postId);
         when(postRepository.findById(postId)).thenReturn(Optional.of(postFromDb));
         when(userRepository.findById(userId)).thenReturn(Optional.of(userFromDb));
@@ -220,7 +220,7 @@ public class PostServiceTest {
         User postOwner = new User();
         postOwner.setUserId(2L);
         Long postId = 1L;
-        Post postFromDb = new Post(postOwner, "Test","This is test");
+        Post postFromDb = new Post(postOwner, "Test","This is test",null);
         postFromDb.setPostId(postId);
         when(postRepository.findById(postId)).thenReturn(Optional.of(postFromDb));
         when(userRepository.findById(userId)).thenReturn(Optional.of(userFromDb));
@@ -235,9 +235,9 @@ public class PostServiceTest {
         User user2 = new User("John", "Smith",null,null,null);
         user2.setUserId(user2Id);
         Page<Post> latestPostFromDb = new PageImpl<>(List.of(
-                new Post(user1, "Test 1", "This is test 1"),
-                new Post(user1, "Test 2", "This is test 2"),
-                new Post(user2, "Test 3", "This is test 3")
+                new Post(user1, "Test 1", "This is test 1",null),
+                new Post(user1, "Test 2", "This is test 2",null),
+                new Post(user2, "Test 3", "This is test 3",null)
         ));
         Pageable pageable = Pageable.ofSize(5);
         when(postRepository.findAllByOrderByCreatedAtDesc(pageable)).thenReturn(latestPostFromDb);
@@ -254,8 +254,8 @@ public class PostServiceTest {
         User user = new User("John", "Doe",null,null,null);
         user.setUserId(userId);
         Page<Post> latestPostFromDb = new PageImpl<>(List.of(
-                new Post(user, "Test 1", "This is test 1"),
-                new Post(user, "Test 2", "This is test 2")
+                new Post(user, "Test 1", "This is test 1",null),
+                new Post(user, "Test 2", "This is test 2",null)
         ));
         Pageable pageable = Pageable.ofSize(5);
         when(postRepository.findAllByUserOrderByCreatedAtDesc(user,pageable)).thenReturn(latestPostFromDb);

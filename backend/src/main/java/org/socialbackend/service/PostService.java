@@ -16,7 +16,8 @@ import java.util.NoSuchElementException;
 
 /**
  * Service class for managing posts.
- * This class handles the business logic for creating, retrieving, updating, and deleting posts.
+ * This class handles the business logic for creating, retrieving, updating, and
+ * deleting posts.
  *
  * @author Kacper Kurek
  * @version 1.0
@@ -33,17 +34,17 @@ public class PostService {
      * Adds a new post.
      *
      * @param postRequest The request object containing post details.
-     * @param userId The ID of the user creating the post.
+     * @param userId      The ID of the user creating the post.
      * @return The created PostDTO.
      * @throws NoSuchElementException if the user does not exist.
      */
     @Transactional
-    public PostDTO addPost(PostRequest postRequest, Long userId){
+    public PostDTO addPost(PostRequest postRequest, Long userId) {
         User owner = findUserById(userId);
-        Post post = new Post(owner, postRequest.getTitle(), postRequest.getContent());
+        Post post = new Post(owner, postRequest.getTitle(), postRequest.getContent(), postRequest.getImgUrl());
         owner.addPost(post);
         postRepository.save(post);
-        return mapToDTO(post,userId);
+        return mapToDTO(post, userId);
     }
 
     /**
@@ -54,23 +55,25 @@ public class PostService {
      * @return The PostDTO.
      * @throws NoSuchElementException if the post does not exist.
      */
-    public PostDTO findPostById(Long postId, Long userId){
-        return postRepository.findById(postId).map(p -> mapToDTO(p,userId)).orElseThrow(() -> new NoSuchElementException("Post with this id don't exist"));
+    public PostDTO findPostById(Long postId, Long userId) {
+        return postRepository.findById(postId).map(p -> mapToDTO(p, userId))
+                .orElseThrow(() -> new NoSuchElementException("Post with this id don't exist"));
     }
 
     /**
      * Updates an existing post.
      *
-     * @param postId The ID of the post to update.
-     * @param userId The ID of the user updating the post.
-     * @param updatePostRequest The request object containing the updated post details.
-     * @throws NoSuchElementException if the post does not exist.
+     * @param postId            The ID of the post to update.
+     * @param userId            The ID of the user updating the post.
+     * @param updatePostRequest The request object containing the updated post
+     *                          details.
+     * @throws NoSuchElementException    if the post does not exist.
      * @throws InvalidParameterException if the user is not the owner of the post.
      */
     @Transactional
-    public void updatePost(Long postId, Long userId, PostRequest updatePostRequest){
+    public void updatePost(Long postId, Long userId, PostRequest updatePostRequest) {
         Post foundPost = getPostEntity(postId);
-        validatePostOwner(foundPost,userId);
+        validatePostOwner(foundPost, userId);
         foundPost.setTitle(updatePostRequest.getTitle());
         foundPost.setContent(updatePostRequest.getContent());
     }
@@ -80,15 +83,15 @@ public class PostService {
      *
      * @param postId The ID of the post to delete.
      * @param userId The ID of the user deleting the post.
-     * @throws NoSuchElementException if the post does not exist.
+     * @throws NoSuchElementException    if the post does not exist.
      * @throws InvalidParameterException if the user is not the owner of the post.
      */
     @Transactional
-    public void deletePost(Long postId, Long userId){
+    public void deletePost(Long postId, Long userId) {
         Post postToDelete = getPostEntity(postId);
-        validatePostOwner(postToDelete,userId);
+        validatePostOwner(postToDelete, userId);
         User owner = postToDelete.getUser();
-        if(owner != null){
+        if (owner != null) {
             owner.removePost(postToDelete);
         }
         postRepository.delete(postToDelete);
@@ -98,37 +101,39 @@ public class PostService {
      * Finds the latest posts.
      *
      * @param pageable The pagination information.
-     * @param userId The ID of the logged-in user.
+     * @param userId   The ID of the logged-in user.
      * @return A page of PostDTOs.
      */
-    public Page<PostDTO> findLatestPosts(Pageable pageable, Long userId){
-        return postRepository.findAllByOrderByCreatedAtDesc(pageable).map(p -> mapToDTO(p,userId));
+    public Page<PostDTO> findLatestPosts(Pageable pageable, Long userId) {
+        return postRepository.findAllByOrderByCreatedAtDesc(pageable).map(p -> mapToDTO(p, userId));
     }
 
     /**
      * Finds the latest posts of a specific user.
      *
-     * @param userId The ID of the user whose posts are to be retrieved.
-     * @param pageable The pagination information.
+     * @param userId       The ID of the user whose posts are to be retrieved.
+     * @param pageable     The pagination information.
      * @param loggedUserId The ID of the logged-in user.
      * @return A page of PostDTOs.
      * @throws NoSuchElementException if the specified user does not exist.
      */
-    public Page<PostDTO> findLatestUserPosts(Long userId, Pageable pageable, Long loggedUserId){
+    public Page<PostDTO> findLatestUserPosts(Long userId, Pageable pageable, Long loggedUserId) {
         User user = findUserById(userId);
-        return postRepository.findAllByUserOrderByCreatedAtDesc(user,pageable).map(p -> mapToDTO(p,loggedUserId));
+        return postRepository.findAllByUserOrderByCreatedAtDesc(user, pageable).map(p -> mapToDTO(p, loggedUserId));
     }
 
     /**
      * Validates if the user is the owner of the post.
      *
-     * @param post The post to validate.
+     * @param post   The post to validate.
      * @param userId The ID of the user.
      * @throws InvalidParameterException if the user is not the owner of the post.
      */
-    private void validatePostOwner(Post post, Long userId){
+    private void validatePostOwner(Post post, Long userId) {
         User owner = findUserById(userId);
-        if(!post.getUser().equals(owner)){throw new InvalidParameterException("You can only edit your posts.");}
+        if (!post.getUser().equals(owner)) {
+            throw new InvalidParameterException("You can only edit your posts.");
+        }
     }
 
     /**
@@ -138,24 +143,28 @@ public class PostService {
      * @return The Post entity.
      * @throws NoSuchElementException if the post does not exist.
      */
-    private Post getPostEntity(Long postId){
-        return postRepository.findById(postId).orElseThrow(() -> new NoSuchElementException("Post with this id don't exist"));
+    private Post getPostEntity(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new NoSuchElementException("Post with this id don't exist"));
     }
+
     /**
      * Maps a Post entity to a PostDTO.
      *
-     * @param post The Post entity.
+     * @param post         The Post entity.
      * @param loggedUserId The ID of the logged-in user.
      * @return The PostDTO.
      */
-    private PostDTO mapToDTO(Post post, Long loggedUserId){
+    private PostDTO mapToDTO(Post post, Long loggedUserId) {
         Long likesNumber = post.getLikesCount();
         Long commentCount = post.getCommentCount();
         String nickname = post.getUser().getFirstName() + " " + post.getUser().getLastName();
         boolean isLiked = postLikeRepository.existsByPost_postIdAndUser_userId(post.getPostId(), loggedUserId);
-        boolean isAuthorFollowed = followerRepository.existsByFollower_UserIdAndFollowed_UserId(loggedUserId,post.getUser().getUserId());
+        boolean isAuthorFollowed = followerRepository.existsByFollower_UserIdAndFollowed_UserId(loggedUserId,
+                post.getUser().getUserId());
         boolean canEdit = post.getUser().getUserId().equals(loggedUserId);
-        return new PostDTO(post.getPostId(),post.getUser().getUserId(),nickname,post.getTitle(),post.getContent(),post.getCreatedAt(),likesNumber,commentCount, isLiked, isAuthorFollowed, canEdit);
+        return new PostDTO(post.getPostId(), post.getUser().getUserId(), nickname, post.getTitle(), post.getContent(),
+                post.getImgUrl(), post.getCreatedAt(), likesNumber, commentCount, isLiked, isAuthorFollowed, canEdit);
     }
 
     /**
@@ -165,7 +174,8 @@ public class PostService {
      * @return The User entity.
      * @throws NoSuchElementException if the user does not exist.
      */
-    private User findUserById(Long userId){
-        return userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User with that id don't exist"));
+    private User findUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User with that id don't exist"));
     }
 }

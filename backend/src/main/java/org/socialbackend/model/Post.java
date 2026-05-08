@@ -18,54 +18,59 @@ import java.util.List;
  * @version 1.0
  */
 @Entity
-@Table(name="post", schema="social")
+@Table(name = "post", schema = "social")
 @NoArgsConstructor
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="post_id")
+    @Column(name = "post_id")
     @Getter
     @Setter
     private Long postId;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="user_id")
+    @JoinColumn(name = "user_id")
     @JsonIgnore
     @Getter
     @Setter
     private User user;
-    @Column(name="title")
+    @Column(name = "title")
     @Getter
     @Setter
     private String title;
-    @Column(name="content")
+    @Column(name = "content")
     @Getter
     @Setter
     private String content;
-    @Column(name="created_at")
+    @Column(name = "created_at")
     @CreationTimestamp
     @Getter
     private LocalDateTime createdAt;
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
-    @Column(name="likes_count")
+    @Column(name = "likes_count")
     @Getter
-    private Long likesCount=0L;
+    private Long likesCount = 0L;
     @Column(name = "comment_count")
     @Getter
-    private Long commentCount=0L;
+    private Long commentCount = 0L;
+    @Column(name = "img_url")
+    @Setter
+    @Getter
+    private String imgUrl;
 
-    public Post(User user, String title, String content) {
+    public Post(User user, String title, String content, String imgUrl) {
         this.user = user;
         this.title = title;
         this.content = content;
+        this.imgUrl = imgUrl;
     }
 
-
-    public void addComment(Comment comment){
+    public void addComment(Comment comment) {
         comments.add(comment);
         comment.setPost(this);
     }
-    public void removeComment(Comment comment){
+
+    public void removeComment(Comment comment) {
         comments.remove(comment);
         comment.setPost(this);
     }
