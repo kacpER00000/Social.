@@ -32,6 +32,9 @@ const PostItem = ({ post, onSelect }: PostItemProps) => {
                             content={post.content}
                             onMoreClicked={() => { onSelect(post) }}
                         />
+                        {post.imgUrl &&
+                            <img src={post.imgUrl} alt="picture" className="max-w-full max-h-[600px] object-contain rounded-xl"/>
+                        }
                     </div>
                     <div className="border-t border-gray-200 my-2"></div>
                     <PostInteractions

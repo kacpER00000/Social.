@@ -4,6 +4,7 @@ export interface PostDTO {
     author: string;
     title: string;
     content: string;
+    imgUrl: string | null;
     createdAt: string;
     likesNum: number;
     commentCount: number;
@@ -96,6 +97,7 @@ export interface UserResponse {
 export interface PostData {
     title: string;
     content: string;
+    picture: File | null;
 }
 
 export interface PostLikeDTO {
@@ -186,4 +188,20 @@ export interface ErrorContextType {
      * Automatically dismisses after a set timeout.
      */
     triggerError: (message: string) => void;
+}
+
+export interface SignatureResponse{
+    signature: string,
+    timestamp: number
+}
+
+export interface CloudinaryResponse{
+    secure_url: string,
+    public_id: number
+}
+
+export interface PostRequest{
+    title: string,
+    content: string,
+    imgUrl: string | null
 }

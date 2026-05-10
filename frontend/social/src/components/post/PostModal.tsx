@@ -287,6 +287,10 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                         />
                     </div>
                     <hr className="border-gray-100 my-4" />
+                    {post.imgUrl &&
+                        <img src={post.imgUrl} alt="picture" className="max-w-full max-h-[600px] object-contain rounded-xl"/>
+                    }
+                    <hr className="border-gray-100 my-4" />
                     <PostInteractions post={currentPost} />
                     <div className="bg-gray-50 shadow-inner p-6 rounded-3xl h-96 flex flex-col mt-4 border border-gray-100">
                         <div className={`overflow-y-auto overflow-x-hidden flex-1 min-h-0 mb-4 pr-2 ${comments.length === 0 ? "flex justify-center items-center" : ""}`}>
