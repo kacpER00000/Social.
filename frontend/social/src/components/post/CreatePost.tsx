@@ -4,7 +4,13 @@ import { useState } from "react";
 import CreatePostModal from "./CreatePostModal";
 import { useFeedContext } from "../../contexts/FeedContext";
 import { useErrorContext } from "../../contexts/ErrorContext";
-import {CloudinaryResponse, PostData, PostDTO, PostRequest, SignatureResponse} from "../../types/types";
+import {
+    CloudinaryResponse,
+    CreatePostData,
+    PostDTO,
+    CreatePostRequest,
+    SignatureResponse
+} from "../../types/types";
 import { formatDate } from "../../utils/formatDate";
 
 /**
@@ -26,13 +32,14 @@ const CreatePost = () => {
     const { triggerError } = useErrorContext();
     const [showCreatePostModal, setShowCreatePostModal] = useState(false);
 
-    const createPost = async (postData: PostData) => {
+    const createPost = async (postData: CreatePostData) => {
         setShowCreatePostModal(false);
         let signatureObj: SignatureResponse;
-        let postRequest: PostRequest = {
+        let postRequest: CreatePostRequest = {
             title: postData.title,
             content: postData.content,
-            imgUrl: null
+            imgUrl: null,
+            imgId: null
         };
         try {
             if(postData.picture !== null){
@@ -54,8 +61,9 @@ const CreatePost = () => {
                         body: cloudinaryRequest
                     })
                     if(cloudinaryResponse.ok){
-                        const clouidnaryData = await cloudinaryResponse.json() as CloudinaryResponse
-                        postRequest.imgUrl = clouidnaryData.secure_url
+                        const cloudinaryData = await cloudinaryResponse.json() as CloudinaryResponse
+                        postRequest.imgUrl = cloudinaryData.secure_url;
+                        postRequest.imgId = cloudinaryData.public_id;
                     }
                 }
             }

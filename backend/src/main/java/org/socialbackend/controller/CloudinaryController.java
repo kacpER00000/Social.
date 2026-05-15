@@ -26,4 +26,5 @@ public class CloudinaryController {
         return ResponseEntity.ok(new CloudinaryDTO(cloudinary.apiSignRequest(paramsToSign, cloudinary.config.apiSecret, SignatureAlgorithm.SHA256.ordinal()),timestamp));
     }
 
+
 }

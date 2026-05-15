@@ -13,7 +13,8 @@ import org.socialbackend.repository.FollowerRepository;
 import org.socialbackend.repository.PostLikeRepository;
 import org.socialbackend.repository.PostRepository;
 import org.socialbackend.repository.UserRepository;
-import org.socialbackend.request.PostRequest;
+import org.socialbackend.request.CreatePostRequest;
+import org.socialbackend.request.UpdatePostRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -43,7 +44,7 @@ public class PostServiceTest {
         Long userId = 1L;
         User userFromDb = new User();
         userFromDb.setUserId(userId);
-        PostRequest postRequest = new PostRequest("Title", "Content",null);
+        CreatePostRequest postRequest = new CreatePostRequest("Title", "Content",null,null);
         when(userRepository.findById(userId)).thenReturn(Optional.of(userFromDb));
         PostDTO result = postService.addPost(postRequest,userId);
         verify(postRepository, times(1)).save(any(Post.class));
@@ -55,7 +56,7 @@ public class PostServiceTest {
         Long userId = 1L;
         User userFromDb = new User();
         userFromDb.setUserId(userId);
-        PostRequest postRequest = new PostRequest("Title", "Content",null);
+        CreatePostRequest postRequest = new CreatePostRequest("Title", "Content",null,null);
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
         assertThrows(NoSuchElementException.class, () -> postService.addPost(postRequest, userId));
         verify(postRepository,never()).save(any(Post.class));
@@ -175,7 +176,7 @@ public class PostServiceTest {
         userFromDb.setUserId(userId);
         Long postId = 1L;
         Post postFromDb = new Post(userFromDb, "Test","This is test",null);
-        PostRequest updateRequest = new PostRequest("Updated", "This is updated",null);
+        UpdatePostRequest updateRequest = new UpdatePostRequest("Updated", "This is updated",null,null,false);
         postFromDb.setPostId(postId);
         when(postRepository.findById(postId)).thenReturn(Optional.of(postFromDb));
         when(userRepository.findById(userId)).thenReturn(Optional.of(userFromDb));
@@ -193,7 +194,7 @@ public class PostServiceTest {
         userFromDb.setUserId(2L);
         Long postId = 1L;
         Post postFromDb = new Post(postOwner, "Test","This is test",null);
-        PostRequest updateRequest = new PostRequest("Updated", "This is updated",null);
+        UpdatePostRequest updateRequest = new UpdatePostRequest("Updated", "This is updated",null,null,false);
         postFromDb.setPostId(postId);
         when(postRepository.findById(postId)).thenReturn(Optional.of(postFromDb));
         when(userRepository.findById(userId)).thenReturn(Optional.of(userFromDb));

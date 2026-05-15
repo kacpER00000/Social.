@@ -7,7 +7,8 @@ import org.socialbackend.dto.PostDTO;
 import org.socialbackend.model.Post;
 import org.socialbackend.model.User;
 import org.socialbackend.repository.*;
-import org.socialbackend.request.PostRequest;
+import org.socialbackend.request.CreatePostRequest;
+import org.socialbackend.request.UpdatePostRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,15 +34,16 @@ public class PostService {
     /**
      * Adds a new post.
      *
-     * @param postRequest The request object containing post details.
+     * @param createPostRequest The request object containing post details.
      * @param userId      The ID of the user creating the post.
      * @return The created PostDTO.
      * @throws NoSuchElementException if the user does not exist.
      */
     @Transactional
-    public PostDTO addPost(PostRequest postRequest, Long userId) {
+    public PostDTO addPost(CreatePostRequest createPostRequest, Long userId) {
         User owner = findUserById(userId);
-        Post post = new Post(owner, postRequest.getTitle(), postRequest.getContent(), postRequest.getImgUrl());
+        Post post = new Post(owner, createPostRequest.getTitle(), createPostRequest.getContent(), createPostRequest.getImgUrl());
+        post.setImgId(createPostRequest.getImgId());
         owner.addPost(post);
         postRepository.save(post);
         return mapToDTO(post, userId);
@@ -71,11 +73,13 @@ public class PostService {
      * @throws InvalidParameterException if the user is not the owner of the post.
      */
     @Transactional
-    public void updatePost(Long postId, Long userId, PostRequest updatePostRequest) {
+    public void updatePost(Long postId, Long userId, UpdatePostRequest updatePostRequest) {
         Post foundPost = getPostEntity(postId);
         validatePostOwner(foundPost, userId);
         foundPost.setTitle(updatePostRequest.getTitle());
         foundPost.setContent(updatePostRequest.getContent());
+        foundPost.setImgUrl(updatePostRequest.getNewImgUrl());
+        foundPost.setImgId(updatePostRequest.getNewImgId());
     }
 
     /**
@@ -164,7 +168,7 @@ public class PostService {
                 post.getUser().getUserId());
         boolean canEdit = post.getUser().getUserId().equals(loggedUserId);
         return new PostDTO(post.getPostId(), post.getUser().getUserId(), nickname, post.getTitle(), post.getContent(),
-                post.getImgUrl(), post.getCreatedAt(), likesNumber, commentCount, isLiked, isAuthorFollowed, canEdit);
+                post.getImgUrl(), post.getImgId(),post.getCreatedAt(), likesNumber, commentCount, isLiked, isAuthorFollowed, canEdit);
     }
 
     /**

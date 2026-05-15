@@ -5,6 +5,7 @@ export interface PostDTO {
     title: string;
     content: string;
     imgUrl: string | null;
+    imgId: string | null;
     createdAt: string;
     likesNum: number;
     commentCount: number;
@@ -94,10 +95,38 @@ export interface UserResponse {
     totalPages: number;
 }
 
-export interface PostData {
+/** Payload used by CreatePost component holding local state before submission. */
+export interface CreatePostData {
     title: string;
     content: string;
     picture: File | null;
+}
+
+/** 
+ * JSON body payload sent to the backend when modifying a post.
+ * Includes information about text changes and image modifications.
+ */
+export interface EditPostRequest{
+    title: string;
+    content: string;
+    newImgUrl: string | null;
+    newImgId: string | null;
+    isImageDeleted: boolean
+}
+
+/** Local React state object used for editing posts, containing only the editable text fields and current image URL. */
+export interface PostData {
+    title: string;
+    content: string;
+    imgUrl: string | null;
+}
+
+/** Data emitted by EditPostModal upon user confirmation. */
+export interface EditPostData {
+    title: string;
+    content: string;
+    newImage: File | null;
+    isImageDeleted: boolean;
 }
 
 export interface PostLikeDTO {
@@ -190,18 +219,26 @@ export interface ErrorContextType {
     triggerError: (message: string) => void;
 }
 
+/** Response from the backend providing a signed timestamp required for secure Cloudinary uploads. */
 export interface SignatureResponse{
     signature: string,
     timestamp: number
 }
 
+/** 
+ * Expected JSON response object from Cloudinary API after a successful image upload.
+ */
 export interface CloudinaryResponse{
+    /** The permanent, secure HTTPS URL of the uploaded image. */
     secure_url: string,
-    public_id: number
+    /** The unique string identifier required by the backend to delete the image from Cloudinary later. */
+    public_id: string
 }
 
-export interface PostRequest{
+/** JSON body payload sent to the backend when creating a new post. */
+export interface CreatePostRequest{
     title: string,
     content: string,
-    imgUrl: string | null
+    imgUrl: string | null,
+    imgId: string | null
 }

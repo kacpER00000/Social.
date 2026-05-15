@@ -57,6 +57,10 @@ public class Post {
     @Setter
     @Getter
     private String imgUrl;
+    @Column(name = "img_id")
+    @Setter
+    @Getter
+    private String imgId;
 
     public Post(User user, String title, String content, String imgUrl) {
         this.user = user;

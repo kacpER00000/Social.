@@ -23,6 +23,7 @@ public class PostDTO {
     private String title;
     private String content;
     private String imgUrl;
+    private String imgId;
     private LocalDateTime createdAt;
     private Long likesNum;
     private Long commentCount;

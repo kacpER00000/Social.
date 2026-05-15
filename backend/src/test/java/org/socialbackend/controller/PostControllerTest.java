@@ -5,11 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.socialbackend.details.AppUserDetails;
 import org.socialbackend.dto.PostDTO;
 import org.socialbackend.dto.PostLikeDTO;
-import org.socialbackend.request.PostRequest;
-import org.socialbackend.service.CustomUserDetailsService;
-import org.socialbackend.service.JwtService;
-import org.socialbackend.service.PostLikeService;
-import org.socialbackend.service.PostService;
+import org.socialbackend.request.CreatePostRequest;
+import org.socialbackend.request.UpdatePostRequest;
+import org.socialbackend.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.data.domain.Page;
@@ -50,6 +48,9 @@ public class PostControllerTest {
 
     @MockitoBean
     private CustomUserDetailsService customUserDetailsService;
+
+    @MockitoBean
+    private CloudinaryService cloudinaryService;
 
     private Authentication createMockAuthentication(Long userId) {
         AppUserDetails mockUserDetails = mock(AppUserDetails.class);
@@ -98,7 +99,7 @@ public class PostControllerTest {
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
         String title="Test";
         String content="Test content";
-        PostRequest postRequest = new PostRequest(title,content,null);
+        CreatePostRequest postRequest = new CreatePostRequest(title,content,null,null);
         PostDTO expectedDTO = new PostDTO();
         expectedDTO.setAuthorId(loggedUserId);
         expectedDTO.setTitle(title);
@@ -112,7 +113,7 @@ public class PostControllerTest {
                 .andExpect(jsonPath("$.authorId").value(loggedUserId))
                 .andExpect(jsonPath("$.title").value(title))
                 .andExpect(jsonPath("$.content").value(content));
-        verify(postService,times(1)).addPost(any(PostRequest.class), eq(loggedUserId));
+        verify(postService,times(1)).addPost(any(CreatePostRequest.class), eq(loggedUserId));
     }
 
     @Test
@@ -121,7 +122,7 @@ public class PostControllerTest {
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
         String title="Test";
         String content="Test content";
-        PostRequest postRequest = new PostRequest(title,content,null);
+        CreatePostRequest postRequest = new CreatePostRequest(title,content,null,null);
         when(postService.addPost(postRequest,loggedUserId)).thenThrow(NoSuchElementException.class);
         mockMvc.perform(post("/social/posts")
                         .principal(mockAuthentication)
@@ -137,13 +138,15 @@ public class PostControllerTest {
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
         String title="Test";
         String content="Test content";
-        PostRequest postRequest = new PostRequest(title,content,null);
+        UpdatePostRequest postRequest = new UpdatePostRequest(title,content,null,null,false);
+        PostDTO postFromDB = new PostDTO(targetPostId, loggedUserId,null,null,null,null,null,null,null,null,null,null,true);
+        when(postService.findPostById(targetPostId,loggedUserId)).thenReturn(postFromDB);
         mockMvc.perform(put("/social/posts/"+targetPostId)
                 .principal(mockAuthentication)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(postRequest)))
                 .andExpect(status().isOk());
-        verify(postService,times(1)).updatePost(eq(targetPostId), eq(loggedUserId), any(PostRequest.class));
+        verify(postService,times(1)).updatePost(eq(targetPostId), eq(loggedUserId), any(UpdatePostRequest.class));
     }
 
     @Test
@@ -153,8 +156,8 @@ public class PostControllerTest {
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
         String title="Test";
         String content="Test content";
-        PostRequest postRequest = new PostRequest(title,content,null);
-        doThrow(NoSuchElementException.class).when(postService).updatePost(eq(targetPostId),eq(loggedUserId),any(PostRequest.class));
+        UpdatePostRequest postRequest = new UpdatePostRequest(title,content,null,null,false);
+        when(postService.findPostById(targetPostId, loggedUserId)).thenThrow(NoSuchElementException.class);
         mockMvc.perform(put("/social/posts/"+targetPostId)
                         .principal(mockAuthentication)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -169,8 +172,10 @@ public class PostControllerTest {
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
         String title="Test";
         String content="Test content";
-        PostRequest postRequest = new PostRequest(title,content,null);
-        doThrow(InvalidParameterException.class).when(postService).updatePost(eq(targetPostId),eq(loggedUserId),any(PostRequest.class));
+        UpdatePostRequest postRequest = new UpdatePostRequest(title,content,null,null,false);
+        PostDTO postFromDB = new PostDTO(targetPostId, 2L,null,null,null,null,null,null,null,null,null,null,false);
+        when(postService.findPostById(targetPostId, loggedUserId)).thenReturn(postFromDB);
+        doThrow(InvalidParameterException.class).when(postService).updatePost(eq(targetPostId),eq(loggedUserId),any(UpdatePostRequest.class));
         mockMvc.perform(put("/social/posts/"+targetPostId)
                         .principal(mockAuthentication)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -183,6 +188,8 @@ public class PostControllerTest {
         Long loggedUserId=99L;
         Long targetPostId=1L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
+        PostDTO postFromDB = new PostDTO(targetPostId, loggedUserId,null,null,null,null,null,null,null,null,null,null,true);
+        when(postService.findPostById(targetPostId, loggedUserId)).thenReturn(postFromDB);
         mockMvc.perform(delete("/social/posts/"+targetPostId)
                         .principal(mockAuthentication))
                 .andExpect(status().isNoContent());
@@ -194,7 +201,7 @@ public class PostControllerTest {
         Long loggedUserId=99L;
         Long targetPostId=1L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        doThrow(NoSuchElementException.class).when(postService).deletePost(targetPostId,loggedUserId);
+        when(postService.findPostById(targetPostId, loggedUserId)).thenThrow(NoSuchElementException.class);
         mockMvc.perform(delete("/social/posts/"+targetPostId)
                         .principal(mockAuthentication))
                 .andExpect(status().isNotFound());
@@ -205,6 +212,8 @@ public class PostControllerTest {
         Long loggedUserId=99L;
         Long targetPostId=1L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
+        PostDTO postFromDB = new PostDTO(targetPostId, 2L,null,null,null,null,null,null,null,null,null,null,false);
+        when(postService.findPostById(targetPostId, loggedUserId)).thenReturn(postFromDB);
         doThrow(InvalidParameterException.class).when(postService).deletePost(targetPostId,loggedUserId);
         mockMvc.perform(delete("/social/posts/"+targetPostId)
                         .principal(mockAuthentication))

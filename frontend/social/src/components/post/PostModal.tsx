@@ -1,4 +1,11 @@
-import { CommentDTO, CommentResponse, PostDTO } from "../../types/types.ts";
+import {
+    CommentDTO,
+    CommentResponse,
+    PostDTO,
+    EditPostData,
+    EditPostRequest,
+    SignatureResponse, CloudinaryResponse
+} from "../../types/types.ts";
 import CommentItem from "../comment/CommentItem.tsx";
 import { useState, useRef, useEffect, useCallback } from "react";
 import Confirmation from "../common/Confirmation.tsx";
@@ -179,22 +186,68 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
         setShowEditModal(true)
     }
 
-    const editPost = async (data: PostData) => {
+    const editPost = async (data: EditPostData) => {
         setShowMorePost(false);
+        let signatureObj: SignatureResponse;
+        let editPostRequest: EditPostRequest = {
+            title: data.title,
+            content: data.content,
+            newImgUrl: null,
+            newImgId: null,
+            isImageDeleted: data.isImageDeleted
+        }
         try {
+            if(data.newImage){
+                const signatureResponse = await fetch(`${import.meta.env.VITE_API_URL}/social/cloudinary`,{
+                    headers: {
+                        "Authorization": "Bearer " + localStorage.getItem('token'),
+                    },
+                    method: "GET"
+                });
+                if(signatureResponse.ok){
+                    signatureObj = await signatureResponse.json() as SignatureResponse
+                    const cloudinaryRequest = new FormData();
+                    cloudinaryRequest.append("file",data.newImage);
+                    cloudinaryRequest.append("api_key","661824944146975")
+                    cloudinaryRequest.append("timestamp", signatureObj.timestamp.toString())
+                    cloudinaryRequest.append("signature",signatureObj.signature);
+                    const cloudinaryResponse = await fetch("https://api.cloudinary.com/v1_1/dzu1igj5q/image/upload",{
+                        method: "POST",
+                        body: cloudinaryRequest
+                    })
+                    if(cloudinaryResponse.ok){
+                        const cloudinaryData = await cloudinaryResponse.json() as CloudinaryResponse
+                        editPostRequest.newImgUrl = cloudinaryData.secure_url
+                        editPostRequest.newImgId = cloudinaryData.public_id
+                    }
+                }
+            }
             const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}`, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": "Bearer " + localStorage.getItem("token")
                 },
                 method: "PUT",
-                body: JSON.stringify(data)
+                body: JSON.stringify(editPostRequest)
             })
             if (response.ok) {
+                let finalImgUrl = currentPost.imgUrl;
+                let finalImgId = currentPost.imgId;
+
+                if (data.isImageDeleted) {
+                    finalImgUrl = null;
+                    finalImgId = null;
+                } else if (editPostRequest.newImgUrl) {
+                    finalImgUrl = editPostRequest.newImgUrl;
+                    finalImgId = editPostRequest.newImgId;
+                }
+                
                 const updatedPost: PostDTO = {
                     ...currentPost,
                     title: data.title,
-                    content: data.content
+                    content: data.content,
+                    imgUrl: finalImgUrl,
+                    imgId: finalImgId
                 }
                 updatePostInFeed(updatedPost)
             } else {
@@ -287,8 +340,8 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                         />
                     </div>
                     <hr className="border-gray-100 my-4" />
-                    {post.imgUrl &&
-                        <img src={post.imgUrl} alt="picture" className="max-w-full max-h-[600px] object-contain rounded-xl"/>
+                    {currentPost.imgUrl &&
+                        <img src={currentPost.imgUrl} alt="picture" className="max-w-full max-h-[600px] object-contain rounded-xl"/>
                     }
                     <hr className="border-gray-100 my-4" />
                     <PostInteractions post={currentPost} />
@@ -363,7 +416,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
             }
             {showEditModal && (
                 <EditPostModal
-                    postData={{ title: currentPost.title, content: currentPost.content } as PostData}
+                    postData={{ title: currentPost.title, content: currentPost.content, imgUrl: currentPost.imgUrl } as PostData}
                     username={currentPost.author}
                     onConfirm={editPost}
                     onCancel={() => setShowEditModal(false)}

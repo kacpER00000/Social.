@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import AvatarCircle from "../profile/AvatarCircle.tsx";
 import PostContent from "../layout/Content.tsx";
 import PostInteractions from "./PostInteractions.tsx";
+import PostImage from "./PostImage.tsx";
 
 type PostItemProps = {
     post: PostDTO,
@@ -32,9 +33,7 @@ const PostItem = ({ post, onSelect }: PostItemProps) => {
                             content={post.content}
                             onMoreClicked={() => { onSelect(post) }}
                         />
-                        {post.imgUrl &&
-                            <img src={post.imgUrl} alt="picture" className="max-w-full max-h-[600px] object-contain rounded-xl"/>
-                        }
+                        <PostImage imgUrl={post.imgUrl} editable={false}/>
                     </div>
                     <div className="border-t border-gray-200 my-2"></div>
                     <PostInteractions
