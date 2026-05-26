@@ -32,4 +32,6 @@ public class RegisterUserRequest {
     @Size(min = 8)
     @NotBlank
     private String password;
+    private String imgUrl;
+    private String imgId;
 }

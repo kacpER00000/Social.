@@ -25,5 +25,7 @@ public class UserDTO {
     private Long followersCount;
     private Long followingCount;
     private boolean canEdit;
+    private String imgUrl;
+    private String imgId;
 
 }

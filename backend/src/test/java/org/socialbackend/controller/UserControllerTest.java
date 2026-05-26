@@ -10,6 +10,7 @@ import org.socialbackend.service.CustomUserDetailsService;
 import org.socialbackend.service.FollowerService;
 import org.socialbackend.service.JwtService;
 import org.socialbackend.service.UserService;
+import org.socialbackend.service.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.data.domain.Page;
@@ -53,6 +54,9 @@ class UserControllerTest {
     @MockitoBean
     private CustomUserDetailsService customUserDetailsService;
 
+    @MockitoBean
+    private CloudinaryService cloudinaryService;
+
     private Authentication createMockAuthentication(Long userId) {
         AppUserDetails mockUserDetails = mock(AppUserDetails.class);
         when(mockUserDetails.getUserId()).thenReturn(userId);
@@ -92,7 +96,13 @@ class UserControllerTest {
     void shouldUpdateUser() throws Exception {
         Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        UpdateUserRequest updateUserRequest = new UpdateUserRequest("John","Smith", LocalDate.of(2000,1,1),'M');
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest("John","Smith", LocalDate.of(2000,1,1),'M', null, null, false);
+        
+        UserDTO userFromDB = new UserDTO();
+        userFromDB.setUserId(loggedUserId);
+        userFromDB.setImgId(null);
+        when(userService.findUserById(loggedUserId, loggedUserId)).thenReturn(userFromDB);
+
         mockMvc.perform(put("/social/users")
                 .principal(mockAuthentication)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -105,7 +115,7 @@ class UserControllerTest {
     void shouldNotUpdateUserBecauseOfBadRequestStatus() throws Exception {
         Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        UpdateUserRequest updateUserRequest = new UpdateUserRequest("John","", LocalDate.of(2000,1,1),'M');
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest("John","", LocalDate.of(2000,1,1),'M', null, null, false);
         mockMvc.perform(put("/social/users")
                         .principal(mockAuthentication)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -118,8 +128,8 @@ class UserControllerTest {
     void shouldNotUpdateUserBecauseOfNoUser() throws Exception {
         Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        UpdateUserRequest updateUserRequest = new UpdateUserRequest("John","Smith", LocalDate.of(2000,1,1),'M');
-        doThrow(NoSuchElementException.class).when(userService).updateUser(loggedUserId,updateUserRequest);
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest("John","Smith", LocalDate.of(2000,1,1),'M', null, null, false);
+        when(userService.findUserById(loggedUserId, loggedUserId)).thenThrow(NoSuchElementException.class);
         mockMvc.perform(put("/social/users")
                         .principal(mockAuthentication)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -131,6 +141,12 @@ class UserControllerTest {
     void shouldDeleteUser() throws Exception {
         Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
+        
+        UserDTO userFromDB = new UserDTO();
+        userFromDB.setUserId(loggedUserId);
+        userFromDB.setImgId(null);
+        when(userService.findUserById(loggedUserId, loggedUserId)).thenReturn(userFromDB);
+
         mockMvc.perform(delete("/social/users").
                 principal(mockAuthentication))
                 .andExpect(status().isNoContent());
@@ -141,7 +157,7 @@ class UserControllerTest {
     void shouldNotDeleteUserBecauseOfNoUser() throws Exception {
         Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        doThrow(NoSuchElementException.class).when(userService).deleteUser(loggedUserId);
+        when(userService.findUserById(loggedUserId, loggedUserId)).thenThrow(NoSuchElementException.class);
         mockMvc.perform(delete("/social/users").
                         principal(mockAuthentication))
                 .andExpect(status().isNotFound());

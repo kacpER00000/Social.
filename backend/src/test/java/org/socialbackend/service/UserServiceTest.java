@@ -42,7 +42,7 @@ public class UserServiceTest {
 
     @Test
     void shouldSuccessfullyAddUser() {
-        RegisterUserRequest registerUserRequest = new RegisterUserRequest("John", "Doe", LocalDate.of(2000, 1, 1), 'M', "john.doe@example.com", "SuperSecretPassword");
+        RegisterUserRequest registerUserRequest = new RegisterUserRequest("John", "Doe", LocalDate.of(2000, 1, 1), 'M', "john.doe@example.com", "SuperSecretPassword", null, null);
         when(userLoginDataRepository.existsByEmail("john.doe@example.com")).thenReturn(false);
         when(passwordEncoder.encode("SuperSecretPassword")).thenReturn("Encoded_password");
 
@@ -53,7 +53,7 @@ public class UserServiceTest {
 
     @Test
     void shouldUnsuccessfullyAddUser() {
-        RegisterUserRequest registerUserRequest = new RegisterUserRequest("John", "Doe", LocalDate.of(2000, 1, 1), 'M', "john.doe@example.com", "SuperSecretPassword");
+        RegisterUserRequest registerUserRequest = new RegisterUserRequest("John", "Doe", LocalDate.of(2000, 1, 1), 'M', "john.doe@example.com", "SuperSecretPassword", null, null);
         when(userLoginDataRepository.existsByEmail("john.doe@example.com")).thenReturn(true);
 
         IllegalStateException exception = assertThrows(IllegalStateException.class, () -> userService.addUser(registerUserRequest));
@@ -66,7 +66,7 @@ public class UserServiceTest {
     void shouldSuccessfullyUpdateUser() {
         Long userId = 1L;
         User existingUser = new User("John", "Doe", LocalDate.of(2000, 1, 1), 'M', null);
-        UpdateUserRequest updateUserRequest = new UpdateUserRequest("John", "Doe", LocalDate.of(2004, 5, 20), 'M');
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest("John", "Doe", LocalDate.of(2004, 5, 20), 'M', null, null, false);
         when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
 
         userService.updateUser(userId, updateUserRequest);
