@@ -1,5 +1,5 @@
 import { useLoaderData, useParams } from "react-router-dom";
-import { EditProfileData, FollowDTO, FollowResponse, PostResponse, UserDTO } from "../../types/types.ts";
+import { CloudinaryResponse, EditProfileData, FollowDTO, FollowResponse, PostResponse, SignatureResponse, UpdateUserRequest, UserDTO } from "../../types/types.ts";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Post from "../post/Post.tsx";
@@ -25,11 +25,15 @@ const Profile = () => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const { triggerError } = useErrorContext();
+
     const userData: EditProfileData = {
         firstName: user.firstName,
         lastName: user.lastName,
         sex: user.sex,
-        birthDate: user.birthDate
+        birthDate: user.birthDate,
+        imgUrl: user.imgUrl,
+        newImage: null,
+        isImageDeleted: false
     };
 
     useEffect(() => {
@@ -107,14 +111,49 @@ const Profile = () => {
 
     const editProfile = async (data: EditProfileData) => {
         setShowEditModal(false);
+        let updateUserRequest: UpdateUserRequest = {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            birthDate: data.birthDate,
+            sex: data.sex,
+            newImgUrl: null,
+            newImgId: null,
+            isImageDeleted: data.isImageDeleted
+        };
+        let signatureObj: SignatureResponse;
         try {
+            if (data.newImage) {
+                const signatureResponse = await fetch(`${import.meta.env.VITE_API_URL}/social/cloudinary`, {
+                    headers: {
+                        "Authorization": "Bearer " + localStorage.getItem('token'),
+                    },
+                    method: "GET"
+                });
+                if (signatureResponse.ok) {
+                    signatureObj = await signatureResponse.json() as SignatureResponse
+                    const cloudinaryRequest = new FormData();
+                    cloudinaryRequest.append("file", data.newImage);
+                    cloudinaryRequest.append("api_key", "661824944146975")
+                    cloudinaryRequest.append("timestamp", signatureObj.timestamp.toString())
+                    cloudinaryRequest.append("signature", signatureObj.signature);
+                    const cloudinaryResponse = await fetch("https://api.cloudinary.com/v1_1/dzu1igj5q/image/upload", {
+                        method: "POST",
+                        body: cloudinaryRequest
+                    })
+                    if (cloudinaryResponse.ok) {
+                        const cloudinaryData = await cloudinaryResponse.json() as CloudinaryResponse
+                        updateUserRequest.newImgUrl = cloudinaryData.secure_url;
+                        updateUserRequest.newImgId = cloudinaryData.public_id;
+                    }
+                }
+            }
             const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users`, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": "Bearer " + localStorage.getItem("token")
                 },
                 method: "PUT",
-                body: JSON.stringify(data)
+                body: JSON.stringify(updateUserRequest)
             })
             if (response.ok) {
                 location.reload()
@@ -161,6 +200,7 @@ const Profile = () => {
                         <AvatarCircle
                             size="large"
                             username={user.firstName + " " + user.lastName}
+                            imgUrl={user.imgUrl}
                         />
                         <div className="m-1">
                             <h1 className="text-3xl">{user.firstName} {user.lastName}</h1>

@@ -84,6 +84,8 @@ export interface UserDTO {
      * True only when viewing their own profile.
      */
     canEdit: boolean;
+    imgUrl: string | null;
+    imgId: string | null;
 }
 
 export interface UserResponse {
@@ -106,7 +108,7 @@ export interface CreatePostData {
  * JSON body payload sent to the backend when modifying a post.
  * Includes information about text changes and image modifications.
  */
-export interface EditPostRequest{
+export interface EditPostRequest {
     title: string;
     content: string;
     newImgUrl: string | null;
@@ -176,6 +178,19 @@ export type EditProfileData = {
     lastName: string;
     sex: string;
     birthDate: string;
+    imgUrl: string | null;
+    newImage: File | null;
+    isImageDeleted: boolean;
+}
+
+export type UpdateUserRequest = {
+    firstName: string;
+    lastName: string;
+    birthDate: string;
+    sex: string;
+    newImgUrl: string | null;
+    newImgId: string | null;
+    isImageDeleted: boolean;
 }
 
 export interface FollowContextType {
@@ -220,7 +235,7 @@ export interface ErrorContextType {
 }
 
 /** Response from the backend providing a signed timestamp required for secure Cloudinary uploads. */
-export interface SignatureResponse{
+export interface SignatureResponse {
     signature: string,
     timestamp: number
 }
@@ -228,7 +243,7 @@ export interface SignatureResponse{
 /** 
  * Expected JSON response object from Cloudinary API after a successful image upload.
  */
-export interface CloudinaryResponse{
+export interface CloudinaryResponse {
     /** The permanent, secure HTTPS URL of the uploaded image. */
     secure_url: string,
     /** The unique string identifier required by the backend to delete the image from Cloudinary later. */
@@ -236,7 +251,7 @@ export interface CloudinaryResponse{
 }
 
 /** JSON body payload sent to the backend when creating a new post. */
-export interface CreatePostRequest{
+export interface CreatePostRequest {
     title: string,
     content: string,
     imgUrl: string | null,

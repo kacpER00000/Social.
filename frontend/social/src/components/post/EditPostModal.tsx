@@ -1,5 +1,5 @@
 import { useState } from "react";
-import {EditPostData, PostData} from "../../types/types.ts";
+import { EditPostData, PostData } from "../../types/types.ts";
 import { createPortal } from "react-dom";
 import AvatarCircle from "../profile/AvatarCircle.tsx";
 import PostImage from "./PostImage.tsx";
@@ -76,18 +76,18 @@ const EditPostModal = ({ postData, username, onConfirm, onCancel, show }: EditPo
                             className="border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                             type="text"
                             value={title}
-                            onChange={(e) => {setTitle(e.target.value)}}
+                            onChange={(e) => { setTitle(e.target.value) }}
                         />
                     </div>
                     <div className="flex flex-col text-left">
                         <label htmlFor="content" className="font-bold mb-1">Content:</label>
-                        <textarea id="content" name="content" className="border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none" rows={10} value={content} onChange={(e) => {setContent(e.target.value)}} />
+                        <textarea id="content" name="content" className="border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none" rows={10} value={content} onChange={(e) => { setContent(e.target.value) }} />
                     </div>
                     <div>
                         <PostImage
                             imgUrl={currentImageUrl}
                             editable={true}
-                            onDelete={() => {setIsImagePresent(false); setCurrentImageUrl(null)}}
+                            onDelete={() => { setIsImagePresent(false); setCurrentImageUrl(null) }}
 
                         />
                         {!isImagePresent &&
@@ -99,7 +99,7 @@ const EditPostModal = ({ postData, username, onConfirm, onCancel, show }: EditPo
                                     setNewImage(tImg);
                                     setIsImagePresent(e.target.files?.[0] !== null)
                                     setCurrentImageUrl(tImg ? URL.createObjectURL(tImg) : null)
-                                }}/>
+                                }} />
                             </div>
                         }
                     </div>
