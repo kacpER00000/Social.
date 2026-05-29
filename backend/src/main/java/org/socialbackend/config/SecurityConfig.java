@@ -60,6 +60,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authorize) ->
                         authorize.requestMatchers("/social/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST,"/social/users").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/social/cloudinary").permitAll()
                                 .requestMatchers(
                                     "/v3/api-docs",
                                     "/v3/api-docs/**",
