@@ -4,8 +4,7 @@ import { ChangeEvent } from "react";
 import { EditProfileData } from "../../types/types.ts";
 import AvatarCircle from "./AvatarCircle.tsx";
 import CropperCutter from "./CropperCutter.tsx";
-import { Area } from "react-easy-crop";
-import { getCroppedImgFile } from "../../utils/cropImage.ts";
+import { useCropperCutter } from "../../hooks/useCropperCutter.ts";
 type EditProfileModalProps = {
     userData: EditProfileData
     onConfirm: (data: EditProfileData) => void,
@@ -14,9 +13,7 @@ type EditProfileModalProps = {
 }
 const EditProfileModal = ({ userData, onConfirm, onCancel, show }: EditProfileModalProps) => {
     const [formData, setFormData] = useState(userData);
-    const [imagePath, setImagePath] = useState<string | null>(userData.imgUrl);
-    const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null)
-    const [showCropper, setShowCropper] = useState(false);
+    const { imagePath, croppedFile, showCropper, croppedAreaPixels, localUpdateProfilePic, close, addNewPicture, deletePicture } = useCropperCutter(userData.imgUrl);
     const today = new Date();
     today.setFullYear(today.getFullYear() - 18);
     const maxDate = today.toISOString().split('T')[0];
@@ -32,6 +29,15 @@ const EditProfileModal = ({ userData, onConfirm, onCancel, show }: EditProfileMo
             document.body.style.overflow = 'unset';
         };
     }, [show]);
+
+    useEffect(() => {
+        if (croppedFile) {
+            setFormData(prev => ({
+                ...prev,
+                newImage: croppedFile
+            }));
+        }
+    }, [croppedFile])
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -50,22 +56,6 @@ const EditProfileModal = ({ userData, onConfirm, onCancel, show }: EditProfileMo
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown)
     }, [onCancel]);
-
-    const localUpdateProfilePic = async (pixelCrop: Area) => {
-        if (imagePath) {
-            const croppedFile = await getCroppedImgFile(imagePath, pixelCrop);
-            if (croppedFile) {
-                setFormData(prev => ({
-                    ...prev,
-                    newImage: croppedFile
-                }));
-                setImagePath(URL.createObjectURL(croppedFile));
-            }
-        }
-        setCroppedAreaPixels(null);
-        setShowCropper(false);
-    }
-
 
     return createPortal(
         <>
@@ -95,15 +85,14 @@ const EditProfileModal = ({ userData, onConfirm, onCancel, show }: EditProfileMo
                             <label htmlFor="picture" className="cursor-pointer block w-full">Add profile picture</label>
                             <input id="picture" type="file" className="hidden" accept=".png, .jpg, .jpeg" onChange={(e) => {
                                 if (e.target.files?.[0] !== null && e.target.files?.[0] !== undefined) {
-                                    setImagePath(URL.createObjectURL(e.target.files[0]));
-                                    setShowCropper(true);
+                                    addNewPicture(e.target.files[0]);
                                 }
                                 e.target.value = '';
                             }} />
                         </div>
                         {imagePath &&
                             <button className="text-sm mb-2 text-white bg-red-500 transition-colors duration-300 hover:bg-red-600 rounded-3xl p-2 mt-2 cursor-pointer" onClick={() => {
-                                setImagePath(null);
+                                deletePicture()
                                 if (userData.imgUrl !== null) {
                                     setFormData(prev => ({
                                         ...prev,
@@ -195,7 +184,8 @@ const EditProfileModal = ({ userData, onConfirm, onCancel, show }: EditProfileMo
                 show={showCropper}
                 onConfirm={localUpdateProfilePic}
                 onClose={() => {
-                    setShowCropper(false); setImagePath(userData.imgUrl); setFormData(prev => ({
+                    close();
+                    setFormData(prev => ({
                         ...prev,
                         newImage: null
                     }))
