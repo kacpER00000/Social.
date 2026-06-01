@@ -59,7 +59,7 @@ const SearchBar = () => {
     }
 
     return (
-        <div className="relative">
+        <div className="order-3 mt-2 w-full pb-1 md:order-none md:mt-0 md:w-80 md:pb-0 xl:w-96">
             <form onSubmit={handleSearch}>
                 <input
                     type="text"
@@ -71,12 +71,12 @@ const SearchBar = () => {
                             setQuery("");
                         }
                     }}
-                    className="shadow-sm bg-white p-3 w-full rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-24"
+                    className="w-full rounded-full border border-blue-200 bg-white px-4 py-2 text-sm shadow-sm transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-200"
                     placeholder="Search for users in Social."
                 />
             </form>
             {users.length > 0 && (
-                <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-md shadow-2xl  mt-2">
+                <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-gray-200 bg-white p-1 shadow-xl">
                     <ul>
                         {users.map((user) => (
                             <UserSearchItem

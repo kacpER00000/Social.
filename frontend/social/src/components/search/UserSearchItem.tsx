@@ -14,13 +14,13 @@ const UserSearchItem = ({ username, userId, variant = "large" }: UserSearchItemP
     const navigate = useNavigate();
     return (
         <div key={userId}>
-            <div className="flex bg-white items-center gap-3 rounded-3xl shadow-2xl p-5 m-5 hover:bg-gray-200 transition-colors duration-200 ease-in-out" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave}>
+            <div className={`flex items-center bg-white transition-all duration-200 ease-in-out hover:bg-gray-50 ${variant === "small" ? "gap-2 rounded-xl px-3 py-2" : "mx-3 my-2 gap-3 rounded-2xl border border-gray-100 px-4 py-3 shadow-sm hover:shadow-md sm:mx-5 sm:my-3 sm:gap-4 sm:px-5 sm:py-4"}`} onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave}>
                 <AvatarCircle
-                    size={variant}
+                    size={variant === "small" ? "small" : "medium"}
                     username={username}
                 />
                 <div className="m-1">
-                    <h1 className={`${variant === "small" ? "text-xl" : "text-3xl"} ${variant === "large" ? "hover:underline" : ""} cursor-pointer`} onClick={() => navigate(`/profile/${userId}`)}>{username}</h1>
+                    <h1 className={`${variant === "small" ? "text-sm" : "text-xl"} ${variant === "large" ? "font-semibold hover:underline" : "font-medium"} cursor-pointer`} onClick={() => navigate(`/profile/${userId}`)}>{username}</h1>
                 </div>
             </div>
             {variant === "large" && show &&

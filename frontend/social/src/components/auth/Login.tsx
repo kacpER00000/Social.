@@ -66,21 +66,21 @@ const Login = () => {
         }
     }
     return (
-        <div className="login-layout grid grid-cols-[2fr_1fr] min-h-screen transition-all duration-500 ease-in-out">
-            <div className="flex justify-center items-center bg-blue-500">
+        <div className="login-layout grid min-h-screen grid-cols-1 grid-rows-[auto_1fr] transition-all duration-500 ease-in-out lg:grid-cols-[minmax(0,1.6fr)_minmax(28rem,0.9fr)] lg:grid-rows-1">
+            <div className="flex items-center justify-center bg-blue-500 px-6 py-8 lg:py-0">
                 <div className="flex flex-col">
-                    <p className="text-9xl text-white font-bold">Social.</p>
-                    <p className="text-7xl text-white font-bold">Login</p>
+                    <p className="text-5xl font-bold tracking-tight text-white sm:text-6xl lg:text-8xl">Social.</p>
+                    <p className="text-3xl font-bold text-white sm:text-4xl lg:text-6xl">Login</p>
                 </div>
             </div>
             <ErrorPopup error={loginError} errorMessage={loginErrorMessage} />
-            <div className="flex justify-center items-center">
-                <form className="flex flex-col gap-4 w-64" onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
+            <div className="flex items-center justify-center bg-white px-6 py-10 shadow-2xl shadow-slate-300/40">
+                <form className="flex w-full max-w-80 flex-col gap-4" onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
                     <label htmlFor="email-input">E-mail</label>
                     <input
                         id="email-input"
                         type="email"
-                        className={`border ${emailError ? "border-red-500 animate-shake" : "border-gray-300"} rounded-3xl px-3 py-2 transition-all duration-500 ease-in-out focus:shadow-2xl`}
+                        className={`border ${emailError ? "border-red-500 animate-shake" : "border-gray-300"} rounded-3xl px-4 py-3 transition-all duration-500 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-100`}
                         defaultValue={email}
                         onChange={(e) => setEmail(e.target.value)}
                     />
@@ -88,7 +88,7 @@ const Login = () => {
                     <input
                         id="password-input"
                         type="password"
-                        className={`border ${passwordError ? "border-red-500 animate-shake" : "border-gray-300"} rounded-3xl px-3 py-2 transition-all duration-500 ease-in-out focus:shadow-2xl`}
+                        className={`border ${passwordError ? "border-red-500 animate-shake" : "border-gray-300"} rounded-3xl px-4 py-3 transition-all duration-500 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-100`}
                         defaultValue={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />

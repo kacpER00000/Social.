@@ -89,9 +89,9 @@ const CreatePost = () => {
 
     return (
         <>
-            <div className="flex items-center gap-3 shadow-xl rounded-3xl p-5 m-5 transition-colors duration-300 hover:bg-gray-100 cursor-pointer" onClick={() => { setShowCreatePostModal(true) }}>
+            <div className="mb-4 flex cursor-pointer items-center gap-3 rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-gray-50 hover:shadow-lg sm:mb-5 sm:px-5 sm:py-4" onClick={() => { setShowCreatePostModal(true) }}>
                 {decoded?.username && <AvatarCircle size="small" username={decoded?.username} />}
-                <div className="flex-1 ">
+                <div className="flex-1">
                     <p className="text-gray-500">What's up?</p>
                 </div>
             </div>

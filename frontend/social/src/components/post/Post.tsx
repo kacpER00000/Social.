@@ -125,7 +125,7 @@ const Post = ({ postResponse, path }: PostComponentProps) => {
                 )}
             </div>
             {isFetchingMore &&
-                <div className="shadow-2xl rounded-3xl p-5 m-5">
+                <div className="mb-5 rounded-2xl border border-gray-100 bg-white p-5 shadow-md">
                     <div className="flex animate-pulse space-x-4">
                         <div className="flex-1 space-y-6 py-1">
                             <div className="h-2 rounded bg-gray-200"></div>

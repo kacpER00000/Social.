@@ -31,37 +31,39 @@ const Navbar = () => {
     }
 
     return (
-        <div className="sticky top-0 z-50 flex justify-between items-center bg-blue-500 w-full shadow-md">
-            <div className="flex justify-between items-center">
-                <p className="text-white text-5xl font-bold px-5 py-4 cursor-default">Social.</p>
+        <header className="sticky top-0 z-50 w-full bg-blue-500 shadow-md">
+            <div className="mx-auto flex min-h-16 w-full max-w-7xl flex-wrap items-center gap-x-4 px-4 py-2 sm:px-6 md:flex-nowrap md:py-0">
+                <p className="cursor-default text-2xl font-bold tracking-tight text-white sm:text-3xl">Social.</p>
                 <SearchBar />
+                <nav className="ml-auto flex self-stretch" aria-label="Main navigation">
+                    <NavLink
+                        to="/home"
+                        className={({ isActive }) => `
+                    flex items-center border-b-2 px-2 text-xs font-semibold transition-all duration-300 sm:px-4 sm:text-sm md:px-5 md:text-base
+                    ${isActive
+                                ? "border-white text-white"
+                                : "border-transparent text-blue-100 hover:bg-blue-600/40 hover:text-white"
+                            }
+                `}
+                    >
+                        Home
+                    </NavLink>
+                    <NavLink
+                        to={`/profile/${decoded.userId}`}
+                        className={({ isActive }) => `
+                    flex items-center border-b-2 px-2 text-xs font-semibold transition-all duration-300 sm:px-4 sm:text-sm md:px-5 md:text-base
+                    ${isActive
+                                ? "border-white text-white"
+                                : "border-transparent text-blue-100 hover:bg-blue-600/40 hover:text-white"
+                            }
+                `}
+                    >
+                        Profile
+                    </NavLink>
+                    <button className="flex items-center px-2 text-xs font-semibold text-white transition-colors duration-300 hover:bg-red-500 active:bg-red-600 sm:px-4 sm:text-sm md:px-5 md:text-base" onClick={logout}>Logout</button>
+                </nav>
             </div>
-            <NavLink
-                to="/home"
-                className={({ isActive }) => `
-            self-stretch flex items-center px-6 text-3xl font-bold transition-all duration-300 border-b-4
-            ${isActive
-                        ? "text-white border-white"
-                        : "text-gray-300 border-transparent hover:text-white"
-                    }
-        `}
-            >
-                Home
-            </NavLink>
-            <NavLink
-                to={`/profile/${decoded.userId}`}
-                className={({ isActive }) => `
-            self-stretch flex items-center px-6 text-3xl font-bold transition-all duration-300 border-b-4
-            ${isActive
-                        ? "text-white border-white"
-                        : "text-gray-300 border-transparent hover:text-white"
-                    }
-        `}
-            >
-                Profile
-            </NavLink>
-            <button className="text-white self-stretch flex items-center px-6 text-3xl font-bold transition-all duration-300 hover:bg-red-500 active:bg-red-600" onClick={logout}>Logout</button>
-        </div>
+        </header>
     );
 }
 

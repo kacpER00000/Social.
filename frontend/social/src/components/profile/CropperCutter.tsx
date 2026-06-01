@@ -27,9 +27,9 @@ const CropperCutter = ({ image, show, onConfirm, onClose }: CropperCutterProps) 
 
     return (
         createPortal(
-            <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/50 z-999">
-                <div className="bg-white p-6 rounded-3xl w-11/12 max-w-md flex flex-col gap-4">
-                    <div className="relative w-full h-80 bg-gray-100 rounded-xl overflow-hidden">
+            <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+                <div className="flex w-full max-w-md flex-col gap-4 rounded-3xl bg-white p-4 sm:p-6">
+                    <div className="relative h-64 w-full overflow-hidden rounded-xl bg-gray-100 sm:h-80">
                         <Cropper
                             image={img}
                             crop={crop}
@@ -42,7 +42,7 @@ const CropperCutter = ({ image, show, onConfirm, onClose }: CropperCutterProps) 
                             onZoomChange={setZoom}
                         />
                     </div>
-                    <div className="flex justify-around">
+                    <div className="flex flex-wrap justify-around gap-2">
                         <button onClick={() => { if (croppedAreaPixels) onConfirm(croppedAreaPixels); }} className="bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition cursor-pointer">Save changes</button>
                         <button onClick={onClose} className="bg-gray-300 text-gray-800 px-4 py-2 rounded-xl hover:bg-gray-400 transition cursor-pointer">Cancel</button>
                     </div>

@@ -79,9 +79,9 @@ const SearchList = () => {
     }, [fetchUsers])
 
     return (
-        <div className="flex justify-center items-center ml-auto mr-auto">
-            <div className="bg-white m-5 min-w-1/2 rounded-3xl shadow-2xl">
-                <h2 className="text-4xl font-bold p-5 first-letter:capitalize">Users</h2>
+        <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
+            <div className="w-full rounded-3xl border border-gray-100 bg-white shadow-lg">
+                <h2 className="px-5 py-4 text-2xl font-bold first-letter:capitalize sm:px-6 sm:py-5 sm:text-3xl">Users</h2>
                 <div className="border-b border-gray-200"></div>
                 {users.length === 0 ?
                     <p className="text-center text-gray-500 p-5">There are no search results for the phrase: <span className="font-bold">{query}</span></p>
@@ -91,10 +91,10 @@ const SearchList = () => {
                     )
                 }
                 {isFetching &&
-                    <div className="shadow-2xl rounded-3xl p-5 m-5">
+                    <div className="m-5 rounded-2xl border border-gray-100 p-5 shadow-sm">
                         <div className="flex animate-pulse space-x-4">
                             <div className="flex justify-center items-center gap-3">
-                                <div className="w-30 h-30 text-4xl rounded-full bg-linear-to-tr from-gray-200 to-gray-300">
+                                <div className="h-20 w-20 rounded-full bg-linear-to-tr from-gray-200 to-gray-300 text-2xl">
                                 </div>
                             </div>
                         </div>

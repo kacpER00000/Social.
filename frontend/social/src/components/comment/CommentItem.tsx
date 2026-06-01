@@ -94,9 +94,9 @@ const CommentItem = ({ comment, onDelete, onUpdate, isPostAuthor }: CommentItemP
                 showConfirmation &&
                 <Confirmation onChoose={handleDelete} show={showConfirmation} />
             }
-            <div className="relative shadow rounded-xl m-5 p-5">
-                <div className="flex justify-between">
-                    <div className="flex gap-3 items-center">
+            <div className="relative my-3 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm sm:p-4">
+                <div className="flex flex-wrap justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                         <AvatarCircle username={comment.author} size="small" />
                         <p className="w-fit font-bold cursor-pointer hover:underline" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave} onClick={() => { navigate(`/profile/${comment.authorId}`) }}>
                             {comment.author}

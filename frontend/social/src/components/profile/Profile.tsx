@@ -194,8 +194,8 @@ const Profile = () => {
 
     return (
         <>
-            <div className="flex flex-col">
-                <div className="flex justify-between items-center gap-5 p-5 m-3 shadow-xl rounded-3xl">
+            <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 sm:py-6">
+                <div className="flex flex-col gap-5 rounded-3xl border border-gray-100 bg-white p-4 shadow-md sm:flex-row sm:items-center sm:justify-between sm:p-6">
                     <div className="flex items-center gap-3">
                         <AvatarCircle
                             size="large"
@@ -203,23 +203,23 @@ const Profile = () => {
                             imgUrl={user.imgUrl}
                         />
                         <div className="m-1">
-                            <h1 className="text-3xl">{user.firstName} {user.lastName}</h1>
-                            <h4>Following: {user.followingCount} &nbsp;Followers: {user.followersCount}</h4>
+                            <h1 className="text-2xl sm:text-3xl">{user.firstName} {user.lastName}</h1>
+                            <h4 className="text-sm sm:text-base">Following: {user.followingCount} &nbsp;Followers: {user.followersCount}</h4>
                         </div>
                     </div>
                     {user.canEdit &&
-                        <div className="flex flex-col w-1/10">
-                            <button className="bg-blue-500 font-bold p-1 m-1 rounded-3xl text-white transition-colors duration-500 hover:bg-blue-600" onClick={() => { setShowEditModal(true) }}>Edit profile</button>
-                            <button className="bg-red-500 font-bold p-1 m-1 rounded-3xl text-white transition-colors duration-500 hover:bg-red-600" onClick={() => setShowDeleteConfirmation(true)}>Delete profile</button>
+                        <div className="flex w-full sm:w-44 sm:flex-col">
+                            <button className="m-1 flex-1 rounded-3xl bg-blue-500 px-4 py-2 font-bold text-white transition-colors duration-500 hover:bg-blue-600 sm:flex-none" onClick={() => { setShowEditModal(true) }}>Edit profile</button>
+                            <button className="m-1 flex-1 rounded-3xl bg-red-500 px-4 py-2 font-bold text-white transition-colors duration-500 hover:bg-red-600 sm:flex-none" onClick={() => setShowDeleteConfirmation(true)}>Delete profile</button>
                         </div>
                     }
                 </div>
-                <div className="grid grid-cols-[1fr_2fr] p-5 m-3">
-                    <div>
-                        <div className="bg-white p-4 rounded-3xl shadow-md w-full h-fit mb-5">
-                            <h3 className="font-bold text-3xl">Personal data</h3>
-                            <p className="text-xl"><i className="icon-venus-mars"></i> {user.sex === "M" ? "Male" : "Female"}</p>
-                            <p className="text-xl"><i className="icon-birthday"></i> {user.birthDate}</p>
+                <div className="mt-5 grid grid-cols-1 gap-5 lg:mt-6 lg:grid-cols-[minmax(260px,0.85fr)_minmax(0,2fr)] lg:gap-6">
+                    <aside>
+                        <div className="mb-5 h-fit w-full rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
+                            <h3 className="text-2xl font-bold">Personal data</h3>
+                            <p className="mt-2 text-base"><i className="icon-venus-mars"></i> {user.sex === "M" ? "Male" : "Female"}</p>
+                            <p className="mt-1 text-base"><i className="icon-birthday"></i> {user.birthDate}</p>
                         </div>
                         <FollowCard
                             users={following}
@@ -233,14 +233,14 @@ const Profile = () => {
                             profileUserId={userId ? Number(userId) : undefined}
                             loading={loading}
                         />
-                    </div>
-                    <div>
-                        <div className="p-5 m-3 shadow-xl rounded-3xl">
+                    </aside>
+                    <section className="min-w-0">
+                        <div className="mb-5 rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
                             <h2 className="text-3xl text-center font-bold">Posts</h2>
                         </div>
                         {userId && decoded.userId === parseInt(userId) && <CreatePost />}
                         {loading &&
-                            <div className="shadow-2xl rounded-3xl p-5 m-5">
+                            <div className="mb-5 rounded-2xl border border-gray-100 bg-white p-5 shadow-md">
                                 <div className="flex animate-pulse space-x-4">
                                     <div className="flex-1 space-y-6 py-1">
                                         <div className="h-2 rounded bg-gray-200"></div>
@@ -262,7 +262,7 @@ const Profile = () => {
                                 path={`${userId}/latest`}
                             />
                         }
-                    </div>
+                    </section>
                 </div>
             </div>
             {showEditModal &&

@@ -17,7 +17,6 @@ const EditProfileModal = ({ userData, onConfirm, onCancel, show }: EditProfileMo
     const today = new Date();
     today.setFullYear(today.getFullYear() - 18);
     const maxDate = today.toISOString().split('T')[0];
-    if (!show) { return null; }
 
     useEffect(() => {
         if (show) {
@@ -57,10 +56,12 @@ const EditProfileModal = ({ userData, onConfirm, onCancel, show }: EditProfileMo
         return () => window.removeEventListener("keydown", handleKeyDown)
     }, [onCancel]);
 
+    if (!show) { return null; }
+
     return createPortal(
         <>
-            <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/50 z-999">
-                <div className="bg-white text-center w-11/12 max-w-md rounded-3xl p-6 shadow-2xl">
+            <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/50 p-3 backdrop-blur-sm sm:p-4">
+                <div className="max-h-[calc(100vh-1.5rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-4 text-center shadow-2xl sm:p-6">
                     <div className="flex items-center justify-between pb-2 pt-2">
                         <h1 className="text-2xl font-bold text-gray-700">Edit profile</h1>
                         <button onClick={onCancel} className="hover:text-gray-700 cursor-pointer">
@@ -70,16 +71,16 @@ const EditProfileModal = ({ userData, onConfirm, onCancel, show }: EditProfileMo
                         </button>
                     </div>
                     <div className="border-t border-gray-200"></div>
-                    <div className="flex gap-2 mt-2 mb-2 items-center">
+                    <div className="my-2 flex flex-wrap items-center gap-2">
                         <AvatarCircle
                             size="medium"
                             username={userData.firstName + " " + userData.lastName}
                             loadedImageProps={croppedAreaPixels ? { image: imagePath, pixelCrop: croppedAreaPixels } : null}
                             imgUrl={imagePath}
                         />
-                        <h1 className="font-bold text-2xl">{userData.firstName + " " + userData.lastName}</h1>
+                        <h1 className="text-xl font-bold sm:text-2xl">{userData.firstName + " " + userData.lastName}</h1>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex flex-wrap justify-between gap-2">
                         <div
                             className="text-sm mb-2 text-white bg-blue-500 transition-colors duration-300 hover:bg-blue-600 rounded-3xl p-2 mt-2 cursor-pointer">
                             <label htmlFor="picture" className="cursor-pointer block w-full">Add profile picture</label>

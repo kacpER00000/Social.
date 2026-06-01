@@ -291,12 +291,12 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
     }
     return (
         <>
-            <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-                <div className="relative shadow-xl w-2/3 h-full overflow-y-auto mx-auto my-8 p-8 rounded-3xl bg-white  text-gray-800">
-                    <div className="flex justify-between">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 sm:p-6">
+                <div className="relative max-h-screen w-full max-w-5xl overflow-y-auto bg-white p-4 text-gray-800 shadow-2xl sm:max-h-[calc(100vh-3rem)] sm:rounded-3xl sm:p-8">
+                    <div className="mb-4 flex justify-between sm:mb-6">
                         <button
                             onClick={onClose}
-                            className="bg-blue-500 text-white rounded-full px-6 py-2 mb-6 hover:bg-blue-600 transition-colors duration-300 ease-in-out flex items-center gap-2 font-bold text-sm"
+                            className="flex items-center gap-2 rounded-full bg-blue-500 px-6 py-2 text-sm font-bold text-white transition-colors duration-300 ease-in-out hover:bg-blue-600"
                         >
                             <span>&larr;</span>
                         </button>
@@ -317,8 +317,8 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                         />
                     }
                     <div>
-                        <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2 cursor-pointer" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave} onClick={() => { navigate(`/profile/${currentPost.authorId}`) }}>
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="flex cursor-pointer items-center gap-2" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave} onClick={() => { navigate(`/profile/${currentPost.authorId}`) }}>
                                 <AvatarCircle username={currentPost.author} size="small" />
                                 <h2 className="w-fit font-bold text-xl text-gray-900 hover:underline" >{currentPost.author}</h2>
                             </div>
@@ -345,7 +345,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                     }
                     <hr className="border-gray-100 my-4" />
                     <PostInteractions post={currentPost} />
-                    <div className="bg-gray-50 shadow-inner p-6 rounded-3xl h-96 flex flex-col mt-4 border border-gray-100">
+                    <div className="mt-4 flex h-80 flex-col rounded-3xl border border-gray-100 bg-gray-50 p-3 shadow-inner sm:p-5">
                         <div className={`overflow-y-auto overflow-x-hidden flex-1 min-h-0 mb-4 pr-2 ${comments.length === 0 ? "flex justify-center items-center" : ""}`}>
                             {comments.length === 0 ? (
                                 <p className="text-gray-400 italic">Be first to write a comment!</p>
@@ -388,13 +388,13 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                             <form onSubmit={(e) => { e.preventDefault() }}>
                                 <div className="relative w-full">
                                     <input
-                                        className="shadow-sm p-3 w-full rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-24"
+                                        className="w-full rounded-full border border-gray-200 p-3 pr-16 shadow-sm transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 sm:pr-24"
                                         type="text"
                                         placeholder="Write a comment..."
                                         value={comment}
                                         onChange={(e) => { setComment(e.target.value) }}
                                     />
-                                    <button data-testid="create-comment" type="button" disabled={comment.trim().length === 0} className="absolute right-1 top-1/2 -translate-y-1/2 bg-blue-500 text-white rounded-full px-6 py-2 hover:bg-blue-600 transition-colors duration-300 ease-in-out flex items-center gap-2 font-bold text-sm disabled:bg-gray-400 disabled:cursor-not-allowed" onClick={addComment}>
+                                    <button data-testid="create-comment" type="button" disabled={comment.trim().length === 0} className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center gap-2 rounded-full bg-blue-500 px-4 py-2 text-sm font-bold text-white transition-colors duration-300 ease-in-out hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-400 sm:px-6" onClick={addComment}>
                                         <i className="icon-comment text-lg"></i>
                                     </button>
                                 </div>

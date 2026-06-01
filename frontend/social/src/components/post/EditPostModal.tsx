@@ -49,8 +49,8 @@ const EditPostModal = ({ postData, username, onConfirm, onCancel, show }: EditPo
 
     if (!show) { return null; }
     return createPortal(
-        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/50 z-999">
-            <div className="flex flex-col gap-2 bg-white text-center w-11/12 max-w-3xl rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/50 p-3 backdrop-blur-sm sm:p-4">
+            <div className="flex max-h-[calc(100vh-1.5rem)] w-full max-w-3xl flex-col gap-2 overflow-y-auto rounded-3xl bg-white p-4 text-center shadow-2xl sm:max-h-[90vh] sm:p-6">
                 <div className="flex items-center justify-between pb-2 pt-2">
                     <h1 className="text-2xl font-bold text-gray-700">Edit post</h1>
                     <button onClick={onCancel} className="hover:text-gray-700 cursor-pointer">
@@ -92,7 +92,7 @@ const EditPostModal = ({ postData, username, onConfirm, onCancel, show }: EditPo
                         />
                         {!isImagePresent &&
                             <div
-                                className="w-1/5 text-sm text-white bg-blue-500 transition-colors duration-300 hover:bg-blue-600 rounded-3xl p-2 mt-2 cursor-pointer">
+                                className="mt-2 w-fit cursor-pointer rounded-3xl bg-blue-500 px-4 py-2 text-sm text-white transition-colors duration-300 hover:bg-blue-600">
                                 <label htmlFor="picture" className="cursor-pointer block w-full">Add picture</label>
                                 <input id="picture" type="file" className="hidden" onChange={(e) => {
                                     const tImg = e.target.files?.[0] || null
