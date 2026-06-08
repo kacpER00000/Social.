@@ -46,4 +46,32 @@ select {
             opacity: 1;
         }
     }
+
+    --animate-like-pop: likePop 0.45s cubic-bezier(0.2, 0.85, 0.4, 1);
+    @keyframes likePop {
+        0% {
+            transform: scale(1);
+        }
+        35% {
+            transform: scale(1.22) rotate(-8deg);
+        }
+        70% {
+            transform: scale(0.96) rotate(3deg);
+        }
+        100% {
+            transform: scale(1) rotate(0);
+        }
+    }
+
+    --animate-like-burst: likeBurst 0.45s ease-out;
+    @keyframes likeBurst {
+        0% {
+            opacity: 0.5;
+            transform: scale(0.35);
+        }
+        100% {
+            opacity: 0;
+            transform: scale(1.35);
+        }
+    }
 }
