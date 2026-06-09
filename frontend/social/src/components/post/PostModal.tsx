@@ -1,6 +1,5 @@
 import {
     CommentDTO,
-    CommentResponse,
     PostDTO,
     EditPostData
 } from "../../types/types.ts";
@@ -24,6 +23,8 @@ import AvatarCircle from "../profile/AvatarCircle.tsx";
 import { useFeedContext } from "../../contexts/FeedContext.tsx";
 import { useErrorContext } from "../../contexts/ErrorContext.tsx";
 import { usePostActions } from "../../hooks/usePostActions.ts";
+import { commentApi } from "../../api/commentApi.ts";
+import { useCommentActions } from "../../hooks/useCommentActions.ts";
 
 type PostModalProps = {
     post: PostDTO
@@ -54,8 +55,9 @@ type PostModalProps = {
  */
 const PostModal = ({ post, onClose }: PostModalProps) => {
     const { checkIfFollowed, toggleFollow } = useFollowSystem();
-    const { posts, updatePostInFeed } = useFeedContext();
+    const { posts } = useFeedContext();
     const { editPost, deletePost } = usePostActions();
+    const { addComment: addCommentAction, deleteComment: deleteCommentAction } = useCommentActions();
     const currentPost = posts.find(p => p.postId === post.postId) || post;
     const { decoded, isInvalid } = useToken();
     const [comment, setComment] = useState("");
@@ -83,27 +85,18 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
         loadingCommentsLock.current = true;
         setLoading(true)
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}/comments?page=${pageRef.current}`, {
-                headers: {
-                    "Authorization": `Bearer ${localStorage.getItem('token')}`
-                }
-            })
-            if (response.ok) {
-                const data = await response.json() as CommentResponse
-                setComments(prev => [...prev, ...data.content.map(comment => ({ ...comment, createdAt: formatDate(comment.createdAt) }))])
-                pageRef.current += 1
-                hasMorePagesRef.current = data.totalPages > pageRef.current
-            } else {
-                hasMorePagesRef.current = false
-                triggerError("Failed to fetch comments.");
-            }
+            const data = await commentApi.getCommentList(currentPost.postId, pageRef.current);
+            setComments(prev => [...prev, ...data.content.map(comment => ({ ...comment, createdAt: formatDate(comment.createdAt) }))])
+            pageRef.current += 1
+            hasMorePagesRef.current = data.totalPages > pageRef.current
         } catch (e) {
-            triggerError("Server error while fetching comments.");
+            hasMorePagesRef.current = false
+            triggerError("Failed to fetch comments.");
         } finally {
             setLoading(false)
             loadingCommentsLock.current = false;
         }
-    }, [currentPost.postId])
+    }, [currentPost.postId, triggerError])
 
     useEffect(() => {
         if (isInvalid) {
@@ -130,32 +123,12 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
     }
 
     const addComment = async () => {
-        const commentRequest = {
-            content: comment
-        }
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}/comments`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                },
-                body: JSON.stringify(commentRequest)
-            })
-            if (response.ok) {
-                const newComment = await response.json() as CommentDTO
+            const newComment = await addCommentAction(currentPost.postId, comment, currentPost);
+            if (newComment) {
                 const modifiedNewComment = { ...newComment, createdAt: formatDate(newComment.createdAt) };
                 setComments(prev => [...prev, modifiedNewComment])
-                const updatedPost: PostDTO = {
-                    ...currentPost,
-                    commentCount: currentPost.commentCount + 1
-                }
-                updatePostInFeed(updatedPost)
-            } else {
-                triggerError("Failed to add comment.");
             }
-        } catch (e) {
-            triggerError("Server error. Please try again.");
         } finally {
             setComment("")
         }
@@ -181,25 +154,8 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
         }
     }
     const deleteComment = async (commentId: number) => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/comments/${commentId}`, {
-                headers: {
-                    "Authorization": "Bearer " + localStorage.getItem('token')
-                },
-                method: "DELETE"
-            })
-            if (response.ok) {
-                setComments(prev => prev.filter(comment => comment.commentId !== commentId))
-                const updatedPost: PostDTO = {
-                    ...currentPost,
-                    commentCount: currentPost.commentCount - 1
-                }
-                updatePostInFeed(updatedPost)
-            } else {
-                triggerError("Failed to delete comment.");
-            }
-        } catch (e) {
-            triggerError("Server error while deleting comment.");
+        if (await deleteCommentAction(commentId, currentPost)) {
+            setComments(prev => prev.filter(c => c.commentId !== commentId));
         }
     }
 
