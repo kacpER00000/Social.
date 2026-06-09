@@ -1,5 +1,5 @@
 import { useLoaderData, useParams } from "react-router-dom";
-import { CloudinaryResponse, EditProfileData, FollowDTO, FollowResponse, PostResponse, SignatureResponse, UpdateUserRequest, UserDTO } from "../../types/types.ts";
+import { CloudinaryResponse, EditProfileData, FollowDTO, PostResponse, SignatureResponse, UpdateUserRequest, UserDTO } from "../../types/types.ts";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Post from "../post/Post.tsx";
@@ -11,6 +11,7 @@ import { useToken } from "../../hooks/useToken.ts";
 import AvatarCircle from "./AvatarCircle.tsx";
 import { useErrorContext } from "../../contexts/ErrorContext.tsx";
 import CreatePost from "../post/CreatePost.tsx";
+import { followApi } from "../../api/followApi.ts";
 
 const Profile = () => {
     const { userId } = useParams();
@@ -63,39 +64,21 @@ const Profile = () => {
 
         const fetchFollowing = async () => {
             try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users/${userId}/following`, {
-                    headers: {
-                        "Authorization": "Bearer " + localStorage.getItem("token")
-                    }
-                })
-                if (response.ok) {
-                    const data = await response.json() as FollowResponse
-                    const followedUserIds = data.content.map(follow => follow.userId);
-                    addFollowedUsers(followedUserIds);
-                    setFollowing(data.content)
-                } else {
-                    triggerError("Failed to load following list.");
-                }
+                const data = await followApi.getFollowing(parseInt(userId!));
+                const followedUserIds = data.content.map(follow => follow.userId);
+                addFollowedUsers(followedUserIds);
+                setFollowing(data.content)
             } catch (e) {
-                triggerError("Error fetching following list.");
+                triggerError("Failed to load following list.");
             }
         }
 
         const fetchFollowers = async () => {
             try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users/${userId}/followers`, {
-                    headers: {
-                        "Authorization": "Bearer " + localStorage.getItem("token")
-                    }
-                })
-                if (response.ok) {
-                    const data = await response.json() as FollowResponse
-                    setFollowers(data.content)
-                } else {
-                    triggerError("Failed to load followers list.");
-                }
+                const data = await followApi.getFollowers(parseInt(userId!));
+                setFollowers(data.content)
             } catch (e) {
-                triggerError("Error fetching followers list.");
+                triggerError("Failed to load followers list.");
             }
         }
         const loadAllProfileData = async () => {

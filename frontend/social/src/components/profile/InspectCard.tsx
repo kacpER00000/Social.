@@ -7,6 +7,7 @@ import { useErrorContext } from "../../contexts/ErrorContext.tsx";
 import FollowButton from "./FollowButton.tsx";
 import { useToken } from "../../hooks/useToken.ts";
 import AvatarCircle from "./AvatarCircle.tsx";
+import { followApi } from "../../api/followApi.ts";
 
 type InspectCardProps = {
     top: number | undefined,
@@ -43,20 +44,11 @@ const InspectCard = ({ username, userId, top, left, show, onMouseEnter, onMouseL
     const { checkIfFollowed, toggleFollow } = useFollowSystem()
     const fetchFollowInfo = useCallback(async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users/${userId}/follow-status`, {
-                headers: {
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                }
-            })
-            if (response.ok) {
-                const data = await response.json() as FollowDTO
-                const formatedData = { ...data, followedSince: data.followedSince === null ? null : formatDate(data.followedSince).split("T")[0] }
-                setFollowInfo(formatedData)
-            } else {
-                 triggerError("Failed to fetch follow status.");
-            }
+            const data = await followApi.getFollowStatus(userId!);
+            const formatedData = { ...data, followedSince: data.followedSince === null ? null : formatDate(data.followedSince).split("T")[0] }
+            setFollowInfo(formatedData)
         } catch (e) {
-            triggerError("Server error. Follow status is unavailable.");
+            triggerError("Failed to fetch follow status.");
         }
     }, [userId, triggerError])
 
