@@ -2,9 +2,7 @@ import {
     CommentDTO,
     CommentResponse,
     PostDTO,
-    EditPostData,
-    EditPostRequest,
-    SignatureResponse, CloudinaryResponse
+    EditPostData
 } from "../../types/types.ts";
 import CommentItem from "../comment/CommentItem.tsx";
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -25,6 +23,7 @@ import PostInteractions from "./PostInteractions.tsx";
 import AvatarCircle from "../profile/AvatarCircle.tsx";
 import { useFeedContext } from "../../contexts/FeedContext.tsx";
 import { useErrorContext } from "../../contexts/ErrorContext.tsx";
+import { usePostActions } from "../../hooks/usePostActions.ts";
 
 type PostModalProps = {
     post: PostDTO
@@ -55,7 +54,8 @@ type PostModalProps = {
  */
 const PostModal = ({ post, onClose }: PostModalProps) => {
     const { checkIfFollowed, toggleFollow } = useFollowSystem();
-    const { posts, updatePostInFeed, deletePostFromFeed } = useFeedContext();
+    const { posts, updatePostInFeed } = useFeedContext();
+    const { editPost, deletePost } = usePostActions();
     const currentPost = posts.find(p => p.postId === post.postId) || post;
     const { decoded, isInvalid } = useToken();
     const [comment, setComment] = useState("");
@@ -162,21 +162,8 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
     }
     const handleDeletePost = async (state: boolean) => {
         if (state) {
-            try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}`, {
-                    headers: {
-                        "Authorization": "Bearer " + localStorage.getItem("token")
-                    },
-                    method: "DELETE"
-                })
-                if (response.ok) {
-                    onClose()
-                    deletePostFromFeed(currentPost.postId)
-                } else {
-                    triggerError("Failed to delete post.");
-                }
-            } catch (e) {
-                triggerError("Server error while deleting post.");
+            if (await deletePost(currentPost.postId)) {
+                onClose()
             }
         }
         setShowConfirmation(false)
@@ -186,77 +173,11 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
         setShowEditModal(true)
     }
 
-    const editPost = async (data: EditPostData) => {
+    const handleEditPost = async (data: EditPostData) => {
         setShowMorePost(false);
-        let signatureObj: SignatureResponse;
-        let editPostRequest: EditPostRequest = {
-            title: data.title,
-            content: data.content,
-            newImgUrl: null,
-            newImgId: null,
-            isImageDeleted: data.isImageDeleted
-        }
-        try {
-            if(data.newImage){
-                const signatureResponse = await fetch(`${import.meta.env.VITE_API_URL}/social/cloudinary`,{
-                    headers: {
-                        "Authorization": "Bearer " + localStorage.getItem('token'),
-                    },
-                    method: "GET"
-                });
-                if(signatureResponse.ok){
-                    signatureObj = await signatureResponse.json() as SignatureResponse
-                    const cloudinaryRequest = new FormData();
-                    cloudinaryRequest.append("file",data.newImage);
-                    cloudinaryRequest.append("api_key","661824944146975")
-                    cloudinaryRequest.append("timestamp", signatureObj.timestamp.toString())
-                    cloudinaryRequest.append("signature",signatureObj.signature);
-                    const cloudinaryResponse = await fetch("https://api.cloudinary.com/v1_1/dzu1igj5q/image/upload",{
-                        method: "POST",
-                        body: cloudinaryRequest
-                    })
-                    if(cloudinaryResponse.ok){
-                        const cloudinaryData = await cloudinaryResponse.json() as CloudinaryResponse
-                        editPostRequest.newImgUrl = cloudinaryData.secure_url
-                        editPostRequest.newImgId = cloudinaryData.public_id
-                    }
-                }
-            }
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}`, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                },
-                method: "PUT",
-                body: JSON.stringify(editPostRequest)
-            })
-            if (response.ok) {
-                let finalImgUrl = currentPost.imgUrl;
-                let finalImgId = currentPost.imgId;
-
-                if (data.isImageDeleted) {
-                    finalImgUrl = null;
-                    finalImgId = null;
-                } else if (editPostRequest.newImgUrl) {
-                    finalImgUrl = editPostRequest.newImgUrl;
-                    finalImgId = editPostRequest.newImgId;
-                }
-                
-                const updatedPost: PostDTO = {
-                    ...currentPost,
-                    title: data.title,
-                    content: data.content,
-                    imgUrl: finalImgUrl,
-                    imgId: finalImgId
-                }
-                updatePostInFeed(updatedPost)
-            } else {
-                triggerError("Failed to update post.");
-            }
-        } catch (e) {
-            triggerError("Server error while editing post.");
-        } finally {
-            setShowEditModal(false)
+        const success = await editPost(data, currentPost);
+        if (success) {
+            setShowEditModal(false);
         }
     }
     const deleteComment = async (commentId: number) => {
@@ -341,7 +262,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                     </div>
                     <hr className="border-gray-100 my-4" />
                     {currentPost.imgUrl &&
-                        <img src={currentPost.imgUrl} alt="picture" className="max-w-full max-h-[600px] object-contain rounded-xl"/>
+                        <img src={currentPost.imgUrl} alt="picture" className="max-w-full max-h-[600px] object-contain rounded-xl" />
                     }
                     <hr className="border-gray-100 my-4" />
                     <PostInteractions post={currentPost} />
@@ -418,7 +339,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                 <EditPostModal
                     postData={{ title: currentPost.title, content: currentPost.content, imgUrl: currentPost.imgUrl } as PostData}
                     username={currentPost.author}
-                    onConfirm={editPost}
+                    onConfirm={handleEditPost}
                     onCancel={() => setShowEditModal(false)}
                     show={showEditModal}
                 />

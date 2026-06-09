@@ -1,10 +1,10 @@
-import {afterEach, beforeEach, describe, vi, it, expect} from "vitest";
-import {FeedProvider} from "../../contexts/FeedContext.tsx";
-import {userEvent} from "@testing-library/user-event";
-import {render, screen} from "@testing-library/react";
+import { afterEach, beforeEach, describe, vi, it, expect } from "vitest";
+import { FeedProvider } from "../../contexts/FeedContext.tsx";
+import { userEvent } from "@testing-library/user-event";
+import { render, screen } from "@testing-library/react";
 import CreatePost from "./CreatePost.tsx";
-import {useToken} from "../../hooks/useToken.ts";
-import {ErrorProvider} from "../../contexts/ErrorContext.tsx";
+import { useToken } from "../../hooks/useToken.ts";
+import { ErrorProvider } from "../../contexts/ErrorContext.tsx";
 
 vi.mock("../../hooks/useToken", () => ({
     useToken: vi.fn()
@@ -14,8 +14,8 @@ describe("CreatePost test", () => {
         vi.useFakeTimers({ shouldAdvanceTime: true });
         vi.clearAllMocks();
         localStorage.clear();
-        localStorage.setItem("token","AAABBBCCCDDD");
-        vi.stubEnv("VITE_API_URL","http://test-api.com");
+        localStorage.setItem("token", "AAABBBCCCDDD");
+        vi.stubEnv("VITE_API_URL", "http://test-api.com");
         vi.spyOn(globalThis, 'fetch');
         vi.mocked(useToken).mockReturnValue({
             isInvalid: false,
@@ -115,7 +115,7 @@ describe("CreatePost test", () => {
 
     it("should close modal when escape key is pressed", async () => {
         const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-        renderWithFeedContext(<CreatePost/>);
+        renderWithFeedContext(<CreatePost />);
         await user.click(screen.getByText(/what's up/i));
         expect(await screen.findByPlaceholderText("Title")).toBeInTheDocument();
         await user.keyboard('{Escape}');
