@@ -1,5 +1,5 @@
-import { useLoaderData, useParams } from "react-router-dom";
-import { CloudinaryResponse, EditProfileData, FollowDTO, PostResponse, SignatureResponse, UpdateUserRequest, UserDTO } from "../../types/types.ts";
+import { useLoaderData, useParams, useRevalidator } from "react-router-dom";
+import { EditProfileData, FollowDTO, PostResponse, UpdateUserRequest, UserDTO } from "../../types/types.ts";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Post from "../post/Post.tsx";
@@ -12,6 +12,8 @@ import AvatarCircle from "./AvatarCircle.tsx";
 import { useErrorContext } from "../../contexts/ErrorContext.tsx";
 import CreatePost from "../post/CreatePost.tsx";
 import { followApi } from "../../api/followApi.ts";
+import { getCloudinaryData } from "../../utils/cloudinaryData.ts";
+import { useStatusContext } from "../../contexts/StatusContext.tsx";
 
 const Profile = () => {
     const { userId } = useParams();
@@ -26,6 +28,8 @@ const Profile = () => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const { triggerError } = useErrorContext();
+    const { setStatus } = useStatusContext();
+    const { revalidate } = useRevalidator();
 
     const userData: EditProfileData = {
         firstName: user.firstName,
@@ -103,32 +107,12 @@ const Profile = () => {
             newImgId: null,
             isImageDeleted: data.isImageDeleted
         };
-        let signatureObj: SignatureResponse;
+        setStatus('loading');
         try {
-            if (data.newImage) {
-                const signatureResponse = await fetch(`${import.meta.env.VITE_API_URL}/social/cloudinary`, {
-                    headers: {
-                        "Authorization": "Bearer " + localStorage.getItem('token'),
-                    },
-                    method: "GET"
-                });
-                if (signatureResponse.ok) {
-                    signatureObj = await signatureResponse.json() as SignatureResponse
-                    const cloudinaryRequest = new FormData();
-                    cloudinaryRequest.append("file", data.newImage);
-                    cloudinaryRequest.append("api_key", "661824944146975")
-                    cloudinaryRequest.append("timestamp", signatureObj.timestamp.toString())
-                    cloudinaryRequest.append("signature", signatureObj.signature);
-                    const cloudinaryResponse = await fetch("https://api.cloudinary.com/v1_1/dzu1igj5q/image/upload", {
-                        method: "POST",
-                        body: cloudinaryRequest
-                    })
-                    if (cloudinaryResponse.ok) {
-                        const cloudinaryData = await cloudinaryResponse.json() as CloudinaryResponse
-                        updateUserRequest.newImgUrl = cloudinaryData.secure_url;
-                        updateUserRequest.newImgId = cloudinaryData.public_id;
-                    }
-                }
+            const cloudinaryData = await getCloudinaryData(data.newImage);
+            if (cloudinaryData) {
+                updateUserRequest.newImgUrl = cloudinaryData.secure_url;
+                updateUserRequest.newImgId = cloudinaryData.public_id;
             }
             const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users`, {
                 headers: {
@@ -139,9 +123,11 @@ const Profile = () => {
                 body: JSON.stringify(updateUserRequest)
             })
             if (response.ok) {
-                location.reload()
+                revalidate();
+                setStatus('success');
             } else {
                 triggerError("Failed to update profile.");
+                setStatus('error');
             }
         } catch (e) {
             triggerError("Server error. Profile was not updated.");
@@ -150,6 +136,7 @@ const Profile = () => {
 
     const deleteProfile = async (state: boolean) => {
         setShowDeleteConfirmation(false);
+        setStatus('loading');
         if (state) {
             try {
                 const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users`, {
@@ -161,12 +148,15 @@ const Profile = () => {
                 if (response.ok) {
                     clearContext()
                     localStorage.removeItem("token")
+                    setStatus('success')
                     navigate("/login")
                 } else {
                     triggerError("Failed to delete profile.");
+                    setStatus('error')
                 }
             } catch (e) {
                 triggerError("Server error. Your profile was not deleted.");
+                setStatus('error')
             }
         }
     }
