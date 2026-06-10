@@ -55,14 +55,15 @@ const Login = () => {
                 navigate("/home");
             } else {
                 setLoginError(true);
+                setLoadingState(false);
                 setLoginErrorMessage("Incorrect login or password!");
             }
         } catch (e) {
             setLoginError(true);
+            setLoadingState(false);
             setLoginErrorMessage("Something gone wrong.");
         } finally {
             loadingLock.current = false;
-            setLoadingState(false)
         }
     }
     return (

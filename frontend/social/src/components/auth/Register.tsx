@@ -4,7 +4,7 @@ import ErrorPopup from "../common/ErrorPopup";
 import AvatarCircle from "../profile/AvatarCircle";
 import CropperCutter from "../profile/CropperCutter";
 import { useCropperCutter } from "../../hooks/useCropperCutter";
-import { SignatureResponse, CloudinaryResponse } from "../../types/types";
+import { getCloudinaryData } from "../../utils/cloudinaryData";
 
 const Register = () => {
     const [sex, setSex] = useState("M");
@@ -57,7 +57,6 @@ const Register = () => {
         if (loadingLock.current || validate()) { return; }
         setLoadingState(true);
         loadingLock.current = true;
-        let signatureObj: SignatureResponse;
         const registerRequest = {
             firstName: firstName,
             lastName: lastName,
@@ -69,27 +68,10 @@ const Register = () => {
             imgId: null as string | null
         };
         try {
-            if (croppedFile) {
-                const signatureResponse = await fetch(`${import.meta.env.VITE_API_URL}/social/cloudinary`, {
-                    method: "GET"
-                });
-                if (signatureResponse.ok) {
-                    signatureObj = await signatureResponse.json() as SignatureResponse;
-                    const cloudinaryRequest = new FormData();
-                    cloudinaryRequest.append("file", croppedFile);
-                    cloudinaryRequest.append("api_key", "661824944146975");
-                    cloudinaryRequest.append("timestamp", signatureObj.timestamp.toString());
-                    cloudinaryRequest.append("signature", signatureObj.signature);
-                    const cloudinaryResponse = await fetch("https://api.cloudinary.com/v1_1/dzu1igj5q/image/upload", {
-                        method: "POST",
-                        body: cloudinaryRequest
-                    });
-                    if (cloudinaryResponse.ok) {
-                        const cloudinaryData = await cloudinaryResponse.json() as CloudinaryResponse;
-                        registerRequest.imgUrl = cloudinaryData.secure_url;
-                        registerRequest.imgId = cloudinaryData.public_id;
-                    }
-                }
+            const cloudinaryData = await getCloudinaryData(croppedFile);
+            if (cloudinaryData) {
+                registerRequest.imgUrl = cloudinaryData.secure_url;
+                registerRequest.imgId = cloudinaryData.public_id;
             }
             const response = await fetch(`${import.meta.env.VITE_API_URL}/social/auth/register`, {
                 method: "POST",
