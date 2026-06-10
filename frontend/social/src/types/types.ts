@@ -234,6 +234,30 @@ export interface ErrorContextType {
     triggerError: (message: string) => void;
 }
 
+/**
+ * Context type representing the current execution/network status of asynchronous operations
+ * and the function to transition between status states.
+ */
+export interface StatusContextType {
+    /**
+     * Current status state:
+     * - 'idle': No active operations.
+     * - 'loading': An operation is currently in progress.
+     * - 'success': The operation completed successfully.
+     * - 'error': The operation failed.
+     */
+    status: 'idle' | 'loading' | 'success' | 'error';
+
+    /**
+     * Updates the status state.
+     * Setting the status to 'success' or 'error' will automatically trigger
+     * a timeout to reset it back to 'idle' after 3000ms.
+     * 
+     * @param status - The new status state.
+     */
+    setStatus: (status: 'idle' | 'loading' | 'success' | 'error') => void;
+}
+
 /** Response from the backend providing a signed timestamp required for secure Cloudinary uploads. */
 export interface SignatureResponse {
     signature: string,

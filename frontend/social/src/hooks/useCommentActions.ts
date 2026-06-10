@@ -1,6 +1,7 @@
 import { commentApi } from "../api/commentApi";
 import { useErrorContext } from "../contexts/ErrorContext";
 import { useFeedContext } from "../contexts/FeedContext";
+import { useStatusContext } from "../contexts/StatusContext";
 import { CommentDTO, PostDTO } from "../types/types";
 
 /**
@@ -26,6 +27,7 @@ type useCommentActionsReturn = {
 export const useCommentActions = (): useCommentActionsReturn => {
     const { updatePostInFeed } = useFeedContext();
     const { triggerError } = useErrorContext();
+    const { setStatus } = useStatusContext();
 
     /**
      * Adds a comment to a post, then updates the post's comment count in FeedContext.
@@ -36,6 +38,7 @@ export const useCommentActions = (): useCommentActionsReturn => {
      * @returns A promise resolving to the created CommentDTO, or null if the operation failed.
      */
     const addComment = async (postId: number, content: string, currentPost: PostDTO): Promise<CommentDTO | null> => {
+        setStatus('loading');
         try {
             const newComment = await commentApi.addComment(postId, content);
             if (newComment) {
@@ -44,10 +47,13 @@ export const useCommentActions = (): useCommentActionsReturn => {
                     commentCount: currentPost.commentCount + 1
                 };
                 updatePostInFeed(updatedPost);
+                setStatus('success');
                 return newComment;
             }
+            setStatus('error');
             return null;
         } catch (error) {
+            setStatus('error');
             triggerError("Failed to add comment.");
             return null;
         }
@@ -61,16 +67,20 @@ export const useCommentActions = (): useCommentActionsReturn => {
      * @returns A promise resolving to a boolean representing success status.
      */
     const editComment = async (commentId: number, content: string): Promise<boolean> => {
+        setStatus('loading');
         try {
             const success = await commentApi.editComment(commentId, content);
             if (success) {
+                setStatus('success');
                 return true;
             } else {
                 triggerError("Failed to update comment.");
+                setStatus('error');
                 return false;
             }
         } catch (error) {
             triggerError("Server error while editing comment.");
+            setStatus('error');
             return false;
         }
     };
@@ -83,6 +93,7 @@ export const useCommentActions = (): useCommentActionsReturn => {
      * @returns A promise resolving to a boolean representing success status.
      */
     const deleteComment = async (commentId: number, currentPost: PostDTO): Promise<boolean> => {
+        setStatus('loading');
         try {
             const success = await commentApi.deleteComment(commentId);
             if (success) {
@@ -91,13 +102,16 @@ export const useCommentActions = (): useCommentActionsReturn => {
                     commentCount: currentPost.commentCount - 1
                 };
                 updatePostInFeed(updatedPost);
+                setStatus('success');
                 return true;
             } else {
                 triggerError("Failed to delete comment.");
+                setStatus('error');
                 return false;
             }
         } catch (error) {
             triggerError("Server error while deleting comment.");
+            setStatus('error');
             return false;
         }
     };

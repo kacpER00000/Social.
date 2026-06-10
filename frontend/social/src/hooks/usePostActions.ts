@@ -1,6 +1,7 @@
 import { postApi } from "../api/postApi"
 import { useErrorContext } from "../contexts/ErrorContext";
 import { useFeedContext } from "../contexts/FeedContext";
+import { useStatusContext } from "../contexts/StatusContext";
 import { CreatePostData, EditPostData, PostDTO } from "../types/types";
 
 /**
@@ -12,7 +13,7 @@ type usePostActionsReturn = {
     /** Submits a request to edit a post and updates it in the global feed. */
     editPost: (data: EditPostData, post: PostDTO) => Promise<boolean>;
     /** Submits a request to delete a post and removes it from the global feed. */
-    deletePost: (postId: number) => Promise<boolean>;
+    deletePost: (postId: number) => Promise<void>;
     /** Submits a request to toggle a like status on a post and updates its state in the global feed. */
     toggleLike: (post: PostDTO, previousLiked: boolean, likesNum: number, newLikesNum: number) => Promise<boolean>;
 }
@@ -28,6 +29,7 @@ type usePostActionsReturn = {
 export const usePostActions = (): usePostActionsReturn => {
     const { addPostToFeed, deletePostFromFeed, updatePostInFeed } = useFeedContext();
     const { triggerError } = useErrorContext();
+    const { setStatus } = useStatusContext();
 
     /**
      * Submits a request to create a post, and adds the newly created post to the feed.
@@ -35,13 +37,18 @@ export const usePostActions = (): usePostActionsReturn => {
      * @param postData - The input details of the post (title, content, image file).
      */
     const createPost = async (postData: CreatePostData) => {
+        setStatus('loading');
         try {
             const newPost = await postApi.createPost(postData);
             if (newPost) {
                 addPostToFeed(newPost);
+                setStatus('success');
+            } else {
+                setStatus('error');
             }
         } catch (error) {
             triggerError("Failed to create post");
+            setStatus('error');
         }
     }
 
@@ -53,15 +60,19 @@ export const usePostActions = (): usePostActionsReturn => {
      * @returns A promise resolving to a boolean representing success status.
      */
     const editPost = async (data: EditPostData, post: PostDTO) => {
+        setStatus('loading');
         try {
             const updatedPost = await postApi.editPost(data, post);
             if (updatedPost) {
                 updatePostInFeed(updatedPost);
+                setStatus('success');
                 return true;
             }
+            setStatus('error');
             return false;
         } catch (error) {
             triggerError("Failed to edit post");
+            setStatus('error');
             return false;
         }
     }
@@ -73,17 +84,18 @@ export const usePostActions = (): usePostActionsReturn => {
      * @returns A promise resolving to a boolean representing success status.
      */
     const deletePost = async (postId: number) => {
+        setStatus('loading');
         try {
             if (await postApi.deletePost(postId)) {
                 deletePostFromFeed(postId);
-                return true;
+                setStatus('success');
             } else {
                 triggerError("Failed to delete post.");
-                return false;
+                setStatus('error');
             }
         } catch (error) {
             triggerError("Server error. Failed to save changes.");
-            return false;
+            setStatus('error');
         }
     }
 

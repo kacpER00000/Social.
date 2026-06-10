@@ -1,4 +1,4 @@
-import {createBrowserRouter, LoaderFunctionArgs, Navigate, RouterProvider} from "react-router-dom";
+import { createBrowserRouter, LoaderFunctionArgs, Navigate, RouterProvider } from "react-router-dom";
 import PublicLayout from "./components/layout/PublicLayout.tsx";
 import Login from "./components/auth/Login.tsx";
 import Register from "./components/auth/Register.tsx";
@@ -14,6 +14,7 @@ import { FeedProvider } from "./contexts/FeedContext.tsx";
 import ErrorPage from "./components/common/ErrorPage.tsx";
 import { ErrorProvider } from "./contexts/ErrorContext.tsx";
 import HydrateFallbackElement from "./components/common/HydrateFallbackElement.tsx";
+import { StatusProvider } from "./contexts/StatusContext.tsx";
 
 const router = createBrowserRouter([
     {
@@ -151,13 +152,15 @@ const router = createBrowserRouter([
 function App() {
 
     return (
-        <ErrorProvider>
-            <FollowProvider>
-                <FeedProvider>
-                    <RouterProvider router={router} />
-                </FeedProvider>
-            </FollowProvider>
-        </ErrorProvider>
+        <StatusProvider>
+            <ErrorProvider>
+                <FollowProvider>
+                    <FeedProvider>
+                        <RouterProvider router={router} />
+                    </FeedProvider>
+                </FollowProvider>
+            </ErrorProvider>
+        </StatusProvider>
     )
 }
 

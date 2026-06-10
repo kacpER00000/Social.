@@ -134,12 +134,11 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
         }
     }
     const handleDeletePost = async (state: boolean) => {
-        if (state) {
-            if (await deletePost(currentPost.postId)) {
-                onClose()
-            }
-        }
         setShowConfirmation(false)
+        onClose()
+        if (state) {
+            await deletePost(currentPost.postId)
+        }
     }
 
     const showEditPostModal = () => {
