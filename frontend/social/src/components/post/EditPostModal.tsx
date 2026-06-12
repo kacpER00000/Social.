@@ -7,6 +7,7 @@ import PostImage from "./PostImage.tsx";
 type EditPostModalProps = {
     postData: PostData,
     username: string,
+    imgUrl: string | null,
     onConfirm: (data: EditPostData) => void,
     onCancel: () => void,
     show: boolean
@@ -31,7 +32,7 @@ type EditPostModalProps = {
  * @param onCancel - Callback to dismiss the modal without saving.
  * @param show - Controls portal visibility; returns `null` when `false`.
  */
-const EditPostModal = ({ postData, username, onConfirm, onCancel, show }: EditPostModalProps) => {
+const EditPostModal = ({ postData, username, imgUrl, onConfirm, onCancel, show }: EditPostModalProps) => {
     const [title, setTitle] = useState(postData.title);
     const [content, setContent] = useState(postData.content);
     const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(postData.imgUrl);
@@ -64,6 +65,7 @@ const EditPostModal = ({ postData, username, onConfirm, onCancel, show }: EditPo
                     <AvatarCircle
                         size="small"
                         username={username}
+                        imgUrl={imgUrl}
                     />
                     <h1 className="font-bold mt-2">{username}</h1>
                 </div>

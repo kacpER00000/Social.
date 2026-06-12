@@ -35,14 +35,15 @@ public class PostService {
      * Adds a new post.
      *
      * @param createPostRequest The request object containing post details.
-     * @param userId      The ID of the user creating the post.
+     * @param userId            The ID of the user creating the post.
      * @return The created PostDTO.
      * @throws NoSuchElementException if the user does not exist.
      */
     @Transactional
     public PostDTO addPost(CreatePostRequest createPostRequest, Long userId) {
         User owner = findUserById(userId);
-        Post post = new Post(owner, createPostRequest.getTitle(), createPostRequest.getContent(), createPostRequest.getImgUrl());
+        Post post = new Post(owner, createPostRequest.getTitle(), createPostRequest.getContent(),
+                createPostRequest.getImgUrl());
         post.setImgId(createPostRequest.getImgId());
         owner.addPost(post);
         postRepository.save(post);
@@ -167,8 +168,10 @@ public class PostService {
         boolean isAuthorFollowed = followerRepository.existsByFollower_UserIdAndFollowed_UserId(loggedUserId,
                 post.getUser().getUserId());
         boolean canEdit = post.getUser().getUserId().equals(loggedUserId);
-        return new PostDTO(post.getPostId(), post.getUser().getUserId(), nickname, post.getTitle(), post.getContent(),
-                post.getImgUrl(), post.getImgId(),post.getCreatedAt(), likesNumber, commentCount, isLiked, isAuthorFollowed, canEdit);
+        return new PostDTO(post.getPostId(), post.getUser().getUserId(), post.getUser().getImgUrl(), nickname,
+                post.getTitle(), post.getContent(),
+                post.getImgUrl(), post.getImgId(), post.getCreatedAt(), likesNumber, commentCount, isLiked,
+                isAuthorFollowed, canEdit);
     }
 
     /**

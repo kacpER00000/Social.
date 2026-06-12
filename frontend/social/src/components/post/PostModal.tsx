@@ -195,7 +195,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                     <div>
                         <div className="flex flex-wrap items-center gap-3">
                             <div className="flex cursor-pointer items-center gap-2" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave} onClick={() => { navigate(`/profile/${currentPost.authorId}`) }}>
-                                <AvatarCircle username={currentPost.author} size="small" />
+                                <AvatarCircle username={currentPost.author} imgUrl={currentPost.authorImgUrl} size="small" />
                                 <h2 className="w-fit font-bold text-xl text-gray-900 hover:underline" >{currentPost.author}</h2>
                             </div>
                             {!currentPost.canEdit &&
@@ -285,6 +285,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                     left={cords.left}
                     username={currentPost.author}
                     userId={currentPost.authorId}
+                    imgUrl={currentPost.authorImgUrl}
                     onMouseEnter={handlers.onMouseCardEnter}
                     onMouseLeave={handlers.onMouseLeave}
                     show={show}
@@ -294,6 +295,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                 <EditPostModal
                     postData={{ title: currentPost.title, content: currentPost.content, imgUrl: currentPost.imgUrl } as PostData}
                     username={currentPost.author}
+                    imgUrl={currentPost.authorImgUrl}
                     onConfirm={handleEditPost}
                     onCancel={() => setShowEditModal(false)}
                     show={showEditModal}

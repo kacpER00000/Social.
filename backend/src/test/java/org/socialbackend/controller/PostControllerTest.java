@@ -57,12 +57,12 @@ public class PostControllerTest {
         when(mockUserDetails.getUserId()).thenReturn(userId);
         return new UsernamePasswordAuthenticationToken(mockUserDetails, null, Collections.emptyList());
     }
-    
+
     @Test
     void shouldReturnPost() throws Exception {
-        Long loggedUserId=99L;
-        Long targetPostId=1L;
-        Long postAuthorId=10L;
+        Long loggedUserId = 99L;
+        Long targetPostId = 1L;
+        Long postAuthorId = 10L;
         String title = "Test";
         String content = "Test content";
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
@@ -72,7 +72,7 @@ public class PostControllerTest {
         expectedDto.setTitle(title);
         expectedDto.setContent(content);
         when(postService.findPostById(targetPostId, loggedUserId)).thenReturn(expectedDto);
-        mockMvc.perform(get("/social/posts/"+targetPostId)
+        mockMvc.perform(get("/social/posts/" + targetPostId)
                 .principal(mockAuthentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.postId").value(targetPostId))
@@ -83,28 +83,28 @@ public class PostControllerTest {
     }
 
     @Test
-    void shouldNotReturnPost() throws Exception{
-        Long loggedUserId=99L;
-        Long targetPostId=1L;
+    void shouldNotReturnPost() throws Exception {
+        Long loggedUserId = 99L;
+        Long targetPostId = 1L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
         when(postService.findPostById(targetPostId, loggedUserId)).thenThrow(NoSuchElementException.class);
-        mockMvc.perform(get("/social/posts/"+targetPostId)
+        mockMvc.perform(get("/social/posts/" + targetPostId)
                 .principal(mockAuthentication))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void shouldCreatePost() throws Exception{
-        Long loggedUserId=99L;
+    void shouldCreatePost() throws Exception {
+        Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        String title="Test";
-        String content="Test content";
-        CreatePostRequest postRequest = new CreatePostRequest(title,content,null,null);
+        String title = "Test";
+        String content = "Test content";
+        CreatePostRequest postRequest = new CreatePostRequest(title, content, null, null);
         PostDTO expectedDTO = new PostDTO();
         expectedDTO.setAuthorId(loggedUserId);
         expectedDTO.setTitle(title);
         expectedDTO.setContent(content);
-        when(postService.addPost(postRequest,loggedUserId)).thenReturn(expectedDTO);
+        when(postService.addPost(postRequest, loggedUserId)).thenReturn(expectedDTO);
         mockMvc.perform(post("/social/posts")
                 .principal(mockAuthentication)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -113,110 +113,118 @@ public class PostControllerTest {
                 .andExpect(jsonPath("$.authorId").value(loggedUserId))
                 .andExpect(jsonPath("$.title").value(title))
                 .andExpect(jsonPath("$.content").value(content));
-        verify(postService,times(1)).addPost(any(CreatePostRequest.class), eq(loggedUserId));
+        verify(postService, times(1)).addPost(any(CreatePostRequest.class), eq(loggedUserId));
     }
 
     @Test
-    void shouldNotCreatePost() throws Exception{
-        Long loggedUserId=99L;
+    void shouldNotCreatePost() throws Exception {
+        Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        String title="Test";
-        String content="Test content";
-        CreatePostRequest postRequest = new CreatePostRequest(title,content,null,null);
-        when(postService.addPost(postRequest,loggedUserId)).thenThrow(NoSuchElementException.class);
+        String title = "Test";
+        String content = "Test content";
+        CreatePostRequest postRequest = new CreatePostRequest(title, content, null, null);
+        when(postService.addPost(postRequest, loggedUserId)).thenThrow(NoSuchElementException.class);
         mockMvc.perform(post("/social/posts")
-                        .principal(mockAuthentication)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(postRequest)))
+                .principal(mockAuthentication)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(postRequest)))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void shouldUpdatePost() throws Exception{
-        Long loggedUserId=99L;
-        Long targetPostId=1L;
+    void shouldUpdatePost() throws Exception {
+        Long loggedUserId = 99L;
+        Long targetPostId = 1L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        String title="Test";
-        String content="Test content";
-        UpdatePostRequest postRequest = new UpdatePostRequest(title,content,null,null,false);
-        PostDTO postFromDB = new PostDTO(targetPostId, loggedUserId,null,null,null,null,null,null,null,null,null,null,true);
-        when(postService.findPostById(targetPostId,loggedUserId)).thenReturn(postFromDB);
-        mockMvc.perform(put("/social/posts/"+targetPostId)
+        String title = "Test";
+        String content = "Test content";
+        UpdatePostRequest postRequest = new UpdatePostRequest(title, content, null, null, false);
+        PostDTO postFromDB = new PostDTO(targetPostId, loggedUserId, null, null, null, null, null, null, null, null,
+                null, null, null, true);
+        when(postService.findPostById(targetPostId, loggedUserId)).thenReturn(postFromDB);
+        mockMvc.perform(put("/social/posts/" + targetPostId)
                 .principal(mockAuthentication)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(postRequest)))
                 .andExpect(status().isOk());
-        verify(postService,times(1)).updatePost(eq(targetPostId), eq(loggedUserId), any(UpdatePostRequest.class));
+        verify(postService, times(1)).updatePost(eq(targetPostId), eq(loggedUserId), any(UpdatePostRequest.class));
     }
 
     @Test
-    void shouldNotUpdatePostBecauseOfNoPost() throws Exception{
-        Long loggedUserId=99L;
-        Long targetPostId=1L;
+    void shouldNotUpdatePostBecauseOfNoPost() throws Exception {
+        Long loggedUserId = 99L;
+        Long targetPostId = 1L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        String title="Test";
-        String content="Test content";
-        UpdatePostRequest postRequest = new UpdatePostRequest(title,content,null,null,false);
+        String title = "Test";
+        String content = "Test content";
+        UpdatePostRequest postRequest = new UpdatePostRequest(title, content, null, null, false);
         when(postService.findPostById(targetPostId, loggedUserId)).thenThrow(NoSuchElementException.class);
-        mockMvc.perform(put("/social/posts/"+targetPostId)
-                        .principal(mockAuthentication)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(postRequest)))
+        mockMvc.perform(put("/social/posts/" + targetPostId)
+                .principal(mockAuthentication)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(postRequest)))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void shouldNotUpdatePostBecauseOfNoPermission() throws Exception{
-        Long loggedUserId=99L;
-        Long targetPostId=1L;
+    void shouldNotUpdatePostBecauseOfNoPermission() throws Exception {
+        Long loggedUserId = 99L;
+        Long targetPostId = 1L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        String title="Test";
-        String content="Test content";
-        UpdatePostRequest postRequest = new UpdatePostRequest(title,content,null,null,false);
-        PostDTO postFromDB = new PostDTO(targetPostId, 2L,null,null,null,null,null,null,null,null,null,null,false);
+        String title = "Test";
+        String content = "Test content";
+        UpdatePostRequest postRequest = new UpdatePostRequest(title, content, null, null, false);
+        PostDTO postFromDB = new PostDTO(targetPostId, 2L, null, null, null, null, null, null, null, null, null, null,
+                null,
+                false);
         when(postService.findPostById(targetPostId, loggedUserId)).thenReturn(postFromDB);
-        doThrow(InvalidParameterException.class).when(postService).updatePost(eq(targetPostId),eq(loggedUserId),any(UpdatePostRequest.class));
-        mockMvc.perform(put("/social/posts/"+targetPostId)
-                        .principal(mockAuthentication)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(postRequest)))
+        doThrow(InvalidParameterException.class).when(postService).updatePost(eq(targetPostId), eq(loggedUserId),
+                any(UpdatePostRequest.class));
+        mockMvc.perform(put("/social/posts/" + targetPostId)
+                .principal(mockAuthentication)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(postRequest)))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void shouldDeletePost() throws Exception{
-        Long loggedUserId=99L;
-        Long targetPostId=1L;
+    void shouldDeletePost() throws Exception {
+        Long loggedUserId = 99L;
+        Long targetPostId = 1L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        PostDTO postFromDB = new PostDTO(targetPostId, loggedUserId,null,null,null,null,null,null,null,null,null,null,true);
+        PostDTO postFromDB = new PostDTO(targetPostId, loggedUserId, null, null, null, null, null, null, null, null,
+                null,
+                null, null, true);
         when(postService.findPostById(targetPostId, loggedUserId)).thenReturn(postFromDB);
-        mockMvc.perform(delete("/social/posts/"+targetPostId)
-                        .principal(mockAuthentication))
+        mockMvc.perform(delete("/social/posts/" + targetPostId)
+                .principal(mockAuthentication))
                 .andExpect(status().isNoContent());
-        verify(postService,times(1)).deletePost(targetPostId,loggedUserId);
+        verify(postService, times(1)).deletePost(targetPostId, loggedUserId);
     }
 
     @Test
-    void shouldNotDeletePostBecauseOfNoPost() throws Exception{
-        Long loggedUserId=99L;
-        Long targetPostId=1L;
+    void shouldNotDeletePostBecauseOfNoPost() throws Exception {
+        Long loggedUserId = 99L;
+        Long targetPostId = 1L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
         when(postService.findPostById(targetPostId, loggedUserId)).thenThrow(NoSuchElementException.class);
-        mockMvc.perform(delete("/social/posts/"+targetPostId)
-                        .principal(mockAuthentication))
+        mockMvc.perform(delete("/social/posts/" + targetPostId)
+                .principal(mockAuthentication))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void shouldNotDeletePostBecauseOfNoPermission() throws Exception{
-        Long loggedUserId=99L;
-        Long targetPostId=1L;
+    void shouldNotDeletePostBecauseOfNoPermission() throws Exception {
+        Long loggedUserId = 99L;
+        Long targetPostId = 1L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        PostDTO postFromDB = new PostDTO(targetPostId, 2L,null,null,null,null,null,null,null,null,null,null,false);
+        PostDTO postFromDB = new PostDTO(targetPostId, 2L, null, null, null, null, null, null, null, null, null, null,
+                null,
+                false);
         when(postService.findPostById(targetPostId, loggedUserId)).thenReturn(postFromDB);
-        doThrow(InvalidParameterException.class).when(postService).deletePost(targetPostId,loggedUserId);
-        mockMvc.perform(delete("/social/posts/"+targetPostId)
-                        .principal(mockAuthentication))
+        doThrow(InvalidParameterException.class).when(postService).deletePost(targetPostId, loggedUserId);
+        mockMvc.perform(delete("/social/posts/" + targetPostId)
+                .principal(mockAuthentication))
                 .andExpect(status().isBadRequest());
     }
 
@@ -227,7 +235,7 @@ public class PostControllerTest {
         Page<PostDTO> postPage = new PageImpl<>(List.of(new PostDTO(), new PostDTO()));
         when(postService.findLatestPosts(any(Pageable.class), eq(loggedUserId))).thenReturn(postPage);
         mockMvc.perform(get("/social/posts/latest")
-                        .principal(mockAuthentication))
+                .principal(mockAuthentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.size()").value(2));
     }
@@ -236,11 +244,13 @@ public class PostControllerTest {
     void shouldGetUserLatestPosts() throws Exception {
         Long targetUserId = 1L;
         Long loggedUserId = 99L;
-        Authentication mockAuthentication = createMockAuthentication(loggedUserId);;
+        Authentication mockAuthentication = createMockAuthentication(loggedUserId);
+        ;
         Page<PostDTO> postPage = new PageImpl<>(List.of(new PostDTO()));
-        when(postService.findLatestUserPosts(eq(targetUserId), any(Pageable.class), eq(loggedUserId))).thenReturn(postPage);
+        when(postService.findLatestUserPosts(eq(targetUserId), any(Pageable.class), eq(loggedUserId)))
+                .thenReturn(postPage);
         mockMvc.perform(get("/social/posts/{userId}/latest", targetUserId)
-                        .principal(mockAuthentication))
+                .principal(mockAuthentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.size()").value(1));
     }
@@ -249,9 +259,10 @@ public class PostControllerTest {
     void shouldLikePost() throws Exception {
         Long postId = 1L;
         Long loggedUserId = 99L;
-        Authentication mockAuthentication = createMockAuthentication(loggedUserId);;
+        Authentication mockAuthentication = createMockAuthentication(loggedUserId);
+        ;
         mockMvc.perform(post("/social/posts/{postId}/like", postId)
-                        .principal(mockAuthentication))
+                .principal(mockAuthentication))
                 .andExpect(status().isOk());
         verify(postLikeService, times(1)).likePost(postId, loggedUserId);
     }
@@ -260,10 +271,11 @@ public class PostControllerTest {
     void shouldNotLikePostWhenAlreadyLiked() throws Exception {
         Long postId = 1L;
         Long loggedUserId = 99L;
-        Authentication mockAuthentication = createMockAuthentication(loggedUserId);;
+        Authentication mockAuthentication = createMockAuthentication(loggedUserId);
+        ;
         doThrow(new IllegalStateException("Already liked.")).when(postLikeService).likePost(postId, loggedUserId);
         mockMvc.perform(post("/social/posts/{postId}/like", postId)
-                        .principal(mockAuthentication))
+                .principal(mockAuthentication))
                 .andExpect(status().isBadRequest());
     }
 
@@ -271,9 +283,10 @@ public class PostControllerTest {
     void shouldUnlikePost() throws Exception {
         Long postId = 1L;
         Long loggedUserId = 99L;
-        Authentication mockAuthentication = createMockAuthentication(loggedUserId);;
+        Authentication mockAuthentication = createMockAuthentication(loggedUserId);
+        ;
         mockMvc.perform(delete("/social/posts/{postId}/like", postId)
-                        .principal(mockAuthentication))
+                .principal(mockAuthentication))
                 .andExpect(status().isNoContent());
         verify(postLikeService, times(1)).unlikePost(postId, loggedUserId);
     }
@@ -282,10 +295,11 @@ public class PostControllerTest {
     void shouldNotUnlikePostWhenNotLiked() throws Exception {
         Long postId = 1L;
         Long loggedUserId = 99L;
-        Authentication mockAuthentication = createMockAuthentication(loggedUserId);;
+        Authentication mockAuthentication = createMockAuthentication(loggedUserId);
+        ;
         doThrow(new IllegalStateException("Already unliked")).when(postLikeService).unlikePost(postId, loggedUserId);
         mockMvc.perform(delete("/social/posts/{postId}/like", postId)
-                        .principal(mockAuthentication))
+                .principal(mockAuthentication))
                 .andExpect(status().isBadRequest());
     }
 

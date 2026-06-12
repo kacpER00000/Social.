@@ -32,6 +32,7 @@ const FollowCard = ({ users, type, profileUserId, loading }: FollowCardProps) =>
     const { show, cords, handlers } = useInspect();
     const [currentUsername, setCurrentUsername] = useState<string | undefined>(undefined)
     const [currentUserId, setCurrentUserId] = useState<number | undefined>(undefined)
+    const [currentImgUrl, setCurrentImgUrl] = useState<string | null>(null)
     const navigate = useNavigate();
     return (
         <>
@@ -56,15 +57,20 @@ const FollowCard = ({ users, type, profileUserId, loading }: FollowCardProps) =>
                                 <div className="w-full aspect-square rounded-lg bg-linear-to-tr from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold shadow-sm cursor-pointer hover:opacity-90 transition" onMouseEnter={(e) => {
                                     setCurrentUsername(item.followerUsername)
                                     setCurrentUserId(item.userId)
+                                    setCurrentImgUrl(item.followerImgUrl)
                                     handlers.onMouseEnter(e)
                                 }}
                                     onMouseLeave={() => { handlers.onMouseLeave() }}
                                     onClick={() => { navigate(`/profile/${item.userId}`) }}
                                 >
-                                    <span className="text-2xl sm:text-3xl">
-                                        {item.followerUsername.split(" ")[0].charAt(0)?.toUpperCase()}
-                                        {item.followerUsername.split(" ")[1].charAt(0)?.toUpperCase()}
-                                    </span>
+                                    {item.followerImgUrl ? (
+                                        <img className="w-full h-full object-cover rounded-lg" src={item.followerImgUrl} alt="" />
+                                    ) : (
+                                        <span className="text-2xl sm:text-3xl">
+                                            {item.followerUsername.split(" ")[0].charAt(0)?.toUpperCase()}
+                                            {item.followerUsername.split(" ")[1].charAt(0)?.toUpperCase()}
+                                        </span>
+                                    )}
                                 </div>
                                 <span className="text-xs font-semibold mt-1 truncate leading-tight text-gray-700">
                                     {item.followerUsername}
@@ -81,6 +87,7 @@ const FollowCard = ({ users, type, profileUserId, loading }: FollowCardProps) =>
                     left={cords.left}
                     username={currentUsername}
                     userId={currentUserId}
+                    imgUrl={currentImgUrl}
                     key={currentUserId}
                     onMouseEnter={handlers.onMouseCardEnter}
                     onMouseLeave={handlers.onMouseLeave}

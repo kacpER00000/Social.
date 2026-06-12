@@ -1,6 +1,7 @@
 export interface PostDTO {
     postId: number;
     authorId: number;
+    authorImgUrl: string | null;
     author: string;
     title: string;
     content: string;
@@ -42,6 +43,7 @@ export interface CommentDTO {
     commentId: number;
     postId: number;
     authorId: number;
+    authorImgUrl: string | null;
     author: string;
     content: string;
     createdAt: string;
@@ -150,6 +152,7 @@ export interface PostLikeResponse {
 export interface JWTPayload {
     userId: number;
     username: string;
+    imgUrl: string | null;
     sub: string;
     iat: number;
     exp: number;
@@ -158,6 +161,7 @@ export interface JWTPayload {
 export interface FollowDTO {
     userId: number;
     followerUsername: string;
+    followerImgUrl: string;
     following: boolean;
     followingBy: boolean;
     followedSince: string | null;

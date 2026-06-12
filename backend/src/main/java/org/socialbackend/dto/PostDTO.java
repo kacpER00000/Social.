@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 public class PostDTO {
     private Long postId;
     private Long authorId;
+    private String authorImgUrl;
     private String author;
     private String title;
     private String content;

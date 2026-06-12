@@ -14,6 +14,7 @@ type InspectCardProps = {
     left: number | undefined,
     username: string | undefined,
     userId: number | undefined,
+    imgUrl: string | null,
     show: boolean,
     onMouseEnter: () => void,
     onMouseLeave: () => void
@@ -36,7 +37,7 @@ type InspectCardProps = {
  *   `useInspect` "Hover Intent" timer can cancel hide-delays while the cursor is
  *   inside the popover itself.
  */
-const InspectCard = ({ username, userId, top, left, show, onMouseEnter, onMouseLeave }: InspectCardProps) => {
+const InspectCard = ({ username, userId, top, left, imgUrl, show, onMouseEnter, onMouseLeave }: InspectCardProps) => {
     const { triggerError } = useErrorContext();
     const { decoded } = useToken();
     const [followInfo, setFollowInfo] = useState<FollowDTO | null>(null);
@@ -82,7 +83,7 @@ const InspectCard = ({ username, userId, top, left, show, onMouseEnter, onMouseL
             }}
         >
             <div className="flex items-center gap-3">
-                <AvatarCircle size="medium" username={username} />
+                <AvatarCircle size="medium" username={username} imgUrl={imgUrl} />
                 <div className="m-1">
                     <h1 className="text-2xl">{username}</h1>
                     {followInfo &&

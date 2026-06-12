@@ -6,10 +6,11 @@ import AvatarCircle from "../profile/AvatarCircle.tsx"
 type UserSearchItemProps = {
     username: string,
     userId: number,
+    imgUrl?: string | null,
     variant?: "small" | "large"
 }
 
-const UserSearchItem = ({ username, userId, variant = "large" }: UserSearchItemProps) => {
+const UserSearchItem = ({ username, userId, imgUrl = null, variant = "large" }: UserSearchItemProps) => {
     const { show, cords, handlers } = useInspect();
     const navigate = useNavigate();
     return (
@@ -18,6 +19,7 @@ const UserSearchItem = ({ username, userId, variant = "large" }: UserSearchItemP
                 <AvatarCircle
                     size={variant === "small" ? "small" : "medium"}
                     username={username}
+                    imgUrl={imgUrl}
                 />
                 <div className="m-1">
                     <h1 className={`${variant === "small" ? "text-sm" : "text-xl"} ${variant === "large" ? "font-semibold hover:underline" : "font-medium"} cursor-pointer`} onClick={() => navigate(`/profile/${userId}`)}>{username}</h1>
@@ -29,6 +31,7 @@ const UserSearchItem = ({ username, userId, variant = "large" }: UserSearchItemP
                     left={cords.left}
                     username={username}
                     userId={userId}
+                    imgUrl={imgUrl}
                     key={userId}
                     onMouseEnter={handlers.onMouseCardEnter}
                     onMouseLeave={handlers.onMouseLeave}

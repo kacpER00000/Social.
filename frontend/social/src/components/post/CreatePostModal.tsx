@@ -1,11 +1,12 @@
-import {useEffect, useState} from "react";
-import {createPortal} from "react-dom";
-import {CreatePostData} from "../../types/types";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { CreatePostData } from "../../types/types";
 import AvatarCircle from "../profile/AvatarCircle";
 
 type CreatePostModalProps = {
     show: boolean,
     username: string | undefined,
+    imgUrl: string | null | undefined,
     onSubmit: (postData: CreatePostData) => void,
     onClose: () => void
 }
@@ -30,7 +31,7 @@ type CreatePostModalProps = {
  * @param onSubmit - Callback receiving `CreatePostData` when the user submits.
  * @param onClose - Callback to dismiss the modal.
  */
-const CreatePostModal = ({show, username, onSubmit, onClose}: CreatePostModalProps) => {
+const CreatePostModal = ({ show, username, imgUrl, onSubmit, onClose }: CreatePostModalProps) => {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [picture, setPicture] = useState<File | null>(null);
@@ -63,44 +64,44 @@ const CreatePostModal = ({show, username, onSubmit, onClose}: CreatePostModalPro
                     <button onClick={onClose} className="hover:text-gray-700 cursor-pointer">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M6 18L18 6M6 6l12 12"/>
+                                d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
                 <div className="border-t border-gray-200 "></div>
                 <div className="flex items-center gap-2">
-                    <AvatarCircle size="small" username={username}/>
+                    <AvatarCircle size="small" username={username} imgUrl={imgUrl} />
                     <p className="font-bold">{username}</p>
                 </div>
                 <form className="flex flex-col gap-3" onSubmit={(e) => {
                     e.preventDefault()
                 }}>
                     <input type="text" className="rounded-3xl p-2 border border-gray-200 w-full focus:outline-none"
-                           placeholder="Title" onChange={(e) => {
-                        setTitle(e.target.value)
-                    }}/>
+                        placeholder="Title" onChange={(e) => {
+                            setTitle(e.target.value)
+                        }} />
                     <textarea className="rounded-3xl p-2 border border-gray-200 w-full focus:outline-none resize-none"
-                              rows={10} placeholder="What's up?" onChange={(e) => {
-                        setContent(e.target.value)
-                    }}/>
+                        rows={10} placeholder="What's up?" onChange={(e) => {
+                            setContent(e.target.value)
+                        }} />
                     <div
                         className="mt-2 w-fit cursor-pointer rounded-3xl bg-blue-500 px-4 py-2 text-sm text-white transition-colors duration-300 hover:bg-blue-600">
                         <label htmlFor="picture" className="cursor-pointer block w-full">Add picture</label>
                         <input id="picture" type="file" className="hidden" onChange={(e) => {
                             setPicture(e.target.files?.[0] || null);
-                        }}/>
+                        }} />
                     </div>
                 </form>
                 {picture &&
                     <div className="flex justify-center mt-2">
                         <img src={URL.createObjectURL(picture)} alt={picture?.name}
-                             className="max-w-full max-h-[600px] object-contain rounded-xl"/>
+                            className="max-w-full max-h-[600px] object-contain rounded-xl" />
                     </div>
                 }
                 <button
                     className="w-full text-xl text-white bg-blue-500 transition-colors duration-300 hover:bg-blue-600 rounded-3xl p-2 mt-2 cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-300 shrink-0"
                     onClick={() => {
-                        onSubmit({title, content, picture})
+                        onSubmit({ title, content, picture })
                     }} disabled={disableCreateButton}>
                     Create
                 </button>

@@ -8,7 +8,8 @@ import java.time.LocalDateTime;
 
 /**
  * Data Transfer Object for comments.
- * This class is used to transfer comment data between the server and the client.
+ * This class is used to transfer comment data between the server and the
+ * client.
  *
  * @author Kacper Kurek
  * @version 1.0
@@ -20,6 +21,7 @@ public class CommentDTO {
     private Long commentId;
     private Long postId;
     private Long authorId;
+    private String authorImgUrl;
     private String author;
     private String content;
     private LocalDateTime createdAt;

@@ -31,7 +31,7 @@ const CreatePost = () => {
     return (
         <>
             <div className="mb-4 flex cursor-pointer items-center gap-3 rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-gray-50 hover:shadow-lg sm:mb-5 sm:px-5 sm:py-4" onClick={() => { setShowCreatePostModal(true) }}>
-                {decoded?.username && <AvatarCircle size="small" username={decoded?.username} />}
+                {decoded?.username && <AvatarCircle size="small" username={decoded?.username} imgUrl={decoded?.imgUrl} />}
                 <div className="flex-1">
                     <p className="text-gray-500">What's up?</p>
                 </div>
@@ -39,6 +39,7 @@ const CreatePost = () => {
             <CreatePostModal
                 show={showCreatePostModal}
                 username={decoded?.username}
+                imgUrl={decoded?.imgUrl}
                 onSubmit={handleCreatePost}
                 onClose={() => { setShowCreatePostModal(false); }}
             />

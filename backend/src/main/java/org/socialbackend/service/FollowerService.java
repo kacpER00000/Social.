@@ -34,8 +34,10 @@ public class FollowerService {
      *
      * @param followerId The ID of the user who is following.
      * @param followedId The ID of the user who is being followed.
-     * @throws IllegalStateException if the user attempts to follow themselves, or if they are already following the target user.
-     * @throws NoSuchElementException if either the follower or the followed user does not exist.
+     * @throws IllegalStateException  if the user attempts to follow themselves, or
+     *                                if they are already following the target user.
+     * @throws NoSuchElementException if either the follower or the followed user
+     *                                does not exist.
      */
     @Transactional
     public void follow(Long followerId, Long followedId) {
@@ -61,8 +63,11 @@ public class FollowerService {
      *
      * @param followerId The ID of the user who is unfollowing.
      * @param followedId The ID of the user who is being unfollowed.
-     * @throws IllegalStateException if the user attempts to unfollow themselves, if they are not following the user, or if the relationship is missing.
-     * @throws NoSuchElementException if either the follower or the followed user does not exist.
+     * @throws IllegalStateException  if the user attempts to unfollow themselves,
+     *                                if they are not following the user, or if the
+     *                                relationship is missing.
+     * @throws NoSuchElementException if either the follower or the followed user
+     *                                does not exist.
      */
     @Transactional
     public void unfollow(Long followerId, Long followedId) {
@@ -85,9 +90,9 @@ public class FollowerService {
     /**
      * Finds the users that a specific user is following.
      *
-     * @param userId The ID of the user.
+     * @param userId       The ID of the user.
      * @param loggedUserId The ID of the logged-in user.
-     * @param pageable The pagination information.
+     * @param pageable     The pagination information.
      * @return A page of FollowerDTOs.
      * @throws NoSuchElementException if the user does not exist.
      */
@@ -101,9 +106,9 @@ public class FollowerService {
     /**
      * Finds the followers of a specific user.
      *
-     * @param userId The ID of the user.
+     * @param userId       The ID of the user.
      * @param loggedUserId The ID of the logged-in user.
-     * @param pageable The pagination information.
+     * @param pageable     The pagination information.
      * @return A page of FollowerDTOs.
      * @throws NoSuchElementException if the user does not exist.
      */
@@ -117,13 +122,13 @@ public class FollowerService {
     /**
      * Finds users that a specific user is following by their username.
      *
-     * @param query The search query.
-     * @param userId The ID of the user.
+     * @param query        The search query.
+     * @param userId       The ID of the user.
      * @param loggedUserId The ID of the logged-in user.
-     * @param pageable The pagination information.
+     * @param pageable     The pagination information.
      * @return A page of FollowerDTOs.
      * @throws InvalidParameterException if the query is null or blank.
-     * @throws NoSuchElementException if the user does not exist.
+     * @throws NoSuchElementException    if the user does not exist.
      */
     public Page<FollowerDTO> findFollowingByUsername(String query, Long userId, Long loggedUserId, Pageable pageable) {
         if (query == null || query.isBlank()) {
@@ -144,13 +149,13 @@ public class FollowerService {
     /**
      * Finds followers of a specific user by their username.
      *
-     * @param query The search query.
-     * @param userId The ID of the user.
+     * @param query        The search query.
+     * @param userId       The ID of the user.
      * @param loggedUserId The ID of the logged-in user.
-     * @param pageable The pagination information.
+     * @param pageable     The pagination information.
      * @return A page of FollowerDTOs.
      * @throws InvalidParameterException if the query is null or blank.
-     * @throws NoSuchElementException if the user does not exist.
+     * @throws NoSuchElementException    if the user does not exist.
      */
     public Page<FollowerDTO> findFollowersByUsername(String query, Long userId, Long loggedUserId, Pageable pageable) {
         if (query == null || query.isBlank()) {
@@ -171,7 +176,7 @@ public class FollowerService {
     /**
      * Gets the follow information between the logged-in user and another user.
      *
-     * @param userId The ID of the other user.
+     * @param userId       The ID of the other user.
      * @param loggedUserId The ID of the logged-in user.
      * @return The FollowerDTO.
      */
@@ -198,8 +203,8 @@ public class FollowerService {
     /**
      * Maps a Follower entity to a FollowerDTO.
      *
-     * @param follower The Follower entity.
-     * @param isFollower True if the user is the follower, false otherwise.
+     * @param follower     The Follower entity.
+     * @param isFollower   True if the user is the follower, false otherwise.
      * @param loggedUserId The ID of the logged-in user.
      * @return The FollowerDTO.
      */
@@ -215,13 +220,14 @@ public class FollowerService {
         if (isFollowing && followInfo.isPresent()) {
             followedSince = followInfo.get().getStartFollowDate();
         }
-        return new FollowerDTO(userId, username, followedSince, isFollowing, isFollowingBy, user.getFollowersCount());
+        return new FollowerDTO(userId, username, user.getImgUrl(), followedSince, isFollowing, isFollowingBy,
+                user.getFollowersCount());
     }
 
     /**
      * Maps a user ID to a FollowerDTO.
      *
-     * @param userId The ID of the user.
+     * @param userId       The ID of the user.
      * @param loggedUserId The ID of the logged-in user.
      * @return The FollowerDTO.
      * @throws NoSuchElementException if the user mapped to the ID does not exist.
@@ -231,6 +237,7 @@ public class FollowerService {
         String username = user.getFirstName() + " " + user.getLastName();
         boolean isFollowing = false;
         boolean isFollowingBy = followerRepository.existsByFollower_UserIdAndFollowed_UserId(userId, loggedUserId);
-        return new FollowerDTO(userId, username, null, isFollowing, isFollowingBy, user.getFollowersCount());
+        return new FollowerDTO(userId, username, user.getImgUrl(), null, isFollowing, isFollowingBy,
+                user.getFollowersCount());
     }
 }

@@ -19,7 +19,7 @@ const PostItem = ({ post, onSelect }: PostItemProps) => {
         <>
             <article className="mb-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-md transition-shadow duration-300 hover:shadow-lg sm:mb-5 sm:p-5">
                 <div className="mb-4 flex w-fit cursor-pointer items-center gap-3" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave} onClick={() => { navigate(`/profile/${post.authorId}`) }}>
-                    <AvatarCircle username={post.author} size="small" />
+                    <AvatarCircle username={post.author} imgUrl={post.authorImgUrl} size="small" />
                     <div className="flex flex-col">
                         <p className="w-fit font-bold hover:underline">{post.author}
                         </p>
@@ -33,7 +33,7 @@ const PostItem = ({ post, onSelect }: PostItemProps) => {
                             content={post.content}
                             onMoreClicked={() => { onSelect(post) }}
                         />
-                        <PostImage imgUrl={post.imgUrl} editable={false}/>
+                        <PostImage imgUrl={post.imgUrl} editable={false} />
                     </div>
                     <div className="border-t border-gray-200 my-2"></div>
                     <PostInteractions
@@ -48,6 +48,7 @@ const PostItem = ({ post, onSelect }: PostItemProps) => {
                     left={cords.left}
                     username={post.author}
                     userId={post.authorId}
+                    imgUrl={post.authorImgUrl}
                     onMouseEnter={handlers.onMouseCardEnter}
                     onMouseLeave={handlers.onMouseLeave}
                     show={show}

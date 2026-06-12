@@ -87,7 +87,7 @@ const SearchList = () => {
                     <p className="text-center text-gray-500 p-5">There are no search results for the phrase: <span className="font-bold">{query}</span></p>
                     :
                     users.map((item) =>
-                        <UserSearchItem key={item.userId} username={item.firstName + " " + item.lastName} userId={item.userId} />
+                        <UserSearchItem key={item.userId} username={item.firstName + " " + item.lastName} userId={item.userId} imgUrl={item.imgUrl} />
                     )
                 }
                 {isFetching &&

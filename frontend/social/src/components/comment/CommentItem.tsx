@@ -80,7 +80,7 @@ const CommentItem = ({ comment, onDelete, onUpdate, isPostAuthor }: CommentItemP
             <div className="relative my-3 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm sm:p-4">
                 <div className="flex flex-wrap justify-between gap-2">
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                        <AvatarCircle username={comment.author} size="small" />
+                        <AvatarCircle username={comment.author} imgUrl={comment.authorImgUrl} size="small" />
                         <p className="w-fit font-bold cursor-pointer hover:underline" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave} onClick={() => { navigate(`/profile/${comment.authorId}`) }}>
                             {comment.author}
                         </p>
@@ -131,6 +131,7 @@ const CommentItem = ({ comment, onDelete, onUpdate, isPostAuthor }: CommentItemP
                     left={cords.left}
                     username={comment.author}
                     userId={comment.authorId}
+                    imgUrl={comment.authorImgUrl}
                     onMouseEnter={handlers.onMouseCardEnter}
                     onMouseLeave={handlers.onMouseLeave}
                     show={show}
