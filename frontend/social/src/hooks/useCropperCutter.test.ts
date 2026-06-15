@@ -10,7 +10,7 @@ vi.mock("../utils/cropImage", () => ({
 describe("useCropperCutter test", () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        global.URL.createObjectURL = vi.fn().mockReturnValue("blob:mock-url");
+        globalThis.URL.createObjectURL = vi.fn().mockReturnValue("blob:mock-url");
     });
     afterEach(() => {
         vi.restoreAllMocks();
@@ -36,7 +36,7 @@ describe("useCropperCutter test", () => {
 
         expect(result.current.imagePath).toBe("blob:mock-url");
         expect(result.current.showCropper).toBe(true);
-        expect(global.URL.createObjectURL).toHaveBeenCalledWith(file);
+        expect(globalThis.URL.createObjectURL).toHaveBeenCalledWith(file);
     });
 
     it("should clear profile picture state on deletePicture", () => {

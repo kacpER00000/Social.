@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { postApi } from "./postApi";
 import { getCloudinaryData } from "../utils/cloudinaryData";
-import { formatDate } from "../utils/formatDate";
 import { CreatePostData, EditPostData, PostDTO } from "../types/types";
 
 vi.mock("../utils/cloudinaryData", () => ({
