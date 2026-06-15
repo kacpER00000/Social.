@@ -83,6 +83,7 @@ const SearchBar = () => {
                                 key={user.userId}
                                 username={user.firstName + " " + user.lastName}
                                 userId={user.userId}
+                                imgUrl={user.imgUrl}
                                 variant="small"
                             />
                         ))}
