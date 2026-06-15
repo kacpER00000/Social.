@@ -45,7 +45,7 @@ public class PostLikeServiceTest {
         postOwnerFromDb.setUserId(postOwnerUserId);
         when(userRepository.findById(userId)).thenReturn(Optional.of(userFromDb));
         Long postId = 10L;
-        Post post = new Post(postOwnerFromDb, "Test","This is test");
+        Post post = new Post(postOwnerFromDb, "Test","This is test",null);
         post.setPostId(postId);
         when(postLikeRepository.existsByPost_postIdAndUser_userId(postId, userId)).thenReturn(false);
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
@@ -64,7 +64,7 @@ public class PostLikeServiceTest {
         postOwnerFromDb.setUserId(postOwnerUserId);
         when(userRepository.findById(userId)).thenReturn(Optional.of(userFromDb));
         Long postId = 10L;
-        Post post = new Post(postOwnerFromDb, "Test","This is test");
+        Post post = new Post(postOwnerFromDb, "Test","This is test",null);
         post.setPostId(postId);
         when(postLikeRepository.existsByPost_postIdAndUser_userId(postId, userId)).thenReturn(true);
         assertThrows(IllegalStateException.class, () -> postLikeService.likePost(postId,userId));
@@ -103,7 +103,7 @@ public class PostLikeServiceTest {
         postOwnerFromDb.setUserId(postOwnerUserId);
         when(userRepository.findById(userId)).thenReturn(Optional.of(userFromDb));
         Long postId = 10L;
-        Post post = new Post(postOwnerFromDb, "Test","This is test");
+        Post post = new Post(postOwnerFromDb, "Test","This is test",null);
         post.setPostId(postId);
         when(postLikeRepository.deleteByPost_postIdAndUser_userId(postId,userId)).thenReturn(1L);
         postLikeService.unlikePost(postId,userId);
@@ -120,7 +120,7 @@ public class PostLikeServiceTest {
         postOwnerFromDb.setUserId(postOwnerUserId);
         when(userRepository.findById(userId)).thenReturn(Optional.of(userFromDb));
         Long postId = 10L;
-        Post post = new Post(postOwnerFromDb, "Test","This is test");
+        Post post = new Post(postOwnerFromDb, "Test","This is test",null);
         post.setPostId(postId);
         when(postLikeRepository.deleteByPost_postIdAndUser_userId(postId,userId)).thenReturn(0L);
         assertThrows(IllegalStateException.class, () -> postLikeService.unlikePost(postId,userId));
@@ -146,7 +146,7 @@ public class PostLikeServiceTest {
         User postOwnerFromDb = new User();
         postOwnerFromDb.setUserId(postOwnerUserId);
         Long postId = 10L;
-        Post post = new Post(postOwnerFromDb, "Test","This is test");
+        Post post = new Post(postOwnerFromDb, "Test","This is test",null);
         post.setPostId(postId);
         Page<PostLike> usersWhoLikePost = new PageImpl<>(List.of(
                 new PostLike(post,user1FromDb),

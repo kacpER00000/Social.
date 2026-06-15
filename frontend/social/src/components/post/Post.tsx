@@ -6,6 +6,7 @@ import { formatDate } from "../../utils/formatDate.ts";
 import PostModal from "./PostModal.tsx";
 import { useFeedContext } from "../../contexts/FeedContext.tsx";
 import { useErrorContext } from "../../contexts/ErrorContext.tsx";
+import { postApi } from "../../api/postApi.ts";
 
 type PostComponentProps = {
     postResponse: PostResponse,
@@ -27,29 +28,20 @@ const Post = ({ postResponse, path }: PostComponentProps) => {
         if (loadingLock.current || !hasMorePages.current) { return }
         loadingLock.current = true
         setIsFetchingMore(true);
+
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${path}?page=${page.current}`, {
-                headers: {
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                }
-            })
-            if (response.ok) {
-                const data = await response.json() as PostResponse
-                setPosts(prev => [...prev, ...data.content.map(post => ({ ...post, createdAt: formatDate(post.createdAt) }))])
-                const followedIds = getFollowedIds(data.content)
-                const uniqueFollowedIds = Array.from(new Set(followedIds))
-                if (uniqueFollowedIds.length > 0) {
-                    addFollowedUsers(uniqueFollowedIds)
-                }
-                page.current = data.number + 1
-                hasMorePages.current = !data.last
-            } else {
-                triggerError("Failed to fetch more posts.");
-                hasMorePages.current = false;
+            const data = await postApi.getPosts(path, page.current);
+            setPosts(prev => [...prev, ...data.content.map(post => ({ ...post, createdAt: formatDate(post.createdAt) }))])
+            const followedIds = getFollowedIds(data.content)
+            const uniqueFollowedIds = Array.from(new Set(followedIds))
+            if (uniqueFollowedIds.length > 0) {
+                addFollowedUsers(uniqueFollowedIds)
             }
+            page.current = data.number + 1
+            hasMorePages.current = !data.last
         } catch (e) {
-            triggerError("Server error while fetching posts.");
             hasMorePages.current = false;
+            triggerError("Failed to fetch more posts.");
         } finally {
             loadingLock.current = false
             setIsFetchingMore(false);
@@ -125,7 +117,7 @@ const Post = ({ postResponse, path }: PostComponentProps) => {
                 )}
             </div>
             {isFetchingMore &&
-                <div className="shadow-2xl rounded-3xl p-5 m-5">
+                <div className="mb-5 rounded-2xl border border-gray-100 bg-white p-5 shadow-md">
                     <div className="flex animate-pulse space-x-4">
                         <div className="flex-1 space-y-6 py-1">
                             <div className="h-2 rounded bg-gray-200"></div>

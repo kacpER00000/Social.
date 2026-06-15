@@ -90,6 +90,7 @@ The project solves common challenges found in modern web applications:
 * **Vercel** - Frontend hosting and CI/CD pipeline
 * **Render** - Hosting for the Spring Boot server
 * **Neon** - Hosting for the PostgreSQL database
+* **Cloudinary** - Hosting for the images
 * **Monorepo** - Codebase organized in a single repository, split into `/frontend` and `/backend` directories
 
 ---

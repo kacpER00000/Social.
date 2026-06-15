@@ -33,8 +33,8 @@ const LikeList = ({ users, onClose, canLoadMore, loadMore, show }: LikeListProps
     const navigate = useNavigate();
     if (!show) { return null; }
     return createPortal(
-        <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-999 transition-opacity">
-            <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh] animate-in fade-in zoom-in duration-200">
+        <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm transition-opacity">
+            <div className="animate-in fade-in zoom-in flex max-h-[80vh] w-full max-w-sm flex-col overflow-hidden rounded-2xl bg-white shadow-2xl duration-200">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-white">
                     <h2 className="text-lg font-bold text-gray-800">Likes</h2>
                     <button
@@ -50,7 +50,7 @@ const LikeList = ({ users, onClose, canLoadMore, loadMore, show }: LikeListProps
                     <div className="space-y-1">
                         {users.map((item, index) => (
                             <div key={index} className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group" onClick={() => navigate(`/profile/${item.userId}`)}>
-                                <AvatarCircle size="small" username={item.username} />
+                                <AvatarCircle size="small" username={item.username} imgUrl={item.imgUrl} />
                                 <div className="flex-1 min-w-0">
                                     <p className="font-semibold text-gray-800 text-sm truncate group-hover:text-blue-600 transition-colors">
                                         {item.username}

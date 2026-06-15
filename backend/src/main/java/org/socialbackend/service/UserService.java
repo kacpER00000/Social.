@@ -47,6 +47,8 @@ public class UserService {
         u.setLastName(registerUserRequest.getLastName());
         u.setBirthDate(registerUserRequest.getBirthDate());
         u.setSex(registerUserRequest.getSex());
+        u.setImgId(registerUserRequest.getImgId());
+        u.setImgUrl(registerUserRequest.getImgUrl());
         UserLoginData newUserLoginData = new UserLoginData();
         newUserLoginData.setEmail(registerUserRequest.getEmail());
         newUserLoginData.setPassword(passwordEncoder.encode(registerUserRequest.getPassword()));
@@ -104,6 +106,8 @@ public class UserService {
         foundUser.setLastName(updateUserRequest.getLastName());
         foundUser.setSex(updateUserRequest.getSex());
         foundUser.setBirthDate(updateUserRequest.getBirthDate());
+        foundUser.setImgUrl(updateUserRequest.getNewImgUrl());
+        foundUser.setImgId(updateUserRequest.getNewImgId());
     }
 
     /**
@@ -128,7 +132,7 @@ public class UserService {
     private UserDTO mapToDTO(User u, Long loggedUserId) {
         boolean canEdit = u.getUserId().equals(loggedUserId);
         return new UserDTO(u.getUserId(), u.getFirstName(), u.getLastName(), u.getBirthDate(), u.getSex(),
-                u.getFollowersCount(), u.getFollowingCount(), canEdit);
+                u.getFollowersCount(), u.getFollowingCount(), canEdit,u.getImgUrl(), u.getImgId());
     }
 
     /**

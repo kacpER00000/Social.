@@ -5,7 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.socialbackend.details.AppUserDetails;
 import org.socialbackend.dto.PostDTO;
 import org.socialbackend.dto.PostLikeDTO;
-import org.socialbackend.request.PostRequest;
+import org.socialbackend.request.CreatePostRequest;
+import org.socialbackend.request.UpdatePostRequest;
+import org.socialbackend.service.CloudinaryService;
 import org.socialbackend.service.PostLikeService;
 import org.socialbackend.service.PostService;
 import org.springframework.data.domain.Page;
@@ -34,6 +36,7 @@ import org.springframework.web.bind.annotation.*;
 public class PostController {
     private final PostService postService;
     private final PostLikeService postLikeService;
+    private final CloudinaryService cloudinaryService;
 
     /**
      * Retrieves a specific post by its ID.
@@ -56,28 +59,35 @@ public class PostController {
      * @return A ResponseEntity containing the created PostDTO.
      */
     @PostMapping
-    public ResponseEntity<PostDTO> createPost(@Valid @RequestBody PostRequest postRequest, Authentication authentication){
+    public ResponseEntity<PostDTO> createPost(@Valid @RequestBody CreatePostRequest postRequest, Authentication authentication){
         AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
         return ResponseEntity.status(HttpStatus.CREATED).body(postService.addPost(postRequest, userDetails.getUserId()));
     }
 
     /**
      * Updates an existing post.
+     * Handles both text content updates and image modifications (uploading new images or removing existing ones).
+     * Automatically triggers image deletion from Cloudinary if an image is replaced or removed.
      *
      * @param postId The ID of the post to update.
-     * @param postRequest The request body with the updated post content.
+     * @param postRequest The request body with the updated post content, including image state flags.
      * @param authentication The authentication object containing the user's details.
      * @return A ResponseEntity indicating the success of the operation.
      */
     @PutMapping("/{postId}")
-    public ResponseEntity<Void> updatePost(@PathVariable Long postId,@Valid @RequestBody PostRequest postRequest, Authentication authentication){
+    public ResponseEntity<Void> updatePost(@PathVariable Long postId, @Valid @RequestBody UpdatePostRequest postRequest, Authentication authentication){
         AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        PostDTO post = postService.findPostById(postId, userDetails.getUserId());
+        if(post != null && post.getImgId() != null && (postRequest.isImageDeleted() || postRequest.getNewImgUrl() != null)){
+            cloudinaryService.deleteImageFromCloudinary(post.getImgId());
+        }
         postService.updatePost(postId,userDetails.getUserId(),postRequest);
         return ResponseEntity.ok().build();
     }
 
     /**
      * Deletes a post.
+     * Automatically triggers the deletion of the associated image from Cloudinary, if one exists.
      *
      * @param postId The ID of the post to delete.
      * @param authentication The authentication object containing the user's details.
@@ -86,6 +96,10 @@ public class PostController {
     @DeleteMapping("/{postId}")
     public ResponseEntity<Void> deletePost(@PathVariable Long postId,Authentication authentication){
         AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        PostDTO post = postService.findPostById(postId, userDetails.getUserId());
+        if(post != null && post.getImgId() != null){
+            cloudinaryService.deleteImageFromCloudinary(post.getImgId());
+        }
         postService.deletePost(postId,userDetails.getUserId());
         return ResponseEntity.noContent().build();
     }

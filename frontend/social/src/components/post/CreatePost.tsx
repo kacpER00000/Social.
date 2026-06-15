@@ -2,10 +2,8 @@ import { useToken } from "../../hooks/useToken";
 import AvatarCircle from "../profile/AvatarCircle";
 import { useState } from "react";
 import CreatePostModal from "./CreatePostModal";
-import { useFeedContext } from "../../contexts/FeedContext";
-import { useErrorContext } from "../../contexts/ErrorContext";
-import { PostData, PostDTO } from "../../types/types";
-import { formatDate } from "../../utils/formatDate";
+import { CreatePostData } from "../../types/types";
+import { usePostActions } from "../../hooks/usePostActions";
 
 /**
  * Smart container for the "create post" flow at the top of the feed.
@@ -22,45 +20,27 @@ import { formatDate } from "../../utils/formatDate";
  */
 const CreatePost = () => {
     const { decoded } = useToken();
-    const { addPostToFeed } = useFeedContext();
-    const { triggerError } = useErrorContext();
+    const { createPost } = usePostActions();
     const [showCreatePostModal, setShowCreatePostModal] = useState(false);
 
-    const createPost = async (postData: PostData) => {
+    const handleCreatePost = async (postData: CreatePostData) => {
         setShowCreatePostModal(false);
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts`, {
-                headers: {
-                    "Authorization": "Bearer " + localStorage.getItem('token'),
-                    "Content-Type": "application/json"
-                },
-                method: "POST",
-                body: JSON.stringify(postData)
-            })
-            if (response.ok) {
-                const newPost = await response.json() as PostDTO;
-                const formatedNewPost = { ...newPost, createdAt: formatDate(newPost.createdAt) }
-                addPostToFeed(formatedNewPost);
-            } else {
-                triggerError("Failed to create post.");
-            }
-        } catch (e) {
-            triggerError("Server error while creating post.");
-        }
+        await createPost(postData);
     }
 
     return (
         <>
-            <div className="flex items-center gap-3 shadow-xl rounded-3xl p-5 m-5 transition-colors duration-300 hover:bg-gray-100 cursor-pointer" onClick={() => { setShowCreatePostModal(true) }}>
-                {decoded?.username && <AvatarCircle size="small" username={decoded?.username} />}
-                <div className="flex-1 ">
+            <div className="mb-4 flex cursor-pointer items-center gap-3 rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-gray-50 hover:shadow-lg sm:mb-5 sm:px-5 sm:py-4" onClick={() => { setShowCreatePostModal(true) }}>
+                {decoded?.username && <AvatarCircle size="small" username={decoded?.username} imgUrl={decoded?.imgUrl} />}
+                <div className="flex-1">
                     <p className="text-gray-500">What's up?</p>
                 </div>
             </div>
             <CreatePostModal
                 show={showCreatePostModal}
                 username={decoded?.username}
-                onSubmit={createPost}
+                imgUrl={decoded?.imgUrl}
+                onSubmit={handleCreatePost}
                 onClose={() => { setShowCreatePostModal(false); }}
             />
         </>

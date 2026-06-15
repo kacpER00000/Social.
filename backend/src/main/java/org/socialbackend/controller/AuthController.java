@@ -22,10 +22,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * AuthController is responsible for handling user authentication, including login and registration.
- * It provides endpoints for users to authenticate and receive a JWT token for accessing protected resources.
+ * AuthController is responsible for handling user authentication, including
+ * login and registration.
+ * It provides endpoints for users to authenticate and receive a JWT token for
+ * accessing protected resources.
  * <p>
- * <b>Error Handling:</b> Exceptions related to invalid parameters or state conflicts
+ * <b>Error Handling:</b> Exceptions related to invalid parameters or state
+ * conflicts
  * are intercepted globally, returning a 400 Bad Request status code.
  * </p>
  *
@@ -43,22 +46,22 @@ public class AuthController {
     /**
      * Authenticates a user and returns a JWT token upon successful authentication.
      *
-     * @param loginRequest The request body containing the user's email and password.
+     * @param loginRequest The request body containing the user's email and
+     *                     password.
      * @return A ResponseEntity containing an AuthDTO with the JWT token.
      */
     @PostMapping("/login")
-    public ResponseEntity<AuthDTO> login(@RequestBody LoginRequest loginRequest){
+    public ResponseEntity<AuthDTO> login(@RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getEmail(),
-                        loginRequest.getPassword()
-                )
-        );
+                        loginRequest.getPassword()));
         var userDetails = (AppUserDetails) authentication.getPrincipal();
         UserDTO user = userService.findUserById(userDetails.getUserId(), userDetails.getUserId());
-        Map<String,Object> claims = new HashMap<>();
+        Map<String, Object> claims = new HashMap<>();
         claims.put("username", user.getFirstName() + " " + user.getLastName());
         claims.put("userId", user.getUserId());
+        claims.put("imgUrl", user.getImgUrl());
         String token = jwtService.generateToken(claims, userDetails);
         return ResponseEntity.ok(new AuthDTO(token));
     }
@@ -66,11 +69,12 @@ public class AuthController {
     /**
      * Registers a new user in the system.
      *
-     * @param registerUserRequest The request body containing user registration details.
+     * @param registerUserRequest The request body containing user registration
+     *                            details.
      * @return A ResponseEntity with a CREATED status upon successful registration.
      */
     @PostMapping("/register")
-    public ResponseEntity<Void> registerUser(@Valid @RequestBody RegisterUserRequest registerUserRequest){
+    public ResponseEntity<Void> registerUser(@Valid @RequestBody RegisterUserRequest registerUserRequest) {
         userService.addUser(registerUserRequest);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

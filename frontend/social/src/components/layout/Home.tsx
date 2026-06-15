@@ -31,13 +31,13 @@ const Home = () => {
         return null;
     }
     return (
-        <>
+        <div className="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6 sm:py-6">
             <CreatePost />
             <Post
                 postResponse={postResponse}
                 path="latest"
             />
-        </>
+        </div>
     );
 }
 

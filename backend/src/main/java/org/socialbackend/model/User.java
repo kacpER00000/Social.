@@ -65,6 +65,14 @@ public class User {
     @Column(name = "following_count")
     @Getter
     private Long followingCount = 0L;
+    @Column(name = "img_url")
+    @Getter
+    @Setter
+    private String imgUrl;
+    @Column(name = "img_id")
+    @Getter
+    @Setter
+    private String imgId;
 
     public User(String firstName, String lastName, LocalDate birthDate, Character sex, UserLoginData userLoginData) {
         this.firstName = firstName;

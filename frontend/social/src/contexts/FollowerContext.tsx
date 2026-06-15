@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useCallback } from "react";
 import { FollowContextType } from "../types/types.ts";
 import { useErrorContext } from "./ErrorContext.tsx";
+import { followApi } from "../api/followApi";
 
 const FollowContext = createContext<FollowContextType | undefined>(undefined);
 
@@ -23,15 +24,10 @@ export const FollowProvider = ({ children }: { children: ReactNode }) => {
 
     const toggleFollow = useCallback(async (userId: number | undefined) => {
         if (!userId) { return; }
-        const method = checkIfFollowed(userId) ? "DELETE" : "POST";
+        const isFollowed = checkIfFollowed(userId);
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users/${userId}/follow`, {
-                headers: {
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                },
-                method: method
-            })
+            const response = await followApi.toggleFollow(userId, isFollowed);
 
             if (response.ok) {
                 // Post-confirmation UI update. Only mutates state if the server acknowledged the action.

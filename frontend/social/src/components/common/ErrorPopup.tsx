@@ -22,8 +22,8 @@ const ErrorPopup = ({ error, errorMessage }: ErrorPopupProps) => {
     return createPortal(
         <div
             className={`
-                fixed top-0 left-1/2 -translate-x-1/2 mt-4 
-                bg-red-500 text-white px-6 py-3 rounded-3xl shadow-xl z-50
+                fixed top-0 left-1/2 -translate-x-1/2 mt-4 w-[calc(100%_-_2rem)] max-w-xl
+                bg-red-500 text-white px-4 py-3 text-center rounded-3xl shadow-xl z-50 sm:px-6
                 transition-transform duration-500 ease-in-out
                 ${error ? 'translate-y-0' : '-translate-y-[200%]'}  
             `}

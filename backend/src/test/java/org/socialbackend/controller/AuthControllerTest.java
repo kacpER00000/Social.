@@ -78,7 +78,9 @@ public class AuthControllerTest {
                 LocalDate.of(1990, 1, 1),
                 'M',
                 "newuser@example.com",
-                "password123"
+                "password123",
+                null,
+                null
         );
         mockMvc.perform(post("/social/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -95,7 +97,9 @@ public class AuthControllerTest {
                 LocalDate.now().plusDays(1),
                 'X',
                 "newuser@example.com",
-                ""
+                "",
+                null,
+                null
         );
         mockMvc.perform(post("/social/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)

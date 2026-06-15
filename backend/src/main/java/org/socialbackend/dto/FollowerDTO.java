@@ -8,7 +8,8 @@ import java.time.LocalDateTime;
 
 /**
  * Data Transfer Object for followers.
- * This class is used to transfer follower data between the server and the client.
+ * This class is used to transfer follower data between the server and the
+ * client.
  *
  * @author Kacper Kurek
  * @version 1.0
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 public class FollowerDTO {
     private Long userId;
     private String followerUsername;
+    private String followerImgUrl;
     private LocalDateTime followedSince;
     private boolean isFollowing;
     private boolean isFollowingBy;

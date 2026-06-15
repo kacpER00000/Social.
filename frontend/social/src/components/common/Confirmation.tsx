@@ -34,6 +34,7 @@ const Confirmation = ({onChoose, show}: ConfirmationProps) => {
     }, [show]);
 
     useEffect(() => {
+        if (!show) return;
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === "Escape") {
                 onChoose(false);
@@ -41,11 +42,11 @@ const Confirmation = ({onChoose, show}: ConfirmationProps) => {
         };
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown)
-    }, [onChoose]);
+    }, [onChoose, show]);
     if(!show){return null;}
     return createPortal(
-        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/50 z-999">
-            <div className="bg-white text-center w-11/12 max-w-md rounded-3xl p-4 shadow-2xl">
+        <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+            <div className="w-full max-w-md rounded-3xl bg-white p-4 text-center shadow-2xl">
                 <div className="flex items-center justify-between pb-2 pt-2">
                     <h1 className="text-2xl font-bold text-gray-700">Confirmation</h1>
                     <button onClick={() => {onChoose(false)}} className="hover:text-gray-700 cursor-pointer">

@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, vi, it, expect } from "vitest";
 import { useToken } from "../../hooks/useToken.ts";
 import { CommentDTO, PostDTO } from "../../types/types.ts";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { FollowProvider } from "../../contexts/FollowerContext.tsx";
 import { MemoryRouter } from "react-router-dom";
 import { FeedProvider } from "../../contexts/FeedContext.tsx";
 import { ErrorProvider } from "../../contexts/ErrorContext.tsx";
+import { StatusProvider } from "../../contexts/StatusContext.tsx";
 import PostModal from "./PostModal.tsx";
 import { userEvent } from "@testing-library/user-event";
 
@@ -43,6 +44,7 @@ describe("PostModal test", () => {
             decoded: {
                 userId: 1,
                 username: "Test",
+                imgUrl: null,
                 sub: "test@test.com",
                 iat: 1610000000,
                 exp: 1710000000
@@ -58,13 +60,15 @@ describe("PostModal test", () => {
     const renderWithContext = (component: React.ReactNode) => {
         render(
             <MemoryRouter>
-                <ErrorProvider>
-                    <FollowProvider>
-                        <FeedProvider>
-                            {component}
-                        </FeedProvider>
-                    </FollowProvider>
-                </ErrorProvider>
+                <StatusProvider>
+                    <ErrorProvider>
+                        <FollowProvider>
+                            <FeedProvider>
+                                {component}
+                            </FeedProvider>
+                        </FollowProvider>
+                    </ErrorProvider>
+                </StatusProvider>
             </MemoryRouter>
         )
     }
@@ -179,16 +183,14 @@ describe("PostModal test", () => {
     });
 
     it("should close modal on Escape key press", async () => {
-        const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
         const mockOnClose = vi.fn();
-
         vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
             ok: true,
             status: 200,
             json: async () => ({ content: [], totalPages: 1 })
         } as Response);
         renderWithContext(<PostModal post={mockPost} onClose={mockOnClose} />);
-        await user.keyboard('{Escape}');
+        fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' });
         expect(mockOnClose).toHaveBeenCalledTimes(1);
     });
 });

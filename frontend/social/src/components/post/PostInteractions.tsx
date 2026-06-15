@@ -1,10 +1,10 @@
-import { PostDTO, PostLikeDTO, PostLikeResponse } from "../../types/types.ts";
+import { PostDTO, PostLikeDTO } from "../../types/types.ts";
 import LikeButton from "../interaction/LikeButton.tsx";
 import { useCallback, useRef, useState, useEffect } from "react";
 import LikeList from "../interaction/LikeList.tsx";
 import { useToken } from "../../hooks/useToken.ts";
-import { useFeedContext } from "../../contexts/FeedContext.tsx";
-import { useErrorContext } from "../../contexts/ErrorContext.tsx";
+import { usePostActions } from "../../hooks/usePostActions.ts";
+import { postApi } from "../../api/postApi.ts";
 
 type PostInteractionsProps = {
     post: PostDTO,
@@ -33,8 +33,7 @@ type PostInteractionsProps = {
  */
 const PostInteractions = ({ post, size = "normal" }: PostInteractionsProps) => {
     const { decoded } = useToken();
-    const { updatePostInFeed } = useFeedContext();
-    const { triggerError } = useErrorContext();
+    const { toggleLike } = usePostActions();
     const [isLiked, setIsLiked] = useState(post.isLiked);
     const [likesNum, setLikesNum] = useState(post.likesNum);
 
@@ -54,30 +53,20 @@ const PostInteractions = ({ post, size = "normal" }: PostInteractionsProps) => {
         if (loadingUsersWhoLikePostLock.current || !usersWhoLikePostHasMorePagesRef.current) { return; }
         loadingUsersWhoLikePostLock.current = true;
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${post.postId}/likes?page=${usersWhoLikePostPageRef.current}`, {
-                headers: {
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                }
-            })
-            if (response.ok) {
-                const data = await response.json() as PostLikeResponse;
-                if (usersWhoLikePostPageRef.current === 0) {
-                    usersWhoLikePostListInit.current = data.content;
-                }
-                setUsersWhoLikePost(prev => [...prev, ...data.content]);
-                usersWhoLikePostPageRef.current += 1;
-                usersWhoLikePostHasMorePagesRef.current = data.totalPages > usersWhoLikePostPageRef.current;
-                usersWhoLikePostHasMorePagesRef.current = data.totalPages > usersWhoLikePostPageRef.current;
-            } else {
-                usersWhoLikePostHasMorePagesRef.current = false;
-                triggerError("Failed to load likes list.");
+            const data = await postApi.getLikeList(post.postId, usersWhoLikePostPageRef.current);
+            if (usersWhoLikePostPageRef.current === 0) {
+                usersWhoLikePostListInit.current = data.content;
             }
+            setUsersWhoLikePost(prev => [...prev, ...data.content]);
+            usersWhoLikePostPageRef.current += 1;
+            usersWhoLikePostHasMorePagesRef.current = data.totalPages > usersWhoLikePostPageRef.current;
+            usersWhoLikePostHasMorePagesRef.current = data.totalPages > usersWhoLikePostPageRef.current;
         } catch (e) {
-            triggerError("Server error while fetching likes.");
+            usersWhoLikePostHasMorePagesRef.current = false;
         } finally {
             loadingUsersWhoLikePostLock.current = false;
         }
-    }, [post.postId, triggerError]);
+    }, [post.postId]);
 
     const handleCloseLikeList = () => {
         setShowUsersWhoLikePost(false);
@@ -105,43 +94,20 @@ const PostInteractions = ({ post, size = "normal" }: PostInteractionsProps) => {
             usersWhoLikePostListInit.current = usersWhoLikePostListInit.current.filter(u => u.username !== decoded.username);
         }
         try {
-            const method = !previousLiked ? "POST" : "DELETE";
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${post.postId}/like`, {
-                method: method,
-                headers: {
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                }
-            });
-            if (response.ok) {
-                const updatedPost: PostDTO = {
-                    ...post,
-                    isLiked: !previousLiked,
-                    likesNum: newLikesNum
-                }
-                updatePostInFeed(updatedPost)
-                updatePostInFeed(updatedPost)
-            } else {
-                 triggerError("Failed to like the post.");
-                 setIsLiked(previousLiked);
-                 setLikesNum(previousCount);
-                 const prevPost: PostDTO = {
-                    ...post,
-                    isLiked: previousLiked,
-                    likesNum: previousCount
-                 }
-                 updatePostInFeed(prevPost);
-                 usersWhoLikePostPageRef.current = 0;
-                 usersWhoLikePostHasMorePagesRef.current = true;
+            if (!await toggleLike(post, previousLiked, likesNum, newLikesNum)) {
+                setIsLiked(previousLiked);
+                setLikesNum(previousCount);
+                usersWhoLikePostPageRef.current = 0;
+                usersWhoLikePostHasMorePagesRef.current = true;
+                setUsersWhoLikePost(prev =>
+                    previousLiked
+                        ? [newUser, ...prev]
+                        : prev.filter(u => u.username !== decoded.username)
+                );
             }
         } catch (e) {
-            triggerError("Server error. Failed to save changes.");
+            setIsLiked(previousLiked);
             setLikesNum(previousCount);
-            const prevPost: PostDTO = {
-                ...post,
-                isLiked: previousLiked,
-                likesNum: previousCount
-            }
-            updatePostInFeed(prevPost);
             usersWhoLikePostPageRef.current = 0;
             usersWhoLikePostHasMorePagesRef.current = true;
         }

@@ -21,9 +21,9 @@ const ErrorPage = () => {
         message = "The server is not responding"
     }
     return (
-        <div className="flex-1 flex flex-col gap-3 justify-center items-center">
-            <h1 className="text-9xl font-bold">{status}</h1>
-            <h3 className="text-3xl font-bold">{message}</h3>
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 px-4 text-center">
+            <h1 className="text-7xl font-bold sm:text-9xl">{status}</h1>
+            <h3 className="text-2xl font-bold sm:text-3xl">{message}</h3>
             <button className={`bg-blue-500 text-white rounded-full px-8 py-2 text-lg hover:bg-blue-600 transition-all duration-300 shadow-md active:scale-95`} onClick={() => navigate("/home")}>
                 <span>Back to Home</span>
             </button>

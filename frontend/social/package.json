@@ -12,9 +12,11 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
+    "framer-motion": "^12.40.0",
     "jwt-decode": "^4.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-easy-crop": "^5.5.7",
     "react-jwt": "^2.0.0",
     "react-router-dom": "^7.13.0",
     "tailwindcss": "^4.1.18"

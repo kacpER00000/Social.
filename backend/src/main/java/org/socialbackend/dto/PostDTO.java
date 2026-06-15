@@ -1,6 +1,5 @@
 package org.socialbackend.dto;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,9 +19,12 @@ import java.time.LocalDateTime;
 public class PostDTO {
     private Long postId;
     private Long authorId;
+    private String authorImgUrl;
     private String author;
     private String title;
     private String content;
+    private String imgUrl;
+    private String imgId;
     private LocalDateTime createdAt;
     private Long likesNum;
     private Long commentCount;

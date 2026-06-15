@@ -1,9 +1,12 @@
 export interface PostDTO {
     postId: number;
     authorId: number;
+    authorImgUrl: string | null;
     author: string;
     title: string;
     content: string;
+    imgUrl: string | null;
+    imgId: string | null;
     createdAt: string;
     likesNum: number;
     commentCount: number;
@@ -40,6 +43,7 @@ export interface CommentDTO {
     commentId: number;
     postId: number;
     authorId: number;
+    authorImgUrl: string | null;
     author: string;
     content: string;
     createdAt: string;
@@ -82,6 +86,8 @@ export interface UserDTO {
      * True only when viewing their own profile.
      */
     canEdit: boolean;
+    imgUrl: string | null;
+    imgId: string | null;
 }
 
 export interface UserResponse {
@@ -93,13 +99,43 @@ export interface UserResponse {
     totalPages: number;
 }
 
+/** Payload used by CreatePost component holding local state before submission. */
+export interface CreatePostData {
+    title: string;
+    content: string;
+    picture: File | null;
+}
+
+/** 
+ * JSON body payload sent to the backend when modifying a post.
+ * Includes information about text changes and image modifications.
+ */
+export interface EditPostRequest {
+    title: string;
+    content: string;
+    newImgUrl: string | null;
+    newImgId: string | null;
+    isImageDeleted: boolean
+}
+
+/** Local React state object used for editing posts, containing only the editable text fields and current image URL. */
 export interface PostData {
     title: string;
     content: string;
+    imgUrl: string | null;
+}
+
+/** Data emitted by EditPostModal upon user confirmation. */
+export interface EditPostData {
+    title: string;
+    content: string;
+    newImage: File | null;
+    isImageDeleted: boolean;
 }
 
 export interface PostLikeDTO {
     username: string;
+    imgUrl: string | null;
     userId: number;
     postId: number;
     likedAt: string;
@@ -117,6 +153,7 @@ export interface PostLikeResponse {
 export interface JWTPayload {
     userId: number;
     username: string;
+    imgUrl: string | null;
     sub: string;
     iat: number;
     exp: number;
@@ -125,6 +162,7 @@ export interface JWTPayload {
 export interface FollowDTO {
     userId: number;
     followerUsername: string;
+    followerImgUrl: string;
     following: boolean;
     followingBy: boolean;
     followedSince: string | null;
@@ -145,6 +183,19 @@ export type EditProfileData = {
     lastName: string;
     sex: string;
     birthDate: string;
+    imgUrl: string | null;
+    newImage: File | null;
+    isImageDeleted: boolean;
+}
+
+export type UpdateUserRequest = {
+    firstName: string;
+    lastName: string;
+    birthDate: string;
+    sex: string;
+    newImgUrl: string | null;
+    newImgId: string | null;
+    isImageDeleted: boolean;
 }
 
 export interface FollowContextType {
@@ -186,4 +237,52 @@ export interface ErrorContextType {
      * Automatically dismisses after a set timeout.
      */
     triggerError: (message: string) => void;
+}
+
+/**
+ * Context type representing the current execution/network status of asynchronous operations
+ * and the function to transition between status states.
+ */
+export interface StatusContextType {
+    /**
+     * Current status state:
+     * - 'idle': No active operations.
+     * - 'loading': An operation is currently in progress.
+     * - 'success': The operation completed successfully.
+     * - 'error': The operation failed.
+     */
+    status: 'idle' | 'loading' | 'success' | 'error';
+
+    /**
+     * Updates the status state.
+     * Setting the status to 'success' or 'error' will automatically trigger
+     * a timeout to reset it back to 'idle' after 3000ms.
+     * 
+     * @param status - The new status state.
+     */
+    setStatus: (status: 'idle' | 'loading' | 'success' | 'error') => void;
+}
+
+/** Response from the backend providing a signed timestamp required for secure Cloudinary uploads. */
+export interface SignatureResponse {
+    signature: string,
+    timestamp: number
+}
+
+/** 
+ * Expected JSON response object from Cloudinary API after a successful image upload.
+ */
+export interface CloudinaryResponse {
+    /** The permanent, secure HTTPS URL of the uploaded image. */
+    secure_url: string,
+    /** The unique string identifier required by the backend to delete the image from Cloudinary later. */
+    public_id: string
+}
+
+/** JSON body payload sent to the backend when creating a new post. */
+export interface CreatePostRequest {
+    title: string,
+    content: string,
+    imgUrl: string | null,
+    imgId: string | null
 }

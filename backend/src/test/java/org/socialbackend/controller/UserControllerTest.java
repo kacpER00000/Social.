@@ -10,6 +10,7 @@ import org.socialbackend.service.CustomUserDetailsService;
 import org.socialbackend.service.FollowerService;
 import org.socialbackend.service.JwtService;
 import org.socialbackend.service.UserService;
+import org.socialbackend.service.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.data.domain.Page;
@@ -53,6 +54,9 @@ class UserControllerTest {
     @MockitoBean
     private CustomUserDetailsService customUserDetailsService;
 
+    @MockitoBean
+    private CloudinaryService cloudinaryService;
+
     private Authentication createMockAuthentication(Long userId) {
         AppUserDetails mockUserDetails = mock(AppUserDetails.class);
         when(mockUserDetails.getUserId()).thenReturn(userId);
@@ -70,7 +74,7 @@ class UserControllerTest {
         expectedDto.setLastName("Smith");
         when(userService.findUserById(targetUserId, loggedUserId)).thenReturn(expectedDto);
         mockMvc.perform(get("/social/users/" + targetUserId)
-                        .principal(mockAuthentication))
+                .principal(mockAuthentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userId").value(targetUserId))
                 .andExpect(jsonPath("$.firstName").value("John"))
@@ -78,11 +82,11 @@ class UserControllerTest {
     }
 
     @Test
-    void shouldNotFindAnyUser() throws Exception{
+    void shouldNotFindAnyUser() throws Exception {
         Long targetUserId = 1L;
         Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        when(userService.findUserById(targetUserId,loggedUserId)).thenThrow(NoSuchElementException.class);
+        when(userService.findUserById(targetUserId, loggedUserId)).thenThrow(NoSuchElementException.class);
         mockMvc.perform(get("/social/users/" + targetUserId)
                 .principal(mockAuthentication))
                 .andExpect(status().isNotFound());
@@ -92,7 +96,14 @@ class UserControllerTest {
     void shouldUpdateUser() throws Exception {
         Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        UpdateUserRequest updateUserRequest = new UpdateUserRequest("John","Smith", LocalDate.of(2000,1,1),'M');
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest("John", "Smith", LocalDate.of(2000, 1, 1), 'M',
+                null, null, false);
+
+        UserDTO userFromDB = new UserDTO();
+        userFromDB.setUserId(loggedUserId);
+        userFromDB.setImgId(null);
+        when(userService.findUserById(loggedUserId, loggedUserId)).thenReturn(userFromDB);
+
         mockMvc.perform(put("/social/users")
                 .principal(mockAuthentication)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -105,11 +116,12 @@ class UserControllerTest {
     void shouldNotUpdateUserBecauseOfBadRequestStatus() throws Exception {
         Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        UpdateUserRequest updateUserRequest = new UpdateUserRequest("John","", LocalDate.of(2000,1,1),'M');
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest("John", "", LocalDate.of(2000, 1, 1), 'M', null,
+                null, false);
         mockMvc.perform(put("/social/users")
-                        .principal(mockAuthentication)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateUserRequest)))
+                .principal(mockAuthentication)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateUserRequest)))
                 .andExpect(status().isBadRequest());
         verify(userService, never()).updateUser(eq(loggedUserId), any(UpdateUserRequest.class));
     }
@@ -118,12 +130,13 @@ class UserControllerTest {
     void shouldNotUpdateUserBecauseOfNoUser() throws Exception {
         Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        UpdateUserRequest updateUserRequest = new UpdateUserRequest("John","Smith", LocalDate.of(2000,1,1),'M');
-        doThrow(NoSuchElementException.class).when(userService).updateUser(loggedUserId,updateUserRequest);
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest("John", "Smith", LocalDate.of(2000, 1, 1), 'M',
+                null, null, false);
+        when(userService.findUserById(loggedUserId, loggedUserId)).thenThrow(NoSuchElementException.class);
         mockMvc.perform(put("/social/users")
-                        .principal(mockAuthentication)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateUserRequest)))
+                .principal(mockAuthentication)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateUserRequest)))
                 .andExpect(status().isNotFound());
     }
 
@@ -131,8 +144,13 @@ class UserControllerTest {
     void shouldDeleteUser() throws Exception {
         Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        mockMvc.perform(delete("/social/users").
-                principal(mockAuthentication))
+
+        UserDTO userFromDB = new UserDTO();
+        userFromDB.setUserId(loggedUserId);
+        userFromDB.setImgId(null);
+        when(userService.findUserById(loggedUserId, loggedUserId)).thenReturn(userFromDB);
+
+        mockMvc.perform(delete("/social/users").principal(mockAuthentication))
                 .andExpect(status().isNoContent());
         verify(userService, times(1)).deleteUser(eq(loggedUserId));
     }
@@ -141,9 +159,8 @@ class UserControllerTest {
     void shouldNotDeleteUserBecauseOfNoUser() throws Exception {
         Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        doThrow(NoSuchElementException.class).when(userService).deleteUser(loggedUserId);
-        mockMvc.perform(delete("/social/users").
-                        principal(mockAuthentication))
+        when(userService.findUserById(loggedUserId, loggedUserId)).thenThrow(NoSuchElementException.class);
+        mockMvc.perform(delete("/social/users").principal(mockAuthentication))
                 .andExpect(status().isNotFound());
     }
 
@@ -164,9 +181,10 @@ class UserControllerTest {
         user3.setFirstName("John");
         user3.setLastName("Dove");
         String query = "John";
-        Page<UserDTO> users = new PageImpl<>(List.of(user1,user2,user3));
-        when(userService.findUsersByFirstNameOrLastName(eq(query),eq(loggedUserId),any(Pageable.class))).thenReturn(users);
-        mockMvc.perform(get("/social/users/search?query="+query)
+        Page<UserDTO> users = new PageImpl<>(List.of(user1, user2, user3));
+        when(userService.findUsersByFirstNameOrLastName(eq(query), eq(loggedUserId), any(Pageable.class)))
+                .thenReturn(users);
+        mockMvc.perform(get("/social/users/search?query=" + query)
                 .principal(mockAuthentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.size()").value(3))
@@ -180,13 +198,15 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.content[2].firstName").value(user3.getFirstName()))
                 .andExpect(jsonPath("$.content[2].lastName").value(user3.getLastName()));
     }
+
     @Test
     void shouldNotFindUsersByFirstNameOrLastNameBecauseOfInvalidQuery() throws Exception {
         Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        String emptyQuery="";
-        when(userService.findUsersByFirstNameOrLastName(eq(emptyQuery),eq(loggedUserId),any(Pageable.class))).thenThrow(InvalidParameterException.class);
-        mockMvc.perform(get("/social/users/search?query="+emptyQuery)
+        String emptyQuery = "";
+        when(userService.findUsersByFirstNameOrLastName(eq(emptyQuery), eq(loggedUserId), any(Pageable.class)))
+                .thenThrow(InvalidParameterException.class);
+        mockMvc.perform(get("/social/users/search?query=" + emptyQuery)
                 .principal(mockAuthentication))
                 .andExpect(status().isBadRequest());
     }
@@ -195,20 +215,20 @@ class UserControllerTest {
     void shouldFollowUser() throws Exception {
         Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        Long targetUserId=1L;
-        mockMvc.perform(post("/social/users/"+targetUserId+"/follow")
+        Long targetUserId = 1L;
+        mockMvc.perform(post("/social/users/" + targetUserId + "/follow")
                 .principal(mockAuthentication))
                 .andExpect(status().isOk());
-        verify(followerService,times(1)).follow(loggedUserId,targetUserId);
+        verify(followerService, times(1)).follow(loggedUserId, targetUserId);
     }
 
     @Test
     void shouldNotFollowBecauseOfFollowingYourself() throws Exception {
         Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        doThrow(IllegalStateException.class).when(followerService).follow(loggedUserId,loggedUserId);
-        mockMvc.perform(post("/social/users/"+loggedUserId+"/follow")
-                        .principal(mockAuthentication))
+        doThrow(IllegalStateException.class).when(followerService).follow(loggedUserId, loggedUserId);
+        mockMvc.perform(post("/social/users/" + loggedUserId + "/follow")
+                .principal(mockAuthentication))
                 .andExpect(status().isBadRequest());
     }
 
@@ -217,9 +237,9 @@ class UserControllerTest {
         Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
         Long targetUserId = 1L;
-        doThrow(IllegalStateException.class).when(followerService).follow(loggedUserId,targetUserId);
-        mockMvc.perform(post("/social/users/"+targetUserId+"/follow")
-                        .principal(mockAuthentication))
+        doThrow(IllegalStateException.class).when(followerService).follow(loggedUserId, targetUserId);
+        mockMvc.perform(post("/social/users/" + targetUserId + "/follow")
+                .principal(mockAuthentication))
                 .andExpect(status().isBadRequest());
     }
 
@@ -228,9 +248,9 @@ class UserControllerTest {
         Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
         Long targetUserId = 1L;
-        doThrow(NoSuchElementException.class).when(followerService).follow(loggedUserId,targetUserId);
-        mockMvc.perform(post("/social/users/"+targetUserId+"/follow")
-                        .principal(mockAuthentication))
+        doThrow(NoSuchElementException.class).when(followerService).follow(loggedUserId, targetUserId);
+        mockMvc.perform(post("/social/users/" + targetUserId + "/follow")
+                .principal(mockAuthentication))
                 .andExpect(status().isNotFound());
     }
 
@@ -238,20 +258,20 @@ class UserControllerTest {
     void shouldUnfollowUser() throws Exception {
         Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        Long targetUserId=1L;
-        mockMvc.perform(delete("/social/users/"+targetUserId+"/follow")
-                        .principal(mockAuthentication))
+        Long targetUserId = 1L;
+        mockMvc.perform(delete("/social/users/" + targetUserId + "/follow")
+                .principal(mockAuthentication))
                 .andExpect(status().isNoContent());
-        verify(followerService,times(1)).unfollow(loggedUserId,targetUserId);
+        verify(followerService, times(1)).unfollow(loggedUserId, targetUserId);
     }
 
     @Test
     void shouldNotUnfollowBecauseOfUnfollowingYourself() throws Exception {
         Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        doThrow(IllegalStateException.class).when(followerService).unfollow(loggedUserId,loggedUserId);
-        mockMvc.perform(delete("/social/users/"+loggedUserId+"/follow")
-                        .principal(mockAuthentication))
+        doThrow(IllegalStateException.class).when(followerService).unfollow(loggedUserId, loggedUserId);
+        mockMvc.perform(delete("/social/users/" + loggedUserId + "/follow")
+                .principal(mockAuthentication))
                 .andExpect(status().isBadRequest());
     }
 
@@ -260,9 +280,9 @@ class UserControllerTest {
         Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
         Long targetUserId = 1L;
-        doThrow(IllegalStateException.class).when(followerService).unfollow(loggedUserId,targetUserId);
-        mockMvc.perform(delete("/social/users/"+targetUserId+"/follow")
-                        .principal(mockAuthentication))
+        doThrow(IllegalStateException.class).when(followerService).unfollow(loggedUserId, targetUserId);
+        mockMvc.perform(delete("/social/users/" + targetUserId + "/follow")
+                .principal(mockAuthentication))
                 .andExpect(status().isBadRequest());
     }
 
@@ -271,20 +291,21 @@ class UserControllerTest {
         Long loggedUserId = 99L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
         Long targetUserId = 1L;
-        doThrow(NoSuchElementException.class).when(followerService).unfollow(loggedUserId,targetUserId);
-        mockMvc.perform(delete("/social/users/"+targetUserId+"/follow")
-                        .principal(mockAuthentication))
+        doThrow(NoSuchElementException.class).when(followerService).unfollow(loggedUserId, targetUserId);
+        mockMvc.perform(delete("/social/users/" + targetUserId + "/follow")
+                .principal(mockAuthentication))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void shouldReturnFollowInfo() throws Exception{
+    void shouldReturnFollowInfo() throws Exception {
         Long loggedUserId = 99L;
         Long targetUserId = 1L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        FollowerDTO followInfo = new FollowerDTO(targetUserId, "John Smith", LocalDateTime.of(2026,3,18,0,0),true,false,1L);
-        when(followerService.getFollowInfo(targetUserId,loggedUserId)).thenReturn(followInfo);
-        mockMvc.perform(get("/social/users/"+targetUserId+"/follow-status")
+        FollowerDTO followInfo = new FollowerDTO(targetUserId, "John Smith", null, LocalDateTime.of(2026, 3, 18, 0, 0),
+                true, false, 1L);
+        when(followerService.getFollowInfo(targetUserId, loggedUserId)).thenReturn(followInfo);
+        mockMvc.perform(get("/social/users/" + targetUserId + "/follow-status")
                 .principal(mockAuthentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userId").value(targetUserId));
@@ -303,9 +324,10 @@ class UserControllerTest {
         FollowerDTO follower3 = new FollowerDTO();
         follower3.setUserId(30L);
         Page<FollowerDTO> targetUserFollowers = new PageImpl<>(List.of(follower1, follower2, follower3));
-        when(followerService.findUserFollowers(eq(targetUserId),eq(loggedUserId),any(Pageable.class))).thenReturn(targetUserFollowers);
-        mockMvc.perform(get("/social/users/"+targetUserId+"/followers")
-                        .principal(mockAuthentication))
+        when(followerService.findUserFollowers(eq(targetUserId), eq(loggedUserId), any(Pageable.class)))
+                .thenReturn(targetUserFollowers);
+        mockMvc.perform(get("/social/users/" + targetUserId + "/followers")
+                .principal(mockAuthentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.size()").value(3))
                 .andExpect(jsonPath("$.content[0].userId").value(follower1.getUserId()))
@@ -320,19 +342,22 @@ class UserControllerTest {
         Long targetUserId = 1L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
 
-        doThrow(InvalidParameterException.class).when(followerService).findUserFollowers(eq(targetUserId),eq(loggedUserId),any(Pageable.class));
-        mockMvc.perform(get("/social/users/"+targetUserId+"/followers")
-                        .principal(mockAuthentication))
+        doThrow(InvalidParameterException.class).when(followerService).findUserFollowers(eq(targetUserId),
+                eq(loggedUserId), any(Pageable.class));
+        mockMvc.perform(get("/social/users/" + targetUserId + "/followers")
+                .principal(mockAuthentication))
                 .andExpect(status().isBadRequest());
     }
+
     @Test
     void shouldNotReturnUserFollowersFromQueryBecauseOfNoUser() throws Exception {
         Long loggedUserId = 99L;
         Long targetUserId = 1L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        doThrow(NoSuchElementException.class).when(followerService).findUserFollowers(eq(targetUserId),eq(loggedUserId),any(Pageable.class));
-        mockMvc.perform(get("/social/users/"+targetUserId+"/followers")
-                        .principal(mockAuthentication))
+        doThrow(NoSuchElementException.class).when(followerService).findUserFollowers(eq(targetUserId),
+                eq(loggedUserId), any(Pageable.class));
+        mockMvc.perform(get("/social/users/" + targetUserId + "/followers")
+                .principal(mockAuthentication))
                 .andExpect(status().isNotFound());
     }
 
@@ -348,9 +373,10 @@ class UserControllerTest {
         FollowerDTO followed3 = new FollowerDTO();
         followed3.setUserId(30L);
         Page<FollowerDTO> targetUserFollowing = new PageImpl<>(List.of(followed1, followed2, followed3));
-        when(followerService.findUserFollowing(eq(targetUserId),eq(loggedUserId),any(Pageable.class))).thenReturn(targetUserFollowing);
-        mockMvc.perform(get("/social/users/"+targetUserId+"/following")
-                        .principal(mockAuthentication))
+        when(followerService.findUserFollowing(eq(targetUserId), eq(loggedUserId), any(Pageable.class)))
+                .thenReturn(targetUserFollowing);
+        mockMvc.perform(get("/social/users/" + targetUserId + "/following")
+                .principal(mockAuthentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.size()").value(3))
                 .andExpect(jsonPath("$.content[0].userId").value(followed1.getUserId()))
@@ -364,19 +390,22 @@ class UserControllerTest {
         Long loggedUserId = 99L;
         Long targetUserId = 1L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        doThrow(InvalidParameterException.class).when(followerService).findUserFollowing(eq(targetUserId),eq(loggedUserId),any(Pageable.class));
-        mockMvc.perform(get("/social/users/"+targetUserId+"/following")
-                        .principal(mockAuthentication))
+        doThrow(InvalidParameterException.class).when(followerService).findUserFollowing(eq(targetUserId),
+                eq(loggedUserId), any(Pageable.class));
+        mockMvc.perform(get("/social/users/" + targetUserId + "/following")
+                .principal(mockAuthentication))
                 .andExpect(status().isBadRequest());
     }
+
     @Test
     void shouldNotReturnUserFollowingFromQueryBecauseOfNoUser() throws Exception {
         Long loggedUserId = 99L;
         Long targetUserId = 1L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        doThrow(NoSuchElementException.class).when(followerService).findUserFollowing(eq(targetUserId),eq(loggedUserId),any(Pageable.class));
-        mockMvc.perform(get("/social/users/"+targetUserId+"/following")
-                        .principal(mockAuthentication))
+        doThrow(NoSuchElementException.class).when(followerService).findUserFollowing(eq(targetUserId),
+                eq(loggedUserId), any(Pageable.class));
+        mockMvc.perform(get("/social/users/" + targetUserId + "/following")
+                .principal(mockAuthentication))
                 .andExpect(status().isNotFound());
     }
 
@@ -394,13 +423,14 @@ class UserControllerTest {
         FollowerDTO follower3 = new FollowerDTO();
         follower3.setUserId(30L);
         follower3.setFollowerUsername("John Doe");
-        String query="John";
+        String query = "John";
         Page<FollowerDTO> targetUserFollowers = new PageImpl<>(List.of(follower1, follower2, follower3));
-        when(followerService.findFollowersByUsername(eq(query),eq(targetUserId),eq(loggedUserId),any(Pageable.class))).thenReturn(targetUserFollowers);
+        when(followerService.findFollowersByUsername(eq(query), eq(targetUserId), eq(loggedUserId),
+                any(Pageable.class))).thenReturn(targetUserFollowers);
         mockMvc.perform(get("/social/users/search/followers")
-                        .param("query",query)
-                        .param("userId",String.valueOf(targetUserId))
-                        .principal(mockAuthentication))
+                .param("query", query)
+                .param("userId", String.valueOf(targetUserId))
+                .principal(mockAuthentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.size()").value(3))
                 .andExpect(jsonPath("$.content[0].userId").value(follower1.getUserId()))
@@ -414,29 +444,30 @@ class UserControllerTest {
         Long loggedUserId = 99L;
         Long targetUserId = 1L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        String emptyQuery="";
-        doThrow(InvalidParameterException.class).when(followerService).findFollowersByUsername(eq(emptyQuery),eq(targetUserId),eq(loggedUserId),any(Pageable.class));
+        String emptyQuery = "";
+        doThrow(InvalidParameterException.class).when(followerService).findFollowersByUsername(eq(emptyQuery),
+                eq(targetUserId), eq(loggedUserId), any(Pageable.class));
         mockMvc.perform(get("/social/users/search/followers")
-                        .param("query",emptyQuery)
-                        .param("userId",String.valueOf(targetUserId))
-                        .principal(mockAuthentication))
+                .param("query", emptyQuery)
+                .param("userId", String.valueOf(targetUserId))
+                .principal(mockAuthentication))
                 .andExpect(status().isBadRequest());
     }
+
     @Test
     void shouldNotReturnFollowersFromQueryBecauseOfNoUser() throws Exception {
         Long loggedUserId = 99L;
         Long targetUserId = 1L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        String query="John";
-        doThrow(NoSuchElementException.class).when(followerService).findFollowersByUsername(eq(query),eq(targetUserId),eq(loggedUserId),any(Pageable.class));
+        String query = "John";
+        doThrow(NoSuchElementException.class).when(followerService).findFollowersByUsername(eq(query), eq(targetUserId),
+                eq(loggedUserId), any(Pageable.class));
         mockMvc.perform(get("/social/users/search/followers")
-                        .param("query",query)
-                        .param("userId",String.valueOf(targetUserId))
-                        .principal(mockAuthentication))
+                .param("query", query)
+                .param("userId", String.valueOf(targetUserId))
+                .principal(mockAuthentication))
                 .andExpect(status().isNotFound());
     }
-
-
 
     @Test
     void shouldReturnFollowingFromQuery() throws Exception {
@@ -452,13 +483,14 @@ class UserControllerTest {
         FollowerDTO followed3 = new FollowerDTO();
         followed3.setUserId(30L);
         followed3.setFollowerUsername("John Doe");
-        String query="John";
+        String query = "John";
         Page<FollowerDTO> targetUserFollowing = new PageImpl<>(List.of(followed1, followed2, followed3));
-        when(followerService.findFollowingByUsername(eq(query),eq(targetUserId),eq(loggedUserId),any(Pageable.class))).thenReturn(targetUserFollowing);
+        when(followerService.findFollowingByUsername(eq(query), eq(targetUserId), eq(loggedUserId),
+                any(Pageable.class))).thenReturn(targetUserFollowing);
         mockMvc.perform(get("/social/users/search/following")
-                        .param("query",query)
-                        .param("userId",String.valueOf(targetUserId))
-                        .principal(mockAuthentication))
+                .param("query", query)
+                .param("userId", String.valueOf(targetUserId))
+                .principal(mockAuthentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.size()").value(3))
                 .andExpect(jsonPath("$.content[0].userId").value(followed1.getUserId()))
@@ -472,25 +504,28 @@ class UserControllerTest {
         Long loggedUserId = 99L;
         Long targetUserId = 1L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        String emptyQuery="";
-        doThrow(InvalidParameterException.class).when(followerService).findFollowingByUsername(eq(emptyQuery),eq(targetUserId),eq(loggedUserId),any(Pageable.class));
+        String emptyQuery = "";
+        doThrow(InvalidParameterException.class).when(followerService).findFollowingByUsername(eq(emptyQuery),
+                eq(targetUserId), eq(loggedUserId), any(Pageable.class));
         mockMvc.perform(get("/social/users/search/following")
-                        .param("query",emptyQuery)
-                        .param("userId",String.valueOf(targetUserId))
-                        .principal(mockAuthentication))
+                .param("query", emptyQuery)
+                .param("userId", String.valueOf(targetUserId))
+                .principal(mockAuthentication))
                 .andExpect(status().isBadRequest());
     }
+
     @Test
     void shouldNotReturnFollowingFromQueryBecauseOfNoUser() throws Exception {
         Long loggedUserId = 99L;
         Long targetUserId = 1L;
         Authentication mockAuthentication = createMockAuthentication(loggedUserId);
-        String query="John";
-        doThrow(NoSuchElementException.class).when(followerService).findFollowingByUsername(eq(query),eq(targetUserId),eq(loggedUserId),any(Pageable.class));
+        String query = "John";
+        doThrow(NoSuchElementException.class).when(followerService).findFollowingByUsername(eq(query), eq(targetUserId),
+                eq(loggedUserId), any(Pageable.class));
         mockMvc.perform(get("/social/users/search/following")
-                        .param("query",query)
-                        .param("userId",String.valueOf(targetUserId))
-                        .principal(mockAuthentication))
+                .param("query", query)
+                .param("userId", String.valueOf(targetUserId))
+                .principal(mockAuthentication))
                 .andExpect(status().isNotFound());
     }
 

@@ -6,6 +6,7 @@ import org.socialbackend.details.AppUserDetails;
 import org.socialbackend.dto.FollowerDTO;
 import org.socialbackend.dto.UserDTO;
 import org.socialbackend.request.UpdateUserRequest;
+import org.socialbackend.service.CloudinaryService;
 import org.socialbackend.service.FollowerService;
 import org.socialbackend.service.UserService;
 import org.springframework.data.domain.Page;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService userService;
     private final FollowerService followerService;
+    private final CloudinaryService cloudinaryService;
 
     /**
      * Retrieves the profile information of a specific user.
@@ -61,6 +63,11 @@ public class UserController {
     public ResponseEntity<Void> updateUser(@Valid @RequestBody UpdateUserRequest updateUserRequest,
                                            Authentication authentication) {
         AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        Long userId = userDetails.getUserId();
+        UserDTO user = userService.findUserById(userId, userId);
+        if(user != null && user.getImgId() != null && (updateUserRequest.getNewImgId() != null || updateUserRequest.isImageDeleted())){
+            cloudinaryService.deleteImageFromCloudinary(user.getImgId());
+        }
         userService.updateUser(userDetails.getUserId(), updateUserRequest);
         return ResponseEntity.ok().build();
     }
@@ -74,7 +81,12 @@ public class UserController {
     @DeleteMapping()
     public ResponseEntity<Void> deleteUser(Authentication authentication) {
         AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
-        userService.deleteUser(userDetails.getUserId());
+        Long userId = userDetails.getUserId();
+        UserDTO user = userService.findUserById(userId, userId);
+        if(user != null && user.getImgId() != null){
+            cloudinaryService.deleteImageFromCloudinary(user.getImgId());
+        }
+        userService.deleteUser(userId);
         return ResponseEntity.noContent().build();
     }
 

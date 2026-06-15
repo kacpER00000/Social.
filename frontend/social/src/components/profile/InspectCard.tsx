@@ -7,12 +7,14 @@ import { useErrorContext } from "../../contexts/ErrorContext.tsx";
 import FollowButton from "./FollowButton.tsx";
 import { useToken } from "../../hooks/useToken.ts";
 import AvatarCircle from "./AvatarCircle.tsx";
+import { followApi } from "../../api/followApi.ts";
 
 type InspectCardProps = {
     top: number | undefined,
     left: number | undefined,
     username: string | undefined,
     userId: number | undefined,
+    imgUrl: string | null,
     show: boolean,
     onMouseEnter: () => void,
     onMouseLeave: () => void
@@ -35,7 +37,7 @@ type InspectCardProps = {
  *   `useInspect` "Hover Intent" timer can cancel hide-delays while the cursor is
  *   inside the popover itself.
  */
-const InspectCard = ({ username, userId, top, left, show, onMouseEnter, onMouseLeave }: InspectCardProps) => {
+const InspectCard = ({ username, userId, top, left, imgUrl, show, onMouseEnter, onMouseLeave }: InspectCardProps) => {
     const { triggerError } = useErrorContext();
     const { decoded } = useToken();
     const [followInfo, setFollowInfo] = useState<FollowDTO | null>(null);
@@ -43,20 +45,11 @@ const InspectCard = ({ username, userId, top, left, show, onMouseEnter, onMouseL
     const { checkIfFollowed, toggleFollow } = useFollowSystem()
     const fetchFollowInfo = useCallback(async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/users/${userId}/follow-status`, {
-                headers: {
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                }
-            })
-            if (response.ok) {
-                const data = await response.json() as FollowDTO
-                const formatedData = { ...data, followedSince: data.followedSince === null ? null : formatDate(data.followedSince).split("T")[0] }
-                setFollowInfo(formatedData)
-            } else {
-                 triggerError("Failed to fetch follow status.");
-            }
+            const data = await followApi.getFollowStatus(userId!);
+            const formatedData = { ...data, followedSince: data.followedSince === null ? null : formatDate(data.followedSince).split("T")[0] }
+            setFollowInfo(formatedData)
         } catch (e) {
-            triggerError("Server error. Follow status is unavailable.");
+            triggerError("Failed to fetch follow status.");
         }
     }, [userId, triggerError])
 
@@ -83,14 +76,14 @@ const InspectCard = ({ username, userId, top, left, show, onMouseEnter, onMouseL
         <div
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
-            className={`animate-fade-in z-999 fixed bg-white flex justify-between items-center gap-5 p-5 shadow-2xl rounded-3xl w-max h-fit border border-gray-100`}
+            className={`animate-fade-in z-999 fixed flex h-fit w-max max-w-[calc(100vw_-_2rem)] items-center justify-between gap-5 rounded-3xl border border-gray-100 bg-white p-4 shadow-2xl sm:p-5`}
             style={{
                 top: `${top}px`,
                 left: `${left}px`
             }}
         >
             <div className="flex items-center gap-3">
-                <AvatarCircle size="medium" username={username} />
+                <AvatarCircle size="medium" username={username} imgUrl={imgUrl} />
                 <div className="m-1">
                     <h1 className="text-2xl">{username}</h1>
                     {followInfo &&

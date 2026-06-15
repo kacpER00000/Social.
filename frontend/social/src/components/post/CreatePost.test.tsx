@@ -1,10 +1,11 @@
-import {afterEach, beforeEach, describe, vi, it, expect} from "vitest";
-import {FeedProvider} from "../../contexts/FeedContext.tsx";
-import {userEvent} from "@testing-library/user-event";
-import {render, screen} from "@testing-library/react";
+import { afterEach, beforeEach, describe, vi, it, expect } from "vitest";
+import { FeedProvider } from "../../contexts/FeedContext.tsx";
+import { userEvent } from "@testing-library/user-event";
+import { render, screen } from "@testing-library/react";
 import CreatePost from "./CreatePost.tsx";
-import {useToken} from "../../hooks/useToken.ts";
-import {ErrorProvider} from "../../contexts/ErrorContext.tsx";
+import { useToken } from "../../hooks/useToken.ts";
+import { ErrorProvider } from "../../contexts/ErrorContext.tsx";
+import { StatusProvider } from "../../contexts/StatusContext.tsx";
 
 vi.mock("../../hooks/useToken", () => ({
     useToken: vi.fn()
@@ -14,8 +15,8 @@ describe("CreatePost test", () => {
         vi.useFakeTimers({ shouldAdvanceTime: true });
         vi.clearAllMocks();
         localStorage.clear();
-        localStorage.setItem("token","AAABBBCCCDDD");
-        vi.stubEnv("VITE_API_URL","http://test-api.com");
+        localStorage.setItem("token", "AAABBBCCCDDD");
+        vi.stubEnv("VITE_API_URL", "http://test-api.com");
         vi.spyOn(globalThis, 'fetch');
         vi.mocked(useToken).mockReturnValue({
             isInvalid: false,
@@ -23,6 +24,7 @@ describe("CreatePost test", () => {
             decoded: {
                 userId: 1,
                 username: "Test",
+                imgUrl: null,
                 sub: "test@test.com",
                 iat: 1610000000,
                 exp: 1710000000
@@ -34,7 +36,14 @@ describe("CreatePost test", () => {
         vi.restoreAllMocks();
     })
     const renderWithFeedContext = (component: React.ReactNode) => (
-        render(<FeedProvider><ErrorProvider>{component}</ErrorProvider></FeedProvider>)
+        render(
+            <StatusProvider>
+                <FeedProvider>
+                    <ErrorProvider>{component}
+                    </ErrorProvider>
+                </FeedProvider>
+            </StatusProvider>
+        )
     );
     it("should open real modal, type data, and send POST request", async () => {
         const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
@@ -60,7 +69,7 @@ describe("CreatePost test", () => {
                     'Content-Type': 'application/json',
                     'Authorization': 'Bearer AAABBBCCCDDD'
                 },
-                body: JSON.stringify({ title: 'Title', content: 'Content' })
+                body: JSON.stringify({ title: 'Title', content: 'Content', imgUrl: null, imgId: null })
             })
         );
     });
@@ -115,7 +124,7 @@ describe("CreatePost test", () => {
 
     it("should close modal when escape key is pressed", async () => {
         const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-        renderWithFeedContext(<CreatePost/>);
+        renderWithFeedContext(<CreatePost />);
         await user.click(screen.getByText(/what's up/i));
         expect(await screen.findByPlaceholderText("Title")).toBeInTheDocument();
         await user.keyboard('{Escape}');

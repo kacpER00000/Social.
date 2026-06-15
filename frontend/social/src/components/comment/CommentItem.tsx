@@ -11,7 +11,7 @@ import { useToken } from "../../hooks/useToken.ts";
 import { useNavigate } from "react-router-dom";
 import AvatarCircle from "../profile/AvatarCircle.tsx";
 import PostContent from "../layout/Content.tsx";
-import { useErrorContext } from "../../contexts/ErrorContext.tsx";
+import { useCommentActions } from "../../hooks/useCommentActions.ts";
 
 type CommentItemProps = {
     comment: CommentDTO,
@@ -31,7 +31,7 @@ const CommentItem = ({ comment, onDelete, onUpdate, isPostAuthor }: CommentItemP
     const [newContent, setNewContent] = useState(comment.content);
     const { show, cords, handlers } = useInspect();
     const navigate = useNavigate();
-    const { triggerError } = useErrorContext();
+    const { editComment } = useCommentActions();
 
     useEffect(() => {
         if (isInvalid) {
@@ -58,26 +58,9 @@ const CommentItem = ({ comment, onDelete, onUpdate, isPostAuthor }: CommentItemP
             return;
         }
         setContentError(false)
-        const updateCommentRequest = {
-            content: newContent
-        }
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/comments/${comment.commentId}`, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                },
-                method: "PUT",
-                body: JSON.stringify(updateCommentRequest)
-            })
-            if (response.ok) {
-                onUpdate(comment.commentId, newContent)
-                setIsEditing(false);
-            } else {
-                triggerError("Failed to update comment.");
-            }
-        } catch (e) {
-            triggerError("Server error while editing comment.");
+        if (await editComment(comment.commentId, newContent)) {
+            onUpdate(comment.commentId, newContent)
+            setIsEditing(false);
         }
     }
 
@@ -94,10 +77,10 @@ const CommentItem = ({ comment, onDelete, onUpdate, isPostAuthor }: CommentItemP
                 showConfirmation &&
                 <Confirmation onChoose={handleDelete} show={showConfirmation} />
             }
-            <div className="relative shadow rounded-xl m-5 p-5">
-                <div className="flex justify-between">
-                    <div className="flex gap-3 items-center">
-                        <AvatarCircle username={comment.author} size="small" />
+            <div className="relative my-3 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm sm:p-4">
+                <div className="flex flex-wrap justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                        <AvatarCircle username={comment.author} imgUrl={comment.authorImgUrl} size="small" />
                         <p className="w-fit font-bold cursor-pointer hover:underline" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave} onClick={() => { navigate(`/profile/${comment.authorId}`) }}>
                             {comment.author}
                         </p>
@@ -148,6 +131,7 @@ const CommentItem = ({ comment, onDelete, onUpdate, isPostAuthor }: CommentItemP
                     left={cords.left}
                     username={comment.author}
                     userId={comment.authorId}
+                    imgUrl={comment.authorImgUrl}
                     onMouseEnter={handlers.onMouseCardEnter}
                     onMouseLeave={handlers.onMouseLeave}
                     show={show}

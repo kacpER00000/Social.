@@ -34,7 +34,7 @@ public class PostLikeService {
      *
      * @param postId The ID of the post to like.
      * @param userId The ID of the user who is liking the post.
-     * @throws IllegalStateException if the user has already liked the post.
+     * @throws IllegalStateException  if the user has already liked the post.
      * @throws NoSuchElementException if the post or user does not exist.
      */
     @Transactional
@@ -54,7 +54,8 @@ public class PostLikeService {
      *
      * @param postId The ID of the post to unlike.
      * @param userId The ID of the user who is unliking the post.
-     * @throws IllegalStateException if the post was not liked by the user prior to this action.
+     * @throws IllegalStateException  if the post was not liked by the user prior to
+     *                                this action.
      * @throws NoSuchElementException if the user does not exist.
      */
     @Transactional
@@ -71,7 +72,7 @@ public class PostLikeService {
     /**
      * Finds the users who liked a specific post.
      *
-     * @param postId The ID of the post.
+     * @param postId   The ID of the post.
      * @param pageable The pagination information.
      * @return A page of PostLikeDTOs.
      */
@@ -88,7 +89,8 @@ public class PostLikeService {
      */
     private PostLikeDTO mapToDTO(PostLike postLike) {
         String username = postLike.getUser().getFirstName() + " " + postLike.getUser().getLastName();
-        return new PostLikeDTO(username, postLike.getUser().getUserId(), postLike.getPost().getPostId(),
+        return new PostLikeDTO(username, postLike.getUser().getImgUrl(), postLike.getUser().getUserId(),
+                postLike.getPost().getPostId(),
                 postLike.getLikedAt());
     }
 

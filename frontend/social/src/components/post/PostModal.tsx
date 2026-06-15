@@ -1,4 +1,8 @@
-import { CommentDTO, CommentResponse, PostDTO } from "../../types/types.ts";
+import {
+    CommentDTO,
+    PostDTO,
+    EditPostData
+} from "../../types/types.ts";
 import CommentItem from "../comment/CommentItem.tsx";
 import { useState, useRef, useEffect, useCallback } from "react";
 import Confirmation from "../common/Confirmation.tsx";
@@ -18,6 +22,9 @@ import PostInteractions from "./PostInteractions.tsx";
 import AvatarCircle from "../profile/AvatarCircle.tsx";
 import { useFeedContext } from "../../contexts/FeedContext.tsx";
 import { useErrorContext } from "../../contexts/ErrorContext.tsx";
+import { usePostActions } from "../../hooks/usePostActions.ts";
+import { commentApi } from "../../api/commentApi.ts";
+import { useCommentActions } from "../../hooks/useCommentActions.ts";
 
 type PostModalProps = {
     post: PostDTO
@@ -48,7 +55,9 @@ type PostModalProps = {
  */
 const PostModal = ({ post, onClose }: PostModalProps) => {
     const { checkIfFollowed, toggleFollow } = useFollowSystem();
-    const { posts, updatePostInFeed, deletePostFromFeed } = useFeedContext();
+    const { posts } = useFeedContext();
+    const { editPost, deletePost } = usePostActions();
+    const { addComment: addCommentAction, deleteComment: deleteCommentAction } = useCommentActions();
     const currentPost = posts.find(p => p.postId === post.postId) || post;
     const { decoded, isInvalid } = useToken();
     const [comment, setComment] = useState("");
@@ -76,27 +85,18 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
         loadingCommentsLock.current = true;
         setLoading(true)
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}/comments?page=${pageRef.current}`, {
-                headers: {
-                    "Authorization": `Bearer ${localStorage.getItem('token')}`
-                }
-            })
-            if (response.ok) {
-                const data = await response.json() as CommentResponse
-                setComments(prev => [...prev, ...data.content.map(comment => ({ ...comment, createdAt: formatDate(comment.createdAt) }))])
-                pageRef.current += 1
-                hasMorePagesRef.current = data.totalPages > pageRef.current
-            } else {
-                hasMorePagesRef.current = false
-                triggerError("Failed to fetch comments.");
-            }
+            const data = await commentApi.getCommentList(currentPost.postId, pageRef.current);
+            setComments(prev => [...prev, ...data.content.map(comment => ({ ...comment, createdAt: formatDate(comment.createdAt) }))])
+            pageRef.current += 1
+            hasMorePagesRef.current = data.totalPages > pageRef.current
         } catch (e) {
-            triggerError("Server error while fetching comments.");
+            hasMorePagesRef.current = false
+            triggerError("Failed to fetch comments.");
         } finally {
             setLoading(false)
             loadingCommentsLock.current = false;
         }
-    }, [currentPost.postId])
+    }, [currentPost.postId, triggerError])
 
     useEffect(() => {
         if (isInvalid) {
@@ -123,109 +123,38 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
     }
 
     const addComment = async () => {
-        const commentRequest = {
-            content: comment
-        }
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}/comments`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                },
-                body: JSON.stringify(commentRequest)
-            })
-            if (response.ok) {
-                const newComment = await response.json() as CommentDTO
+            const newComment = await addCommentAction(currentPost.postId, comment, currentPost);
+            if (newComment) {
                 const modifiedNewComment = { ...newComment, createdAt: formatDate(newComment.createdAt) };
                 setComments(prev => [...prev, modifiedNewComment])
-                const updatedPost: PostDTO = {
-                    ...currentPost,
-                    commentCount: currentPost.commentCount + 1
-                }
-                updatePostInFeed(updatedPost)
-            } else {
-                triggerError("Failed to add comment.");
             }
-        } catch (e) {
-            triggerError("Server error. Please try again.");
         } finally {
             setComment("")
         }
     }
     const handleDeletePost = async (state: boolean) => {
-        if (state) {
-            try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}`, {
-                    headers: {
-                        "Authorization": "Bearer " + localStorage.getItem("token")
-                    },
-                    method: "DELETE"
-                })
-                if (response.ok) {
-                    onClose()
-                    deletePostFromFeed(currentPost.postId)
-                } else {
-                    triggerError("Failed to delete post.");
-                }
-            } catch (e) {
-                triggerError("Server error while deleting post.");
-            }
-        }
         setShowConfirmation(false)
+        onClose()
+        if (state) {
+            await deletePost(currentPost.postId)
+        }
     }
 
     const showEditPostModal = () => {
         setShowEditModal(true)
     }
 
-    const editPost = async (data: PostData) => {
+    const handleEditPost = async (data: EditPostData) => {
         setShowMorePost(false);
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/posts/${currentPost.postId}`, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                },
-                method: "PUT",
-                body: JSON.stringify(data)
-            })
-            if (response.ok) {
-                const updatedPost: PostDTO = {
-                    ...currentPost,
-                    title: data.title,
-                    content: data.content
-                }
-                updatePostInFeed(updatedPost)
-            } else {
-                triggerError("Failed to update post.");
-            }
-        } catch (e) {
-            triggerError("Server error while editing post.");
-        } finally {
-            setShowEditModal(false)
+        const success = await editPost(data, currentPost);
+        if (success) {
+            setShowEditModal(false);
         }
     }
     const deleteComment = async (commentId: number) => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/social/comments/${commentId}`, {
-                headers: {
-                    "Authorization": "Bearer " + localStorage.getItem('token')
-                },
-                method: "DELETE"
-            })
-            if (response.ok) {
-                setComments(prev => prev.filter(comment => comment.commentId !== commentId))
-                const updatedPost: PostDTO = {
-                    ...currentPost,
-                    commentCount: currentPost.commentCount - 1
-                }
-                updatePostInFeed(updatedPost)
-            } else {
-                triggerError("Failed to delete comment.");
-            }
-        } catch (e) {
-            triggerError("Server error while deleting comment.");
+        if (await deleteCommentAction(commentId, currentPost)) {
+            setComments(prev => prev.filter(c => c.commentId !== commentId));
         }
     }
 
@@ -238,12 +167,12 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
     }
     return (
         <>
-            <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-                <div className="relative shadow-xl w-2/3 h-full overflow-y-auto mx-auto my-8 p-8 rounded-3xl bg-white  text-gray-800">
-                    <div className="flex justify-between">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 sm:p-6">
+                <div className="relative max-h-screen w-full max-w-5xl overflow-y-auto bg-white p-4 text-gray-800 shadow-2xl sm:max-h-[calc(100vh-3rem)] sm:rounded-3xl sm:p-8">
+                    <div className="mb-4 flex justify-between sm:mb-6">
                         <button
                             onClick={onClose}
-                            className="bg-blue-500 text-white rounded-full px-6 py-2 mb-6 hover:bg-blue-600 transition-colors duration-300 ease-in-out flex items-center gap-2 font-bold text-sm"
+                            className="flex items-center gap-2 rounded-full bg-blue-500 px-6 py-2 text-sm font-bold text-white transition-colors duration-300 ease-in-out hover:bg-blue-600"
                         >
                             <span>&larr;</span>
                         </button>
@@ -264,9 +193,9 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                         />
                     }
                     <div>
-                        <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2 cursor-pointer" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave} onClick={() => { navigate(`/profile/${currentPost.authorId}`) }}>
-                                <AvatarCircle username={currentPost.author} size="small" />
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="flex cursor-pointer items-center gap-2" onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave} onClick={() => { navigate(`/profile/${currentPost.authorId}`) }}>
+                                <AvatarCircle username={currentPost.author} imgUrl={currentPost.authorImgUrl} size="small" />
                                 <h2 className="w-fit font-bold text-xl text-gray-900 hover:underline" >{currentPost.author}</h2>
                             </div>
                             {!currentPost.canEdit &&
@@ -287,8 +216,12 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                         />
                     </div>
                     <hr className="border-gray-100 my-4" />
+                    {currentPost.imgUrl &&
+                        <img src={currentPost.imgUrl} alt="picture" className="max-w-full max-h-[600px] object-contain rounded-xl" />
+                    }
+                    <hr className="border-gray-100 my-4" />
                     <PostInteractions post={currentPost} />
-                    <div className="bg-gray-50 shadow-inner p-6 rounded-3xl h-96 flex flex-col mt-4 border border-gray-100">
+                    <div className="mt-4 flex h-80 flex-col rounded-3xl border border-gray-100 bg-gray-50 p-3 shadow-inner sm:p-5">
                         <div className={`overflow-y-auto overflow-x-hidden flex-1 min-h-0 mb-4 pr-2 ${comments.length === 0 ? "flex justify-center items-center" : ""}`}>
                             {comments.length === 0 ? (
                                 <p className="text-gray-400 italic">Be first to write a comment!</p>
@@ -331,13 +264,13 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                             <form onSubmit={(e) => { e.preventDefault() }}>
                                 <div className="relative w-full">
                                     <input
-                                        className="shadow-sm p-3 w-full rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-24"
+                                        className="w-full rounded-full border border-gray-200 p-3 pr-16 shadow-sm transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 sm:pr-24"
                                         type="text"
                                         placeholder="Write a comment..."
                                         value={comment}
                                         onChange={(e) => { setComment(e.target.value) }}
                                     />
-                                    <button data-testid="create-comment" type="button" disabled={comment.trim().length === 0} className="absolute right-1 top-1/2 -translate-y-1/2 bg-blue-500 text-white rounded-full px-6 py-2 hover:bg-blue-600 transition-colors duration-300 ease-in-out flex items-center gap-2 font-bold text-sm disabled:bg-gray-400 disabled:cursor-not-allowed" onClick={addComment}>
+                                    <button data-testid="create-comment" type="button" disabled={comment.trim().length === 0} className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center gap-2 rounded-full bg-blue-500 px-4 py-2 text-sm font-bold text-white transition-colors duration-300 ease-in-out hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-400 sm:px-6" onClick={addComment}>
                                         <i className="icon-comment text-lg"></i>
                                     </button>
                                 </div>
@@ -352,6 +285,7 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
                     left={cords.left}
                     username={currentPost.author}
                     userId={currentPost.authorId}
+                    imgUrl={currentPost.authorImgUrl}
                     onMouseEnter={handlers.onMouseCardEnter}
                     onMouseLeave={handlers.onMouseLeave}
                     show={show}
@@ -359,9 +293,10 @@ const PostModal = ({ post, onClose }: PostModalProps) => {
             }
             {showEditModal && (
                 <EditPostModal
-                    postData={{ title: currentPost.title, content: currentPost.content } as PostData}
+                    postData={{ title: currentPost.title, content: currentPost.content, imgUrl: currentPost.imgUrl } as PostData}
                     username={currentPost.author}
-                    onConfirm={editPost}
+                    imgUrl={currentPost.authorImgUrl}
+                    onConfirm={handleEditPost}
                     onCancel={() => setShowEditModal(false)}
                     show={showEditModal}
                 />

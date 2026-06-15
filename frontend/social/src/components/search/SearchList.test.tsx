@@ -53,6 +53,7 @@ describe('SearchList test', () => {
             decoded: {
                 userId: 99,
                 username: "Test",
+                imgUrl: null,
                 sub: "test@test.com",
                 iat: 1610000000,
                 exp: 1710000000
