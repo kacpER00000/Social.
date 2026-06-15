@@ -50,7 +50,7 @@ const LikeList = ({ users, onClose, canLoadMore, loadMore, show }: LikeListProps
                     <div className="space-y-1">
                         {users.map((item, index) => (
                             <div key={index} className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group" onClick={() => navigate(`/profile/${item.userId}`)}>
-                                <AvatarCircle size="small" username={item.username} />
+                                <AvatarCircle size="small" username={item.username} imgUrl={item.imgUrl} />
                                 <div className="flex-1 min-w-0">
                                     <p className="font-semibold text-gray-800 text-sm truncate group-hover:text-blue-600 transition-colors">
                                         {item.username}

@@ -135,6 +135,7 @@ export interface EditPostData {
 
 export interface PostLikeDTO {
     username: string;
+    imgUrl: string | null;
     userId: number;
     postId: number;
     likedAt: string;
