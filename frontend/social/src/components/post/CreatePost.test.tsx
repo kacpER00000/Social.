@@ -5,6 +5,7 @@ import { render, screen } from "@testing-library/react";
 import CreatePost from "./CreatePost.tsx";
 import { useToken } from "../../hooks/useToken.ts";
 import { ErrorProvider } from "../../contexts/ErrorContext.tsx";
+import { StatusProvider } from "../../contexts/StatusContext.tsx";
 
 vi.mock("../../hooks/useToken", () => ({
     useToken: vi.fn()
@@ -23,6 +24,7 @@ describe("CreatePost test", () => {
             decoded: {
                 userId: 1,
                 username: "Test",
+                imgUrl: null,
                 sub: "test@test.com",
                 iat: 1610000000,
                 exp: 1710000000
@@ -34,7 +36,14 @@ describe("CreatePost test", () => {
         vi.restoreAllMocks();
     })
     const renderWithFeedContext = (component: React.ReactNode) => (
-        render(<FeedProvider><ErrorProvider>{component}</ErrorProvider></FeedProvider>)
+        render(
+            <StatusProvider>
+                <FeedProvider>
+                    <ErrorProvider>{component}
+                    </ErrorProvider>
+                </FeedProvider>
+            </StatusProvider>
+        )
     );
     it("should open real modal, type data, and send POST request", async () => {
         const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
@@ -60,7 +69,7 @@ describe("CreatePost test", () => {
                     'Content-Type': 'application/json',
                     'Authorization': 'Bearer AAABBBCCCDDD'
                 },
-                body: JSON.stringify({ title: 'Title', content: 'Content' })
+                body: JSON.stringify({ title: 'Title', content: 'Content', imgUrl: null, imgId: null })
             })
         );
     });

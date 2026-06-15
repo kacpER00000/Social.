@@ -34,6 +34,7 @@ const Confirmation = ({onChoose, show}: ConfirmationProps) => {
     }, [show]);
 
     useEffect(() => {
+        if (!show) return;
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === "Escape") {
                 onChoose(false);
@@ -41,7 +42,7 @@ const Confirmation = ({onChoose, show}: ConfirmationProps) => {
         };
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown)
-    }, [onChoose]);
+    }, [onChoose, show]);
     if(!show){return null;}
     return createPortal(
         <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">

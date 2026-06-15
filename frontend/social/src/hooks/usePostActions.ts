@@ -44,10 +44,11 @@ export const usePostActions = (): usePostActionsReturn => {
                 addPostToFeed(newPost);
                 setStatus('success');
             } else {
+                triggerError("Failed to create post.");
                 setStatus('error');
             }
-        } catch (error) {
-            triggerError("Failed to create post");
+        } catch (error: any) {
+            triggerError(error.message || "Failed to create post.");
             setStatus('error');
         }
     }
